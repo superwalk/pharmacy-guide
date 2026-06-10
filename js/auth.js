@@ -1,0 +1,150 @@
+// ═══ 用户认证 ═══
+let currentUser = null;
+
+// 从 users.json 同步过来的核心数据
+const USERS = [
+  { username:'admin', password:'walkman0097', role:'admin', nickname:'管理员' },
+  { username:'user001', password:'exr3690', role:'editor', nickname:'药师001' },
+  { username:'user002', password:'wfx4480', role:'editor', nickname:'药师002' },
+  { username:'user003', password:'qdf0212', role:'editor', nickname:'药师003' },
+  { username:'user004', password:'uil6918', role:'editor', nickname:'药师004' },
+  { username:'user005', password:'aud4706', role:'user', nickname:'药师005' },
+  { username:'user006', password:'uug4540', role:'user', nickname:'药师006' },
+  { username:'user007', password:'fia2906', role:'user', nickname:'药师007' },
+  { username:'user008', password:'ksj9168', role:'user', nickname:'药师008' },
+  { username:'user009', password:'fvk9285', role:'user', nickname:'药师009' },
+  { username:'user010', password:'jog6468', role:'user', nickname:'药师010' },
+  { username:'user011', password:'jdl6400', role:'user', nickname:'药师011' },
+  { username:'user012', password:'wox7858', role:'user', nickname:'药师012' },
+  { username:'user013', password:'mej1169', role:'user', nickname:'药师013' },
+  { username:'user014', password:'kop6248', role:'user', nickname:'药师014' },
+  { username:'user015', password:'voa2802', role:'user', nickname:'药师015' },
+  { username:'user016', password:'rfj9770', role:'user', nickname:'药师016' },
+  { username:'user017', password:'tmi6874', role:'user', nickname:'药师017' },
+  { username:'user018', password:'aok3424', role:'user', nickname:'药师018' },
+  { username:'user019', password:'oze2490', role:'user', nickname:'药师019' },
+  { username:'user020', password:'iic6167', role:'user', nickname:'药师020' },
+  { username:'user021', password:'tul6244', role:'user', nickname:'药师021' },
+  { username:'user022', password:'alr4765', role:'user', nickname:'药师022' },
+  { username:'user023', password:'ygi3591', role:'user', nickname:'药师023' },
+  { username:'user024', password:'xly5273', role:'user', nickname:'药师024' },
+  { username:'user025', password:'evc6832', role:'user', nickname:'药师025' },
+  { username:'user026', password:'yyx8344', role:'user', nickname:'药师026' },
+  { username:'user027', password:'beg8692', role:'user', nickname:'药师027' },
+  { username:'user028', password:'wut0594', role:'user', nickname:'药师028' },
+  { username:'user029', password:'erc8106', role:'user', nickname:'药师029' },
+  { username:'user030', password:'uob5975', role:'user', nickname:'药师030' },
+  { username:'user031', password:'axm9088', role:'user', nickname:'药师031' },
+  { username:'user032', password:'bxd9433', role:'user', nickname:'药师032' },
+  { username:'user033', password:'syi9344', role:'user', nickname:'药师033' },
+  { username:'user034', password:'ulb2673', role:'user', nickname:'药师034' },
+  { username:'user035', password:'mhp7919', role:'user', nickname:'药师035' },
+  { username:'user036', password:'arq8755', role:'user', nickname:'药师036' },
+  { username:'user037', password:'swg2474', role:'user', nickname:'药师037' },
+  { username:'user038', password:'aao6401', role:'user', nickname:'药师038' },
+  { username:'user039', password:'ltw9060', role:'user', nickname:'药师039' },
+  { username:'user040', password:'olp7126', role:'user', nickname:'药师040' },
+  { username:'user041', password:'bgv7820', role:'user', nickname:'药师041' },
+  { username:'user042', password:'ktk5155', role:'user', nickname:'药师042' },
+  { username:'user043', password:'yyv4970', role:'user', nickname:'药师043' },
+  { username:'user044', password:'rcv9750', role:'user', nickname:'药师044' },
+  { username:'user045', password:'aqr6576', role:'user', nickname:'药师045' },
+  { username:'user046', password:'srr9565', role:'user', nickname:'药师046' },
+  { username:'user047', password:'hqg8089', role:'user', nickname:'药师047' },
+  { username:'user048', password:'hwh5105', role:'user', nickname:'药师048' },
+  { username:'user049', password:'cpl6243', role:'user', nickname:'药师049' },
+  { username:'user050', password:'kes2963', role:'user', nickname:'药师050' },
+  { username:'user051', password:'mgs6108', role:'user', nickname:'药师051' },
+  { username:'user052', password:'pqt6546', role:'user', nickname:'药师052' },
+  { username:'user053', password:'bkh8622', role:'user', nickname:'药师053' },
+  { username:'user054', password:'oyj0196', role:'user', nickname:'药师054' },
+  { username:'user055', password:'dqt3880', role:'user', nickname:'药师055' },
+  { username:'user056', password:'bkl7793', role:'user', nickname:'药师056' },
+  { username:'user057', password:'bdi2710', role:'user', nickname:'药师057' },
+  { username:'user058', password:'qoh8084', role:'user', nickname:'药师058' },
+  { username:'user059', password:'con7706', role:'user', nickname:'药师059' },
+  { username:'user060', password:'hzq5595', role:'user', nickname:'药师060' },
+  { username:'user061', password:'ltt9596', role:'user', nickname:'药师061' },
+  { username:'user062', password:'vur9098', role:'user', nickname:'药师062' },
+  { username:'user063', password:'fse2407', role:'user', nickname:'药师063' },
+  { username:'user064', password:'kfx2775', role:'user', nickname:'药师064' },
+  { username:'user065', password:'kvy7161', role:'user', nickname:'药师065' },
+  { username:'user066', password:'jib0337', role:'user', nickname:'药师066' },
+  { username:'user067', password:'lcp5438', role:'user', nickname:'药师067' },
+  { username:'user068', password:'jkd7500', role:'user', nickname:'药师068' },
+  { username:'user069', password:'lle0916', role:'user', nickname:'药师069' },
+  { username:'user070', password:'lpi3638', role:'user', nickname:'药师070' },
+  { username:'user071', password:'mde5773', role:'user', nickname:'药师071' },
+  { username:'user072', password:'lhp8465', role:'user', nickname:'药师072' },
+  { username:'user073', password:'oai1814', role:'user', nickname:'药师073' },
+  { username:'user074', password:'ydc4621', role:'user', nickname:'药师074' },
+  { username:'user075', password:'jsh8949', role:'user', nickname:'药师075' },
+  { username:'user076', password:'yvu0114', role:'user', nickname:'药师076' },
+  { username:'user077', password:'yvn9043', role:'user', nickname:'药师077' },
+  { username:'user078', password:'hzp7814', role:'user', nickname:'药师078' },
+  { username:'user079', password:'pur3672', role:'user', nickname:'药师079' },
+  { username:'user080', password:'dhf5035', role:'user', nickname:'药师080' },
+  { username:'user081', password:'mxi5663', role:'user', nickname:'药师081' },
+  { username:'user082', password:'hdl3927', role:'user', nickname:'药师082' },
+  { username:'user083', password:'ote9553', role:'user', nickname:'药师083' },
+  { username:'user084', password:'jnm8104', role:'user', nickname:'药师084' },
+  { username:'user085', password:'uxu1384', role:'user', nickname:'药师085' },
+  { username:'user086', password:'umh5082', role:'user', nickname:'药师086' },
+  { username:'user087', password:'pbe6518', role:'user', nickname:'药师087' },
+  { username:'user088', password:'lrg7946', role:'user', nickname:'药师088' },
+  { username:'user089', password:'gkc3090', role:'user', nickname:'药师089' },
+  { username:'user090', password:'vej5612', role:'user', nickname:'药师090' },
+  { username:'user091', password:'wsl4716', role:'user', nickname:'药师091' },
+  { username:'user092', password:'paz7579', role:'user', nickname:'药师092' },
+  { username:'user093', password:'zkl3098', role:'user', nickname:'药师093' },
+  { username:'user094', password:'qay3807', role:'user', nickname:'药师094' },
+  { username:'user095', password:'jev3160', role:'user', nickname:'药师095' },
+  { username:'user096', password:'non7417', role:'user', nickname:'药师096' },
+  { username:'user097', password:'orw7159', role:'user', nickname:'药师097' },
+  { username:'user098', password:'fyr9830', role:'user', nickname:'药师098' },
+  { username:'user099', password:'cos4179', role:'user', nickname:'药师099' },
+];
+
+function findUser(username) { return USERS.find(u => u.username === username); }
+
+function login(username, password) {
+  const u = findUser(username);
+  if (!u) return { ok:false, msg:'用户不存在' };
+  if (u.password !== password) return { ok:false, msg:'密码错误' };
+  // 合并本地存储的昵称
+  const saved = JSON.parse(localStorage.getItem('user_' + u.username) || '{}');
+  if (saved.nickname) u.nickname = saved.nickname;
+  if (saved.password) u.password = saved.password;
+  currentUser = u;
+  localStorage.setItem('currentUser', u.username);
+  return { ok:true, user:u };
+}
+
+function logout() {
+  currentUser = null;
+  localStorage.removeItem('currentUser');
+}
+
+function isEditor() { return currentUser && (currentUser.role === 'admin' || currentUser.role === 'editor'); }
+
+function updateNickname(newName) {
+  if (!currentUser) return;
+  currentUser.nickname = newName;
+  const saved = JSON.parse(localStorage.getItem('user_' + currentUser.username) || '{}');
+  saved.nickname = newName;
+  localStorage.setItem('user_' + currentUser.username, JSON.stringify(saved));
+  document.getElementById('profile-nickname').textContent = newName;
+  toast('昵称已修改');
+}
+
+function changePassword(oldPw, newPw) {
+  if (!currentUser) return { ok:false, msg:'未登录' };
+  const u = findUser(currentUser.username);
+  if (u.password !== oldPw) return { ok:false, msg:'原密码错误' };
+  u.password = newPw;
+  currentUser.password = newPw;
+  const saved = JSON.parse(localStorage.getItem('user_' + currentUser.username) || '{}');
+  saved.password = newPw;
+  localStorage.setItem('user_' + currentUser.username, JSON.stringify(saved));
+  return { ok:true };
+}
