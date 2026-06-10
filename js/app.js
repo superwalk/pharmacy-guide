@@ -376,17 +376,32 @@ function initSearch() {
   function doSearch(q) {
     if(q.length<1) return;
     window._lastQuery=q;
+    var terms=q.split(/\s+/).filter(function(t){return t.length>0;});
+    function matchAny(txt){
+      if(!txt) return false;
+      txt=txt.toLowerCase();
+      for(var i=0;i<terms.length;i++){ if(txt.indexOf(terms[i])>=0) return true; }
+      return false;
+    }
+    function matchPy(py){
+      if(!py) return false;
+      py=py.toLowerCase();
+      for(var i=0;i<terms.length;i++){ if(py.indexOf(terms[i])===0) return true; }
+      return false;
+    }
     document.getElementById('search-results-input').value=q;
     pushScreen('search');
     var results=document.getElementById('search-results');
-    var dr=[],gd=[],dis=[],lw=[],rd=[],inf=[];
-    try{dr=allDrugs().filter(function(d){return d.name.toLowerCase().indexOf(q)>=0||d.indications.toLowerCase().indexOf(q)>=0||d.category.toLowerCase().indexOf(q)>=0||d.subcategory.toLowerCase().indexOf(q)>=0||(d.py||'').toLowerCase().indexOf(q)===0;});}catch(e){}
-    try{gd=allGuides().filter(function(g){return g.title.toLowerCase().indexOf(q)>=0||g.system.toLowerCase().indexOf(q)>=0||(g.content||'').toLowerCase().indexOf(q)>=0;});}catch(e){}
-    try{dis=DISEASES.filter(function(d){return d.name.toLowerCase().indexOf(q)>=0||d.desc.toLowerCase().indexOf(q)>=0||d.cat.toLowerCase().indexOf(q)>=0;});}catch(e){}
-    try{lw=LAWS.filter(function(l){return l.title.toLowerCase().indexOf(q)>=0||(l.content||'').toLowerCase().indexOf(q)>=0;});}catch(e){}
-    try{rd=HEALTH_EDU.filter(function(h){return h.title.toLowerCase().indexOf(q)>=0||h.content.toLowerCase().indexOf(q)>=0||h.cat.toLowerCase().indexOf(q)>=0;});}catch(e){}
-    try{inf=INFUSION_DATA.filter(function(i){return i.drug.toLowerCase().indexOf(q)>=0||i.note.toLowerCase().indexOf(q)>=0||i.cat.toLowerCase().indexOf(q)>=0||(i.interact||'').toLowerCase().indexOf(q)>=0||(i.vehicle||'').toLowerCase().indexOf(q)>=0;});}catch(e){}
-    var total=dr.length+dis.length+gd.length+lw.length+rd.length+inf.length;
+    var dr=[],gd=[],dis=[],lw=[],rd=[],inf=[],me=[];
+    var me=[];
+    try{dr=allDrugs().filter(function(d){return matchAny(d.name)||matchAny(d.indications)||matchAny(d.category)||matchAny(d.subcategory)||matchPy(d.py||'');});}catch(e){}
+    try{gd=allGuides().filter(function(g){return matchAny(g.title)||matchAny(g.system)||matchAny(g.content);});}catch(e){}
+    try{dis=DISEASES.filter(function(d){return matchAny(d.name)||matchAny(d.desc)||matchAny(d.cat);});}catch(e){}
+    try{lw=LAWS.filter(function(l){return matchAny(l.title)||matchAny(l.content);});}catch(e){}
+    try{rd=HEALTH_EDU.filter(function(h){return matchAny(h.title)||matchAny(h.content)||matchAny(h.cat);});}catch(e){}
+    try{me=MED_EDU.filter(function(m){return matchAny(m.drug)||matchAny(m.detail)||matchAny(m.cat)||matchAny(m.key);});}catch(e){}
+    try{inf=INFUSION_DATA.filter(function(i){return matchAny(i.drug)||matchAny(i.note)||matchAny(i.cat)||matchAny(i.interact||'')||matchAny(i.vehicle||'');});}catch(e){}
+    var total=dr.length+dis.length+gd.length+lw.length+rd.length+inf.length+me.length;
     document.getElementById('result-count').textContent=total+'个结果';
     function hl(t){var re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');return t.replace(re,'<mark style="background:#FEF08A;padding:1px 2px;border-radius:2px">$1</mark>');}
     results.innerHTML='';
