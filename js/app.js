@@ -167,7 +167,7 @@ function renderKnowledge() {
 
   if(activeTab==='drug'){
     let cats=DRUG_CATEGORIES;
-    if(kw) cats=cats.filter(c=>c.name.includes(kw)||c.subs.some(s=>s.includes(kw)));
+    if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw)));
     kb.innerHTML=cats.map(c=>`
       <div class="cat-card">
         <div class="cat-header" onclick="showDrugList('cat','${c.id}')"><span class="cat-name">${c.name}</span><span class="cat-arrow">›</span></div>
@@ -180,10 +180,10 @@ function renderKnowledge() {
     }
   } else {
     let cats= DISEASE_CATEGORIES;
-    if(kw) cats=cats.filter(c=>c.name.includes(kw)||c.subs.some(s=>s.includes(kw)));
+    if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw)));
     kb.innerHTML=cats.map(c=>`\n      <div class="cat-card">\n        <div class="cat-header" onclick="showDiseaseList('${c.name}')"><span class="cat-name">${c.name}</span><span class="cat-arrow">›</span></div>\n        <div class="cat-subs">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();openDisease('${s}')">${s}</span>`).join('')}</div>\n      </div>\n    `).join('');
     if(kw){
-      const matches=DISEASES.filter(d=>d.name.includes(kw));
+      const matches=DISEASES.filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase().includes(kw));
       if(matches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配疾病</div>`+matches.map(d=>`<div class="list-card" onclick="openDisease('${d.name}')"><div class="icon-box">🦠</div><div class="info"><div class="name">${d.name}</div><div class="desc">${(d.desc||'').slice(0,40)}…</div></div></div>`).join('');
     }
   }
@@ -230,6 +230,8 @@ function renderGuidelines() {
   `).join('');
   if(systems.length===0&&kw) gl.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">未找到匹配的指南或法规</div>';
   gl.querySelectorAll('.guide-item').forEach(item=>{ item.onclick=()=>openGuide(item.dataset.gid); });
+  // 确保搜索绑定
+  var gs2=document.getElementById('guide-search'); if(gs2 && !gs2._bound){ gs2.oninput=renderGuidelines; gs2._bound=true; }
 }
 
 function toggleGuideGroup(header) {
@@ -394,7 +396,7 @@ function initSearch() {
     var results=document.getElementById('search-results');
     var dr=[],gd=[],dis=[],lw=[],rd=[],inf=[],me=[];
     var me=[];
-    try{dr=allDrugs().filter(function(d){return matchAny(d.name)||matchAny(d.indications)||matchAny(d.category)||matchAny(d.subcategory)||matchPy(d.py||'');});}catch(e){}
+    try{dr=allDrugs().filter(function(d){return matchAny(d.name)||matchAny(d.indications)||matchAny(d.category)||matchAny(d.subcategory)||matchAny(d.py||'');});}catch(e){}
     try{gd=allGuides().filter(function(g){return matchAny(g.title)||matchAny(g.system)||matchAny(g.content);});}catch(e){}
     try{dis=DISEASES.filter(function(d){return matchAny(d.name)||matchAny(d.desc)||matchAny(d.cat);});}catch(e){}
     try{lw=LAWS.filter(function(l){return matchAny(l.title)||matchAny(l.content);});}catch(e){}
@@ -463,7 +465,7 @@ function renderHealthEdu() {
   const hl=document.getElementById('he-list');
   const cats=[...new Set(HEALTH_EDU.map(h=>h.cat))];
   let data=HEALTH_EDU;
-  if(kw) data=data.filter(h=>h.title.toLowerCase().includes(kw)||h.content.toLowerCase().includes(kw)||h.cat.includes(kw));
+  if(kw) data=data.filter(h=>h.title.toLowerCase().includes(kw)||h.content.toLowerCase().includes(kw)||h.cat.toLowerCase().includes(kw));
   hl.innerHTML=cats.map(cat=>{
     const items=data.filter(h=>h.cat===cat);
     if(items.length===0) return '';
@@ -521,7 +523,7 @@ function openInfusion(iid) {
 }
 
 function showDiseaseList(catName) {
-  const dr=allDrugs().filter(d=>d.indications.includes(catName)||d.category.includes(catName));
+  const dr=allDrugs().filter(d=>d.indications.toLowerCase().includes(catName.toLowerCase())||d.category.toLowerCase().includes(catName.toLowerCase()));
   const ds=DISEASES.filter(d=>d.cat===catName);
   pushScreen('search');
   document.getElementById('search-results-input').value=catName;
@@ -534,7 +536,7 @@ function showDiseaseList(catName) {
 
 function openDisease(name) {
   const d=DISEASES.find(x=>x.name===name);
-  const drugs=allDrugs().filter(dr=>dr.indications.toLowerCase().includes(name.slice(0,3).toLowerCase())||dr.category.includes(name.slice(0,3)));
+  const drugs=allDrugs().filter(dr=>dr.indications.toLowerCase().includes(name.slice(0,3).toLowerCase())||dr.category.toLowerCase().includes(name.slice(0,3)));
   const guides=allGuides().filter(g=>g.title.includes(name)||g.content.includes(name));
   if(!d && drugs.length===0 && guides.length===0){ toast('暂无数据'); return; }
   pushScreen('label');
@@ -556,7 +558,7 @@ function renderMedEdu(){
   var hl=document.getElementById('me-list');
   var cats=[...new Set(MED_EDU.map(m=>m.cat))];
   var data=MED_EDU;
-  if(kw) data=data.filter(m=>m.drug.toLowerCase().includes(kw)||m.detail.toLowerCase().includes(kw)||m.cat.includes(kw)||m.key.includes(kw));
+  if(kw) data=data.filter(m=>m.drug.toLowerCase().includes(kw)||m.detail.toLowerCase().includes(kw)||m.cat.toLowerCase().includes(kw)||m.key.toLowerCase().includes(kw));
   hl.innerHTML=cats.map(function(cat){
     var items=data.filter(function(m){return m.cat===cat;});
     if(items.length===0) return '';
