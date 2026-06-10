@@ -125,6 +125,7 @@ function renderHome() {
       if(nav==='compare'){ pushScreen('compare'); renderCompare(); return; }
       if(nav==='calc'){ pushScreen('calc'); renderCalc(); return; }
       if(nav==='healthedu'){ pushScreen('healthedu'); renderHealthEdu(); return; }
+      if(nav==='infusion'){ pushScreen('infusion'); renderInfusion(); return; }
       if(card.dataset.tab) { showScreen(nav); document.querySelectorAll('#kb-tabs .segment-item').forEach(t=>t.classList.toggle('active',t.dataset.tab===card.dataset.tab)); renderKnowledge(); }
       else { showScreen(nav); }
     };
@@ -352,7 +353,8 @@ function initSearch() {
     const dis= DISEASE_CATEGORIES.flatMap(c=>c.subs).filter(s=>s.includes(q));
     const lw=LAWS.filter(l=>l.title.toLowerCase().includes(q));
     const rd=HEALTH_EDU.filter(h=>h.title.toLowerCase().includes(q)||h.content.toLowerCase().includes(q)||h.cat.includes(q));
-    const total=dr.length+dis.length+gd.length+lw.length+rd.length;
+    const inf=INFUSION_DATA.filter(i=>i.drug.toLowerCase().includes(q)||i.note.toLowerCase().includes(q)||i.cat.includes(q)||(i.interact||'').includes(q));
+    const total=dr.length+dis.length+gd.length+lw.length+rd.length+inf.length;
     document.getElementById('result-count').textContent=total+'个结果';
     results.innerHTML='';
     if(dr.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title drugs">💊 药品 (${dr.length})</div>${dr.map(d=>`<div class="result-item" data-drug="${d.id}">${d.name}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')}</div>`;
@@ -360,6 +362,7 @@ function initSearch() {
     if(gd.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title guides">📋 指南 (${gd.length})</div>${gd.map(g=>`<div class="result-item">${g.title}</div>`).join('')}</div>`;
     if(lw.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title guides">📜 法规 (${lw.length})</div>${lw.map(l=>`<div class="result-item" onclick="openGuide('${l.id}')">${l.title}</div>`).join('')}</div>`;
     if(rd.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title" style="color:#D97706">📖 科普教育 (${rd.length})</div>${rd.map(h=>`<div class="result-item" onclick="openHealthEdu('${h.id}')">${h.title}<span class="badge badge-blue" style="margin-left:auto;font-size:10px">${h.cat}</span></div>`).join('')}</div>`;
+    if(inf.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title" style="color:#7C3AED">💉 输液配伍 (${inf.length})</div>${inf.map(i=>`<div class="result-item" onclick="openInfusion('${i.id}')">${i.drug}<span class="badge badge-blue" style="margin-left:auto;font-size:10px">${i.cat}</span></div>`).join('')}</div>`;
     if(total===0) results.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">未找到相关内容</div>';
     results.querySelectorAll('.result-item[data-drug]').forEach(r=>r.onclick=()=>{ pushScreen('detail'); renderDetail(r.dataset.drug); });
   }
@@ -421,6 +424,40 @@ function openHealthEdu(hid) {
     <div class="section-title" style="font-size:20px">${h.title}</div>
     <div style="font-size:12px;color:var(--text-light)">${h.cat}</div>
     <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${h.content||''}</p></div>
+  `;
+}
+
+// ═══ 输液配伍 ─══
+function renderInfusion() {
+  const kw=(document.getElementById('inf-search')?.value||'').toLowerCase();
+  const il=document.getElementById('inf-list');
+  const cats=[...new Set(INFUSION_DATA.map(i=>i.cat))];
+  let data=INFUSION_DATA;
+  if(kw) data=data.filter(i=>i.drug.toLowerCase().includes(kw)||i.note.toLowerCase().includes(kw)||i.cat.includes(kw)||(i.interact||'').includes(kw));
+  il.innerHTML=cats.map(cat=>{
+    const items=data.filter(i=>i.cat===cat);
+    if(items.length===0) return '';
+    return `<div class="cat-card" style="margin-bottom:8px">
+      <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="true"><span class="cat-name">${cat}</span><span style="font-size:12px;color:var(--text-light)">${items.length} 条 <span class="guide-arrow">▼</span></span></div>
+      <div class="guide-items">${items.map(i=>`<div class="guide-item" data-iid="${i.id}" style="display:flex;gap:6px;align-items:center;padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><span style="width:6px;height:6px;background:#7C3AED;border-radius:3px;flex-shrink:0"></span><span style="color:var(--text-body);flex:1;font-weight:600">${i.drug}</span><span style="font-size:11px;color:var(--text-light)">${i.vehicle||''}</span></div>`).join('')}</div>
+    </div>`;
+  }).join('');
+  il.querySelectorAll('.guide-item').forEach(item=>{ item.onclick=()=>openInfusion(item.dataset.iid); });
+  document.getElementById('inf-search').oninput=renderInfusion;
+}
+
+function openInfusion(iid) {
+  const i=INFUSION_DATA.find(x=>x.id===iid); if(!i) return;
+  pushScreen('label');
+  document.getElementById('label-content').innerHTML=`
+    <div class="section-title" style="font-size:22px">${i.drug}</div>
+    <div style="font-size:13px;color:var(--text-light);margin-bottom:12px"><span class="badge badge-blue">${i.cat}</span></div>
+    <div class="info-card"><div class="info-label">输液载体</div><div class="info-value">${i.vehicle||'—'}</div></div>
+    <div class="info-card"><div class="info-label">浓度</div><div class="info-value">${i.conc||'—'}</div></div>
+    <div class="info-card"><div class="info-label">输注速度</div><div class="info-value">${i.speed||'—'}</div></div>
+    ${i.interact?`<div class="info-card"><div class="info-label danger">配伍禁忌</div><div class="info-value">${i.interact}</div></div>`:''}
+    ${i.detail?`<div class="info-card"><div class="info-label danger">细节</div><div class="info-value">${i.detail}</div></div>`:''}
+    <div class="info-card"><div class="info-label">注意事项</div><div class="info-value" style="white-space:pre-wrap">${i.note||''}</div></div>
   `;
 }
 
