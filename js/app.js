@@ -107,7 +107,7 @@ function initApp() {
   document.getElementById('nav-bar').style.display='flex';
   SCREENS.forEach(s => {
     const el=document.getElementById('screen-'+s);
-    if(['home','knowledge','guidelines','profile'].includes(s)) el.style.height='calc(100% - var(--nav-height))';
+    if(['home','knowledge','guidelines','profile','admin','mededu'].includes(s)) el.style.height='calc(100% - var(--nav-height))';
   });
   showScreen('home');
   initSearch();
@@ -217,7 +217,7 @@ function renderGuidelines() {
   if(kw){
     systems=GUIDE_SYSTEMS.map(s=>({
       ...s,
-      items:s.items.filter(g=>g.title.toLowerCase().includes(kw)||(g.content||'').toLowerCase().includes(kw)||g.system.toLowerCase().includes(kw))
+      items:s.items.filter(g=>g.title.toLowerCase().includes(kw)||(g.content||'').toLowerCase().includes(kw)||g.system.toLowerCase().includes(kw)||(g.py||'').toLowerCase().includes(kw))
     })).filter(s=>s.items.length>0);
   }
   gl.innerHTML=systems.map((s,i)=>`
@@ -326,7 +326,7 @@ function renderFavorites() {
   if(fv.length===0){ fl.innerHTML=''; fe.style.display='block'; return; }
   fe.style.display='none';
   const kw=(document.getElementById('fav-search').value||'').toLowerCase();
-  let items=fv.map(id=>{ const d=findDrug(id); return d?{id,type:'drug',name:d.name,cat:d.category}:null; }).filter(Boolean);
+  let items=fv.map(id=>{ const d=findDrug(id); return d?{id,type:'drug',name:d.name,cat:d.category}:null; }).filter(Boolean).reverse();
   items=items.concat(allGuides().filter(g=>fv.includes(g.id)).map(g=>({id:g.id,type:'guide',name:g.title,cat:g.system})));
   if(kw) items=items.filter(i=>i.name.toLowerCase().includes(kw)||i.cat.includes(kw));
   fl.innerHTML=items.map(i=>`<div class="list-card" data-id="${i.id}" data-type="${i.type}"><div class="icon-box">${i.type==='drug'?'💊':'📋'}</div><div class="info"><div class="name">${i.name}</div><div class="desc">${i.cat}</div></div></div>`).join('');
@@ -400,12 +400,12 @@ function initSearch() {
     var dr=[],gd=[],dis=[],lw=[],rd=[],inf=[],me=[];
     var me=[];
     try{dr=allDrugs().filter(function(d){return matchAny(d.name)||matchAny(d.indications)||matchAny(d.category)||matchAny(d.subcategory)||matchAny(d.py||'');});}catch(e){}
-    try{gd=allGuides().filter(function(g){return matchAny(g.title)||matchAny(g.system)||matchAny(g.content);});}catch(e){}
+    try{gd=allGuides().filter(function(g){return matchAny(g.title)||matchAny(g.system)||matchAny(g.content)||matchAny(g.py||'');});}catch(e){}
     try{dis=DISEASES.filter(function(d){return matchAny(d.name)||matchAny(d.desc)||matchAny(d.cat);});}catch(e){}
     try{lw=LAWS.filter(function(l){return matchAny(l.title)||matchAny(l.content);});}catch(e){}
-    try{rd=HEALTH_EDU.filter(function(h){return matchAny(h.title)||matchAny(h.content)||matchAny(h.cat);});}catch(e){}
-    try{me=MED_EDU.filter(function(m){return matchAny(m.drug)||matchAny(m.detail)||matchAny(m.cat)||matchAny(m.key);});}catch(e){}
-    try{inf=INFUSION_DATA.filter(function(i){return matchAny(i.drug)||matchAny(i.note)||matchAny(i.cat)||matchAny(i.interact||'')||matchAny(i.vehicle||'');});}catch(e){}
+    try{rd=HEALTH_EDU.filter(function(h){return matchAny(h.title)||matchAny(h.content)||matchAny(h.cat)||matchAny(h.py||'');});}catch(e){}
+    try{me=MED_EDU.filter(function(m){return matchAny(m.drug)||matchAny(m.detail)||matchAny(m.cat)||matchAny(m.key)||matchAny(m.py||'');});}catch(e){}
+    try{inf=INFUSION_DATA.filter(function(i){return matchAny(i.drug)||matchAny(i.note)||matchAny(i.cat)||matchAny(i.interact||'')||matchAny(i.vehicle||'')||matchAny(i.py||'');});}catch(e){}
     var total=dr.length+dis.length+gd.length+lw.length+rd.length+inf.length+me.length;
     document.getElementById('result-count').textContent=total+'个结果';
     function hl(t){var re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');return t.replace(re,'<mark style="background:#FEF08A;padding:1px 2px;border-radius:2px">$1</mark>');}
@@ -446,6 +446,11 @@ function initProfileMenus() {
   document.getElementById('menu-change-pw').onclick=()=>{ showModal('修改密码','<input id="old-pw" type="password" placeholder="原密码"><input id="new-pw" type="password" placeholder="新密码">',[{label:'取消'},{label:'确认修改',primary:true,onClick:()=>{ const o=document.getElementById('old-pw').value; const n=document.getElementById('new-pw').value; if(!n||n.length<4){ toast('密码至少4位'); return; } const r=changePassword(o,n); if(!r.ok) toast(r.msg); else toast('密码已修改，下次登录生效'); }}]); };
   document.getElementById('menu-disclaimer').onclick=()=>{ showModal('免责声明','<div style="font-size:13px;line-height:1.8;color:var(--text-body)"><p>本应用提供的药学知识内容仅供参考和学习交流之用，<span style="color:var(--danger)">不构成医疗建议、诊断或处方依据。</span></p><p style="margin-top:8px">具体用药方案请以药品说明书和临床指南为准，并遵循执业医师或药师的指导。</p><p style="margin-top:8px">作者不承担因使用本资料所产生任何直接或间接责任的义务。</p><p style="margin-top:8px;color:var(--text-light)">© 2026 药学知识指南</p></div>',[{label:'我知道了',primary:true}]); };
   document.getElementById('menu-logout').onclick=()=>{ logout(); location.reload(); };
+  // 使用帮助
+  document.getElementById('menu-guide').onclick=()=>{ pushScreen('label'); document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">📖 使用帮助</div><div class="label-doc" style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">'+USER_GUIDE+'</div>'; };
+  // 编辑记录菜单（函数在 admin.js 中定义）
+  var elog=document.getElementById('menu-edit-log');
+  if(elog) elog.onclick=()=>{ showEditLogs(); };
   document.querySelectorAll('.menu-item[data-nav]').forEach(m=>{ m.onclick=()=>showScreen(m.dataset.nav); });
 }
 
@@ -468,7 +473,7 @@ function renderHealthEdu() {
   const hl=document.getElementById('he-list');
   const cats=[...new Set(HEALTH_EDU.map(h=>h.cat))];
   let data=HEALTH_EDU;
-  if(kw) data=data.filter(h=>h.title.toLowerCase().includes(kw)||h.content.toLowerCase().includes(kw)||h.cat.toLowerCase().includes(kw));
+  if(kw) data=data.filter(h=>h.title.toLowerCase().includes(kw)||h.content.toLowerCase().includes(kw)||h.cat.toLowerCase().includes(kw)||(h.py||'').toLowerCase().includes(kw));
   hl.innerHTML=cats.map(cat=>{
     const items=data.filter(h=>h.cat===cat);
     if(items.length===0) return '';
@@ -564,7 +569,7 @@ function renderMedEdu(){
   var hl=document.getElementById('me-list');
   var cats=[...new Set(MED_EDU.map(m=>m.cat))];
   var data=MED_EDU;
-  if(kw) data=data.filter(m=>m.drug.toLowerCase().includes(kw)||m.detail.toLowerCase().includes(kw)||m.cat.toLowerCase().includes(kw)||m.key.toLowerCase().includes(kw));
+  if(kw) data=data.filter(m=>m.drug.toLowerCase().includes(kw)||m.detail.toLowerCase().includes(kw)||m.cat.toLowerCase().includes(kw)||m.key.toLowerCase().includes(kw)||(m.py||'').toLowerCase().includes(kw));
   hl.innerHTML=cats.map(function(cat){
     var items=data.filter(function(m){return m.cat===cat;});
     if(items.length===0) return '';

@@ -1,6 +1,6 @@
 // ═══ 导航 ═══
-const SCREENS = ['home','knowledge','guidelines','favorites','detail','compare','search','profile','label','mynotes','calc','healthedu','infusion','mededu'];
-const NAV_SCREENS = ['home','knowledge','guidelines','profile','compare'];
+const SCREENS = ['home','knowledge','guidelines','favorites','detail','compare','search','profile','label','mynotes','calc','healthedu','infusion','mededu','admin'];
+const NAV_SCREENS = ['home','knowledge','guidelines','profile','compare','admin'];
 let screenStack = ['home'];
 
 function showScreen(name) {

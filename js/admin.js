@@ -1,4 +1,48 @@
 // ═══ 内容管理 ═══
+
+// 编辑日志
+function addEditLog(type, name, action) {
+  try {
+    var logs = JSON.parse(localStorage.getItem('edit_logs') || '[]');
+    logs.unshift({
+      time: new Date().toLocaleString('zh-CN'),
+      user: currentUser ? currentUser.nickname : '未知',
+      type: type,
+      name: name,
+      action: action
+    });
+    if (logs.length > 200) logs = logs.slice(0, 200);
+    localStorage.setItem('edit_logs', JSON.stringify(logs));
+  } catch(e) {}
+}
+
+function showEditLogs() {
+  pushScreen('label');
+  var logs = JSON.parse(localStorage.getItem('edit_logs') || '[]');
+  var html = '<div class="section-title" style="font-size:22px">📝 编辑记录</div>';
+  if (logs.length === 0) {
+    html += '<div style="text-align:center;padding:40px;color:var(--text-light)">暂无编辑记录</div>';
+  } else {
+    html += '<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn btn-sm btn-outline" onclick="clearEditLogs()">清空记录</button></div>';
+    logs.forEach(function(l) {
+      var color = l.action === '新增' ? 'var(--primary)' : (l.action === '删除' ? 'var(--danger)' : 'var(--accent)');
+      html += '<div class="list-card"><div class="icon-box" style="font-size:12px">' + l.action + '</div><div class="info"><div class="name">' + l.name + '</div><div class="desc" style="font-size:11px">' + l.user + ' · ' + l.type + ' · ' + l.time + '</div></div></div>';
+    });
+  }
+  document.getElementById('label-content').innerHTML = html;
+}
+
+function clearEditLogs() {
+  showModal('确认清空', '<p style="text-align:center">确认清空所有编辑记录？</p>', [
+    {label: '取消'},
+    {label: '清空', primary: true, onClick: function() {
+      localStorage.removeItem('edit_logs');
+      showEditLogs();
+      toast('已清空');
+    }}
+  ]);
+}
+
 function initAdmin() {
   if (!isEditor()) { toast('无权限访问'); goBack(); return; }
 
@@ -129,7 +173,7 @@ function showDrugEditor(drug, index) {
       if(!nd.name||!nd.category||!nd.indications){toast('名称/分类/适应症为必填');return;}
       var cd=getCust();
       if(isNew){cd.drugs.unshift(nd);}else if(index>=DRUGS.length){cd.drugs[index-DRUGS.length]=nd;}else{cd.drugOverlay=cd.drugOverlay||{};cd.drugOverlay[d.id]=nd;}
-      saveCust(cd); renderAdminList('drugs'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('drugs'); addEditLog('疾病',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
     }}]
   );
 }
@@ -150,7 +194,7 @@ function showGuidelineEditor(guide, index) {
       if(!ng.title||!ng.system){toast('标题和系统为必填');return;}
       var cd=getCust();
       if(isNew){cd.guidelines.unshift(ng);}else if(index>=GUIDELINES.length){cd.guidelines[index-GUIDELINES.length]=ng;}else{cd.glOverlay=cd.glOverlay||{};cd.glOverlay[g.id]=ng;}
-      saveCust(cd); renderAdminList('guidelines'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('guidelines'); addEditLog('疾病',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
     }}]
   );
 }
@@ -170,7 +214,7 @@ function showEduEditor(item, index) {
       var cd=getCust();
       cd.education=cd.education||[];
       if(isNew){cd.education.unshift(ne);}else{var idx=cd.education.findIndex(x=>x.id===h.id);if(idx>=0)cd.education[idx]=ne;else{cd.eduOverlay=cd.eduOverlay||{};cd.eduOverlay[h.id]=ne;}}
-      saveCust(cd); renderAdminList('education'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('education'); addEditLog('疾病',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
     }}]
   );
 }
@@ -193,7 +237,7 @@ function showInfEditor(item, index) {
       var cd=getCust();
       cd.infusion=cd.infusion||[];
       if(isNew){cd.infusion.unshift(ni);}else{var idx=cd.infusion.findIndex(x=>x.id===inf.id);if(idx>=0)cd.infusion[idx]=ni;else{cd.infOverlay=cd.infOverlay||{};cd.infOverlay[inf.id]=ni;}}
-      saveCust(cd); renderAdminList('infusion'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('infusion'); addEditLog('疾病',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
     }}]
   );
 }
@@ -216,7 +260,7 @@ function showDiseaseEditor(item, index) {
       var cd=getCust();
       cd.diseases=cd.diseases||[];
       if(isNew){cd.diseases.unshift(nd);}else{var idx=cd.diseases.findIndex(x=>x.id===d.id);if(idx>=0)cd.diseases[idx]=nd;else{cd.disOverlay=cd.disOverlay||{};cd.disOverlay[d.id]=nd;}}
-      saveCust(cd); renderAdminList('diseases'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('diseases'); addEditLog('疾病',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
     }}]
   );
 }
