@@ -115,7 +115,13 @@ function initApp() {
 }
 
 // ═══ 时钟 ───
-setInterval(()=>{ const t=new Date(); const s=t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0'); for(let i=1;i<=10;i++){ const c=document.getElementById('clock'+i); if(c)c.textContent=s; } },30000);
+// ═══ 时钟 ───
+(function updateClock(){
+  const t=new Date();
+  const s=t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
+  for(let i=1;i<=12;i++){ const c=document.getElementById('clock'+i); if(c)c.textContent=s; }
+  setTimeout(updateClock,60000-(t.getSeconds()*1000));
+})();
 
 // ═══ 首页 ───
 function renderHome() {
