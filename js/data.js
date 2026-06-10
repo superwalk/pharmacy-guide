@@ -16,7 +16,24 @@ const DRUG_CATEGORIES = [
   { id:'hematology', name:'血液系统用药', subs:['抗凝药','止血药','抗贫血药'] },
 ];
 
-// ═══ 疾病分类 ═══
+// ═══ 疾病数据 ═══
+const DISEASES = [
+  { id:'ds001', cat:'呼吸系统疾病', name:'社区获得性肺炎', desc:'社区环境中感染的肺实质炎症。常见病原体：肺炎链球菌、流感嗜血杆菌、肺炎支原体等。', symptoms:'发热、咳嗽、咳痰、胸痛、呼吸困难。', diagnosis:'胸部X线/CT显示浸润影 + 临床症状。', treatment:'经验性抗感染治疗为主，根据CURB-65评分决定治疗场所。' },
+  { id:'ds002', cat:'呼吸系统疾病', name:'COPD', desc:'慢性阻塞性肺疾病，以持续气流受限为特征的常见呼吸系统疾病。主要病因：吸烟、空气污染。', symptoms:'慢性咳嗽、咳痰、进行性呼吸困难。', diagnosis:'肺功能FEV1/FVC<0.7。', treatment:'戒烟+支气管扩张剂（LABA/LAMA）+吸入激素（频繁急性加重者）。' },
+  { id:'ds003', cat:'呼吸系统疾病', name:'支气管哮喘', desc:'以慢性气道炎症为特征的异质性疾病。特征：可变性气流受限。', symptoms:'反复发作性喘息、胸闷、咳嗽。', diagnosis:'可变气流受限证据+典型症状。', treatment:'按GINA阶梯方案，ICS为基础控制药物。' },
+  { id:'ds004', cat:'心血管疾病', name:'高血压', desc:'动脉血压持续升高的慢性疾病。诊断标准：非同日3次SBP≥140和/或DBP≥90mmHg。', symptoms:'多数无症状，部分头晕、头痛。', diagnosis:'非同日多次测量血压升高。', treatment:'生活方式干预+五大类降压药。' },
+  { id:'ds005', cat:'心血管疾病', name:'心力衰竭', desc:'各种心脏结构/功能异常导致心室充盈或射血能力受损的临床综合征。', symptoms:'呼吸困难、乏力、水肿。', diagnosis:'BNP/NT-proBNP升高+心脏超声LVEF评估。', treatment:'新四联：ARNI+β-blocker+MRA+SGLT2i。' },
+  { id:'ds006', cat:'心血管疾病', name:'冠心病', desc:'冠状动脉粥样硬化导致管腔狭窄或阻塞，心肌缺血缺氧。', symptoms:'胸痛（压榨性）、放射至左肩。', diagnosis:'心电图+心肌酶+冠脉造影。', treatment:'抗血小板+他汀+β-blocker±血运重建。' },
+  { id:'ds007', cat:'消化系统疾病', name:'胃溃疡', desc:'胃黏膜缺损深度超过黏膜肌层的慢性溃疡。Hp感染和NSAIDs为主要病因。', symptoms:'上腹痛（餐后加重）、反酸。', diagnosis:'胃镜+病理+Hp检测。', treatment:'根除Hp+PPI+胃黏膜保护剂。' },
+  { id:'ds008', cat:'消化系统疾病', name:'反流性食管炎', desc:'胃内容物反流至食管引起的食管黏膜损伤。', symptoms:'烧心、反酸、胸骨后疼痛。', diagnosis:'胃镜检查。', treatment:'PPI为主，疗程4-8周。' },
+  { id:'ds009', cat:'内分泌疾病', name:'2型糖尿病', desc:'胰岛素抵抗和/或分泌不足导致的慢性高血糖。', symptoms:'多饮、多尿、多食、体重减轻。', diagnosis:'FBG≥7.0或OGTT 2h≥11.1或HbA1c≥6.5%。', treatment:'二甲双胍为基础，逐步升级治疗。' },
+  { id:'ds010', cat:'内分泌疾病', name:'痛风', desc:'嘌呤代谢紊乱致高尿酸血症，尿酸盐结晶沉积引起的关节炎。', symptoms:'急性关节炎（常首发第一跖趾关节）。', diagnosis:'高尿酸血症+典型关节炎+关节液尿酸盐结晶。', treatment:'急性期NSAIDs/秋水仙碱，缓解期降尿酸。' },
+  { id:'ds011', cat:'内分泌疾病', name:'甲亢', desc:'甲状腺激素分泌过多。最常见：Graves病。', symptoms:'心悸、多汗、手抖、消瘦。', diagnosis:'TSH↓ + FT3/FT4↑。', treatment:'抗甲状腺药物±放射性碘或手术。' },
+  { id:'ds012', cat:'神经系统疾病', name:'癫痫', desc:'大脑神经元异常同步放电导致的反复发作性疾病。', symptoms:'突发意识障碍、肢体抽搐等。', diagnosis:'临床发作特点+脑电图。', treatment:'抗癫痫药物，部分可手术。' },
+  { id:'ds013', cat:'神经系统疾病', name:'脑卒中', desc:'急性脑血管病，分为缺血性（约80%）和出血性。', symptoms:'突发面部不对称、单侧肢体无力。', diagnosis:'头颅CT/MRI。', treatment:'溶栓/取栓+抗血小板+危险因素控制。' },
+  { id:'ds014', cat:'消化系统疾病', name:'肝硬化', desc:'慢性肝损伤导致肝纤维化和假小叶形成的终末期肝病。', symptoms:'乏力、黄疸、腹水、肝掌。', diagnosis:'影像学+肝功能+肝弹性检测。', treatment:'病因治疗+并发症管理+肝移植评估。' },
+  { id:'ds015', cat:'泌尿系统疾病', name:'尿路感染', desc:'病原微生物侵入尿路上皮引起的炎症反应。', symptoms:'尿频、尿急、尿痛，可伴发热。', diagnosis:'尿常规+尿培养。', treatment:'抗生素（呋喃妥因/头孢类/喹诺酮类）。' },
+];
 const DISEASE_CATEGORIES = [
   { id:'resp_disease', name:'呼吸系统疾病', subs:['社区获得性肺炎','COPD','支气管哮喘','肺结核'] },
   { id:'cardio_disease', name:'心血管疾病', subs:['高血压','心力衰竭','冠心病','心律失常'] },
@@ -32,7 +49,7 @@ const DISEASE_CATEGORIES = [
 
 // ═══ 药品数据 ═══
 const DRUGS = [
-  { id:'d001', name:'阿莫西林胶囊', en:'Amoxicillin Capsules', category:'抗生素', subcategory:'抗生素', type:'处方药',
+  { id:'d001', name:'阿莫西林胶囊', py:'AMXLJN', en:'Amoxicillin Capsules', category:'抗生素', subcategory:'抗生素', type:'处方药',
     indications:'适用于敏感菌所致的呼吸道感染、泌尿生殖道感染、皮肤软组织感染、急性单纯性淋病、伤寒等。',
     contraindications:'对青霉素过敏者禁用。用药前必须进行青霉素皮肤试验，阳性反应者禁用。',
     adverse:'常见：恶心、呕吐、腹泻等胃肠道反应；偶见：皮疹、药物热、哮喘等过敏反应；罕见：伪膜性肠炎。',
@@ -40,422 +57,422 @@ const DRUGS = [
     storage:'遮光，密封，在阴凉干燥处（不超过20℃）保存。',
     interactions:'丙磺舒可竞争性抑制本药肾小管分泌；与氨基糖苷类合用可增强杀菌作用；与避孕药合用可能降低避孕效果。',
     label:`【药品名称】通用名称：阿莫西林胶囊 英文名称：Amoxicillin Capsules\n【成份】主要成份为阿莫西林。\n【性状】本品为胶囊剂，内容物为白色或类白色粉末。\n【适应症】适用于敏感菌所致的呼吸道感染、泌尿生殖道感染等。\n【用法用量】口服。成人一次0.5g，每6~8小时1次，一日不超过4g。\n【不良反应】常见胃肠道反应，偶见过敏反应。\n【禁忌】青霉素过敏者禁用。\n【注意事项】用药前须做皮试。肾功能不全者需调整剂量。\n【药物相互作用】与丙磺舒合用可延长半衰期；与氨基糖苷类有协同作用。\n【贮藏】遮光，密封，阴凉干燥处保存。\n【批准文号】国药准字H......` },
-  { id:'d002', name:'头孢克肟胶囊', en:'Cefixime Capsules', category:'抗生素', subcategory:'抗生素', type:'处方药',
+  { id:'d002', name:'头孢克肟胶囊', py:'TBKWJN', en:'Cefixime Capsules', category:'抗生素', subcategory:'抗生素', type:'处方药',
     indications:'适用于敏感菌所致的呼吸道感染、泌尿道感染、胆道感染、中耳炎等。',
     contraindications:'对头孢菌素类过敏者禁用。有青霉素过敏性休克史者慎用。',
     adverse:'偶见腹泻、恶心、皮疹、一过性肝功能异常。',
     dosage:'成人及体重30kg以上儿童：一次0.1g，一日2次。',
     storage:'遮光，密封，阴凉干燥处保存。',
     interactions:'与氨基糖苷类合用可能增加肾毒性。与抗凝药合用可能增加出血风险。' },
-  { id:'d003', name:'左氧氟沙星片', en:'Levofloxacin Tablets', category:'抗生素', subcategory:'抗生素', type:'处方药',
+  { id:'d003', name:'左氧氟沙星片', py:'ZYFSX片', en:'Levofloxacin Tablets', category:'抗生素', subcategory:'抗生素', type:'处方药',
     indications:'适用于敏感菌所致的社区获得性肺炎、复杂性尿路感染、慢性支气管炎急性发作等。',
     contraindications:'对喹诺酮类药物过敏者、癫痫患者、18岁以下禁用。',
     adverse:'常见恶心、腹泻、头晕、失眠；偶见肌腱炎、QT间期延长。',
     dosage:'成人一次0.5g，一日1次。',
     storage:'遮光，密封，阴凉处保存。',
     interactions:'与含金属离子药物（铁剂、铝剂）合用影响吸收，需间隔2小时以上。' },
-  { id:'d004', name:'硝苯地平控释片', en:'Nifedipine Controlled-release', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
+  { id:'d004', name:'硝苯地平控释片', py:'XBDPKS片', en:'Nifedipine Controlled-release', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
     indications:'用于治疗高血压、心绞痛（慢性稳定性心绞痛及变异型心绞痛）。',
     contraindications:'心源性休克、严重主动脉瓣狭窄、不稳定心绞痛急性发作期。',
     adverse:'常见头痛、面部潮红、踝部水肿、心悸。',
     dosage:'一次30mg，一日1次。整片吞服，不可掰开。',
     storage:'遮光，密封，不超过25℃保存。',
     interactions:'与CYP3A4抑制剂（如葡萄柚汁）合用可能升高血药浓度。与β受体阻滞剂合用可能加重心衰。' },
-  { id:'d005', name:'二甲双胍片', en:'Metformin Tablets', category:'内分泌系统用药', subcategory:'降糖药', type:'处方药',
+  { id:'d005', name:'二甲双胍片', py:'EJSG片', en:'Metformin Tablets', category:'内分泌系统用药', subcategory:'降糖药', type:'处方药',
     indications:'用于单纯饮食控制不满意的2型糖尿病患者，尤其是肥胖和伴高胰岛素血症者。',
     contraindications:'严重肾功能不全（eGFR<30）、糖尿病酮症酸中毒、严重感染时禁用。',
     adverse:'常见胃肠道反应（恶心、腹泻）；长期使用可能影响维生素B12吸收。',
     dosage:'起始剂量一次0.25g，一日2-3次，随餐服用；最大剂量一日2g。',
     storage:'密封保存。',
     interactions:'碘造影剂检查前需暂停本药。与酒精合用可能增加乳酸酸中毒风险。' },
-  { id:'d006', name:'奥美拉唑肠溶片', en:'Omeprazole Enteric-coated', category:'消化系统用药', subcategory:'抗酸药', type:'处方药',
+  { id:'d006', name:'奥美拉唑肠溶片', py:'AMLZCR片', en:'Omeprazole Enteric-coated', category:'消化系统用药', subcategory:'抗酸药', type:'处方药',
     indications:'用于胃溃疡、十二指肠溃疡、反流性食管炎、卓-艾综合征。',
     contraindications:'对本药过敏者禁用。',
     adverse:'常见头痛、腹泻、恶心；长期使用可能增加骨折风险和维生素B12缺乏。',
     dosage:'一次20mg，一日1-2次。晨起吞服，不可咀嚼。',
     storage:'遮光，密封，阴凉干燥处保存。',
     interactions:'与氯吡格雷合用可能降低后者抗血小板效果。影响胃酸依赖药物（如酮康唑）的吸收。' },
-  { id:'d007', name:'阿司匹林肠溶片', en:'Aspirin Enteric-coated', category:'解热镇痛药', subcategory:'非甾体抗炎药', type:'OTC',
+  { id:'d007', name:'阿司匹林肠溶片', py:'ASPLCR片', en:'Aspirin Enteric-coated', category:'解热镇痛药', subcategory:'非甾体抗炎药', type:'OTC',
     indications:'抑制血小板聚集，用于预防心脑血管疾病。也用于解热镇痛。',
     contraindications:'活动性消化性溃疡、出血倾向者、哮喘患者。',
     adverse:'常见胃肠道反应、出血时间延长；偶见过敏反应。',
     dosage:'抗血小板：一次100mg，一日1次。解热镇痛：一次0.3-0.6g。',
     storage:'密封，阴凉干燥处保存。',
     interactions:'与其他NSAIDs合用增加胃溃疡风险；与抗凝药合用增加出血风险。' },
-  { id:'d008', name:'氯雷他定片', en:'Loratadine Tablets', category:'呼吸系统用药', subcategory:'抗组胺药', type:'OTC',
+  { id:'d008', name:'氯雷他定片', py:'L雷T定片', en:'Loratadine Tablets', category:'呼吸系统用药', subcategory:'抗组胺药', type:'OTC',
     indications:'用于缓解过敏性鼻炎症状，如喷嚏、流涕、鼻痒及眼部症状。也用于慢性荨麻疹。',
     contraindications:'对本药过敏者禁用。',
     adverse:'罕见乏力、头痛、口干。无明显镇静作用。',
     dosage:'成人及12岁以上儿童：一次10mg，一日1次。',
     storage:'密封保存。',
     interactions:'与酮康唑、红霉素合用可能升高氯雷他定血药浓度。' },
-  { id:'d009', name:'阿托伐他汀钙片', en:'Atorvastatin Calcium', category:'心血管系统用药', subcategory:'调脂药', type:'处方药',
+  { id:'d009', name:'阿托伐他汀钙片', py:'ATFT汀G片', en:'Atorvastatin Calcium', category:'心血管系统用药', subcategory:'调脂药', type:'处方药',
     indications:'用于高胆固醇血症和混合型高脂血症，降低心血管事件风险。',
     contraindications:'活动性肝病、不明原因转氨酶持续升高、妊娠及哺乳期。',
     adverse:'常见肌痛、腹泻；偶见肝功能异常、肌酸激酶升高。',
     dosage:'起始剂量10-20mg，一日1次，晚餐后服用。',
     storage:'遮光，密封保存。',
     interactions:'与吉非罗齐合用增加肌病风险。与环孢素、克拉霉素合用需调整剂量。' },
-  { id:'d010', name:'氢氯噻嗪片', en:'Hydrochlorothiazide', category:'心血管系统用药', subcategory:'利尿剂', type:'处方药',
+  { id:'d010', name:'氢氯噻嗪片', py:'QLSQ片', en:'Hydrochlorothiazide', category:'心血管系统用药', subcategory:'利尿剂', type:'处方药',
     indications:'用于水肿性疾病、高血压、尿崩症。',
     contraindications:'无尿者、磺胺过敏者。',
     adverse:'电解质紊乱（低钾、低钠）、高尿酸血症、血糖升高。',
     dosage:'降压：一次12.5-25mg，一日1次。',
     storage:'遮光，密封保存。',
     interactions:'与洋地黄类合用注意低钾风险；与降糖药合用可能影响降糖效果。' },
-  { id:'d011', name:'头孢曲松钠', en:'Ceftriaxone Sodium', category:'抗生素', subcategory:'抗生素', type:'处方药',
+  { id:'d011', name:'头孢曲松钠', py:'TBQSN', en:'Ceftriaxone Sodium', category:'抗生素', subcategory:'抗生素', type:'处方药',
     indications:'用于敏感菌所致的下呼吸道感染、泌尿道感染、腹腔感染、败血症、脑膜炎等。',
     contraindications:'对头孢菌素过敏者禁用。',
     adverse:'常见腹泻、皮疹；偶见胆道假结石、一过性肝酶升高。',
     dosage:'成人一次1-2g，一日1次。严重感染可增至4g/d。',
     storage:'遮光，密闭，阴凉干燥处保存。',
     interactions:'与含钙溶液配伍禁忌。与氨基糖苷类合用有协同作用。' },
-  { id:'d012', name:'阿奇霉素片', en:'Azithromycin Tablets', category:'抗生素', subcategory:'抗生素', type:'处方药',
+  { id:'d012', name:'阿奇霉素片', py:'AQMS片', en:'Azithromycin Tablets', category:'抗生素', subcategory:'抗生素', type:'处方药',
     indications:'用于敏感菌所致的呼吸道感染、皮肤软组织感染、泌尿生殖道感染。',
     contraindications:'对大环内酯类过敏者禁用。',
     adverse:'常见腹泻、恶心；偶见QT间期延长、肝功能异常。',
     dosage:'成人一次0.5g，一日1次，连用3天；或首日0.5g，第2-5日0.25g qd。',
     storage:'密封，干燥处保存。',
     interactions:'与抗凝药合用可能增加出血风险。与茶碱合用可能增加茶碱血药浓度。' },
-  { id:'d013', name:'莫西沙星片', en:'Moxifloxacin Tablets', category:'抗生素', subcategory:'抗生素', type:'处方药',
+  { id:'d013', name:'莫西沙星片', py:'MXSX片', en:'Moxifloxacin Tablets', category:'抗生素', subcategory:'抗生素', type:'处方药',
     indications:'用于敏感菌所致的社区获得性肺炎、慢性支气管炎急性发作、急性鼻窦炎。',
     contraindications:'18岁以下、癫痫患者、QT间期延长者禁用。',
     adverse:'常见恶心、腹泻、头晕；偶见QT间期延长、肌腱炎。',
     dosage:'一次0.4g，一日1次。疗程5-14天。',
     storage:'遮光，密封保存。',
     interactions:'与抗心律失常药合用可能加重QT延长。与含金属离子药物间隔2小时以上服用。' },
-  { id:'d014', name:'布洛芬缓释胶囊', en:'Ibuprofen SR Capsules', category:'解热镇痛药', subcategory:'非甾体抗炎药', type:'OTC',
+  { id:'d014', name:'布洛芬缓释胶囊', py:'BLFHSJN', en:'Ibuprofen SR Capsules', category:'解热镇痛药', subcategory:'非甾体抗炎药', type:'OTC',
     indications:'用于缓解轻中度疼痛、关节痛、头痛、牙痛、痛经；也用于退热。',
     contraindications:'活动性消化性溃疡、严重肾功能不全、妊娠晚期禁用。',
     adverse:'常见胃肠道反应；偶见头晕、皮疹、肾功能损害。',
     dosage:'一次0.3g，一日2次。饭后服用减轻胃肠刺激。',
     storage:'密封保存。',
     interactions:'与抗凝药合用增加出血风险。与其他NSAIDs合用增加胃溃疡风险。' },
-  { id:'d015', name:'氯沙坦钾片', en:'Losartan Potassium', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
+  { id:'d015', name:'氯沙坦钾片', py:'LSTJ片', en:'Losartan Potassium', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
     indications:'用于治疗原发性高血压。尤其适用于合并糖尿病肾病的高血压患者。',
     contraindications:'妊娠中晚期禁用。双侧肾动脉狭窄者禁用。',
     adverse:'偶见头晕、高钾血症、肾功能损害。干咳发生率低于ACEI。',
     dosage:'起始剂量50mg，一日1次。可增至100mg qd。',
     storage:'遮光，密封保存。',
     interactions:'与保钾利尿药合用可能增加高钾血症风险。与NSAIDs合用可能减弱降压效果。' },
-  { id:'d016', name:'氨氯地平片', en:'Amlodipine Tablets', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
+  { id:'d016', name:'氨氯地平片', py:'ALDP片', en:'Amlodipine Tablets', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
     indications:'用于治疗高血压和稳定性心绞痛。',
     contraindications:'重度主动脉瓣狭窄、不稳定心绞痛急性期。',
     adverse:'常见踝部水肿、头痛、面部潮红；偶见心悸、牙龈增生。',
     dosage:'起始剂量5mg，一日1次。最大10mg qd。',
     storage:'遮光，密封保存。',
     interactions:'与CYP3A4强抑制剂合用可能升高血药浓度。与β受体阻滞剂合用注意心衰风险。' },
-  { id:'d017', name:'美托洛尔缓释片', en:'Metoprolol SR', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
+  { id:'d017', name:'美托洛尔缓释片', py:'MTLEHS片', en:'Metoprolol SR', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
     indications:'用于高血压、心绞痛、慢性心力衰竭（NYHA Ⅱ-Ⅲ级）。',
     contraindications:'心源性休克、病态窦房结综合征、严重心动过缓。',
     adverse:'常见疲劳、头晕、心动过缓；偶见肢端发冷、支气管痉挛。',
     dosage:'心衰：起始23.75mg qd，逐步滴定至190mg qd。降压：47.5-95mg qd。',
     storage:'遮光，密封保存。',
     interactions:'与维拉帕米合用禁。与地高辛合用可能增加心动过缓风险。' },
-  { id:'d018', name:'沙库巴曲缬沙坦片', en:'Sacubitril/Valsartan', category:'心血管系统用药', subcategory:'抗心衰药', type:'处方药',
+  { id:'d018', name:'沙库巴曲缬沙坦片', py:'SKBQXST片', en:'Sacubitril/Valsartan', category:'心血管系统用药', subcategory:'抗心衰药', type:'处方药',
     indications:'用于射血分数降低的慢性心力衰竭（NYHA Ⅱ-Ⅳ级）。',
     contraindications:'同时使用ACEI者（需洗脱36h）、血管性水肿史、妊娠期。',
     adverse:'常见低血压、高钾血症、肾功能损害；偶见血管性水肿。',
     dosage:'起始剂量50mg bid，逐步增加至200mg bid。',
     storage:'密封，不超过25℃保存。',
     interactions:'禁与ACEI合用。与保钾利尿药合用增加高钾风险。与NSAIDs合用可能减弱疗效。' },
-  { id:'d019', name:'非布司他片', en:'Febuxostat Tablets', category:'解热镇痛药', subcategory:'抗痛风药', type:'处方药',
+  { id:'d019', name:'非布司他片', py:'FBST片', en:'Febuxostat Tablets', category:'解热镇痛药', subcategory:'抗痛风药', type:'处方药',
     indications:'用于痛风患者高尿酸血症的长期治疗（不推荐用于无临床症状的高尿酸血症）。',
     contraindications:'正在使用硫唑嘌呤或巯嘌呤者禁用。',
     adverse:'常见肝功能异常、关节痛；偶见心血管事件增加风险。',
     dosage:'起始剂量40mg，一日1次。2周后SUA不达标可增至80mg qd。',
     storage:'遮光，密封保存。',
     interactions:'与硫唑嘌呤、巯嘌呤合用可显著增加后者毒性。' },
-  { id:'d020', name:'胰岛素注射液（短效）', en:'Regular Insulin', category:'内分泌系统用药', subcategory:'降糖药', type:'处方药',
+  { id:'d020', name:'胰岛素注射液（短效）', py:'YDSZSY（短效）', en:'Regular Insulin', category:'内分泌系统用药', subcategory:'降糖药', type:'处方药', tag:'高危',
     indications:'用于1型糖尿病、2型糖尿病口服药控制不佳、糖尿病急症（酮症酸中毒）。',
     contraindications:'低血糖发作时禁用。',
     adverse:'常见低血糖、注射部位脂肪萎缩；偶见过敏反应。',
     dosage:'个体化给药。一般餐前15-30分钟皮下注射。',
     storage:'未开封：2-8℃冷藏。开封后：室温（<25℃）保存不超过4周。',
     interactions:'与糖皮质激素、噻嗪类利尿药合用可能减弱降糖效果。与β受体阻滞剂合用可能掩盖低血糖症状。' },
-  { id:'d021', name:'达格列净片', en:'Dapagliflozin', category:'内分泌系统用药', subcategory:'降糖药', type:'处方药',
+  { id:'d021', name:'达格列净片', py:'达GL净片', en:'Dapagliflozin', category:'内分泌系统用药', subcategory:'降糖药', type:'处方药',
     indications:'用于2型糖尿病、射血分数降低的心衰、慢性肾病（eGFR≥25）。',
     contraindications:'eGFR<25时禁用。1型糖尿病禁用。',
     adverse:'常见泌尿生殖道感染；偶见酮症酸中毒（血糖不高时也可发生）、脱水。',
     dosage:'2型糖尿病/心衰/CKD：10mg qd。',
     storage:'密封保存。',
     interactions:'与利尿剂合用可能增加脱水风险。与胰岛素/磺脲类合用增加低血糖风险。' },
-  { id:'d022', name:'氯吡格雷片', en:'Clopidogrel', category:'血液系统用药', subcategory:'抗凝药', type:'处方药',
+  { id:'d022', name:'氯吡格雷片', py:'LBG雷片', en:'Clopidogrel', category:'血液系统用药', subcategory:'抗凝药', type:'处方药',
     indications:'用于预防动脉粥样硬化血栓形成事件：ACS、PCI术后、缺血性卒中。',
     contraindications:'活动性出血、严重肝功能损害。',
     adverse:'常见出血（消化道、皮肤）；偶见血小板减少症。',
     dosage:'负荷量300mg，维持量75mg qd。',
     storage:'密封保存。',
     interactions:'与PPI（尤其是奥美拉唑）合用可能减弱抗血小板效果。与抗凝药合用增加出血风险。' },
-  { id:'d023', name:'利伐沙班片', en:'Rivaroxaban', category:'血液系统用药', subcategory:'抗凝药', type:'处方药',
+  { id:'d023', name:'利伐沙班片', py:'利FS班片', en:'Rivaroxaban', category:'血液系统用药', subcategory:'抗凝药', type:'处方药',
     indications:'用于非瓣膜性房颤卒中预防、DVT/PE治疗和预防。',
     contraindications:'活动性出血、严重肝功能损害合并凝血障碍。',
     adverse:'常见出血；偶见肝功能异常、血小板减少。',
     dosage:'房颤：20mg qd（CrCl 15-49者15mg qd）。DVT/PE：15mg bid×21天，然后20mg qd。',
     storage:'密封，不超过30℃。',
     interactions:'与其他抗凝药、抗血小板药合用增加出血风险。与CYP3A4/P-gp强抑制剂合用增加血药浓度。' },
-  { id:'d024', name:'孟鲁司特钠片', en:'Montelukast Sodium', category:'呼吸系统用药', subcategory:'平喘药', type:'处方药',
+  { id:'d024', name:'孟鲁司特钠片', py:'MLSTN片', en:'Montelukast Sodium', category:'呼吸系统用药', subcategory:'平喘药', type:'处方药',
     indications:'用于哮喘的预防和长期治疗（包括阿司匹林敏感性哮喘）、过敏性鼻炎。',
     contraindications:'对本药过敏者禁用。',
     adverse:'罕见头痛、腹痛；极罕见精神神经事件。',
     dosage:'成人10mg qd，睡前服用。',
     storage:'遮光，密封，室温保存。',
     interactions:'与苯妥英钠、利福平合用可能降低血药浓度。' },
-  { id:'d025', name:'甲泼尼龙片', en:'Methylprednisolone', category:'内分泌系统用药', subcategory:'激素类', type:'处方药',
+  { id:'d025', name:'甲泼尼龙片', py:'JPN龙片', en:'Methylprednisolone', category:'内分泌系统用药', subcategory:'激素类', type:'处方药',
     indications:'用于过敏性疾病、自身免疫性疾病、炎症性疾病、器官移植排斥反应等。',
     contraindications:'全身性真菌感染、对本品过敏者。',
     adverse:'长期使用：库欣综合征、骨质疏松、高血糖、感染风险增加、消化道溃疡。',
     dosage:'起始剂量4-48mg/d，根据疾病和反应调整。需逐步减量停药。',
     storage:'遮光，密封保存。',
     interactions:'与NSAIDs合用增加消化道溃疡风险。与利福平合用加速代谢。' },
-  { id:'d026', name:'甲钴胺片', en:'Mecobalamin', category:'营养支持药', subcategory:'维生素类', type:'OTC',
+  { id:'d026', name:'甲钴胺片', py:'JGA片', en:'Mecobalamin', category:'营养支持药', subcategory:'维生素类', type:'OTC',
     indications:'用于周围神经病变、巨幼细胞性贫血。',
     contraindications:'对本药过敏者禁用。',
     adverse:'偶见食欲不振、恶心、腹泻；罕见皮疹。',
     dosage:'一次0.5mg，一日3次。',
     storage:'遮光，密封保存。',
     interactions:'与氯霉素合用可能影响造血系统。' },
-  { id:'d027', name:'碳酸钙D3片', en:'Calcium Carbonate/D3', category:'营养支持药', subcategory:'电解质', type:'OTC',
+  { id:'d027', name:'碳酸钙D3片', py:'TSGD3片', en:'Calcium Carbonate/D3', category:'营养支持药', subcategory:'电解质', type:'OTC',
     indications:'用于预防和治疗钙缺乏症、骨质疏松的辅助治疗。',
     contraindications:'高钙血症、严重肾功能不全。',
     adverse:'偶见便秘、胃肠胀气。',
     dosage:'一次1片（钙600mg+D3 200IU），一日1-2次。',
     storage:'密封保存。',
     interactions:'与四环素类、喹诺酮类抗生素同服影响吸收，需间隔2小时以上。' },
-  { id:'d028', name:'铝碳酸镁咀嚼片', en:'Hydrotalcite', category:'消化系统用药', subcategory:'胃黏膜保护剂', type:'OTC',
+  { id:'d028', name:'铝碳酸镁咀嚼片', py:'LTSM咀嚼片', en:'Hydrotalcite', category:'消化系统用药', subcategory:'胃黏膜保护剂', type:'OTC',
     indications:'用于胃酸过多引起的胃痛、胃灼热、反酸、饱胀等。',
     contraindications:'严重肾功能不全、低磷血症。',
     adverse:'偶见便秘、腹泻。',
     dosage:'一次1-2片，一日3-4次。餐后1-2小时嚼服。',
     storage:'密封保存。',
     interactions:'可影响四环素类、喹诺酮类、铁剂吸收，需间隔1-2小时服用。' },
-  { id:'d029', name:'氯硝西泮片', en:'Clonazepam', category:'神经系统用药', subcategory:'镇静催眠药', type:'处方药（精二）',
+  { id:'d029', name:'氯硝西泮片', py:'LXXP片', en:'Clonazepam', category:'神经系统用药', subcategory:'镇静催眠药', type:'处方药（精二）', tag:'精二',
     indications:'用于癫痫和惊恐障碍。',
     contraindications:'重症肌无力、闭角型青光眼、严重呼吸功能不全。',
     adverse:'常见嗜睡、乏力、共济失调；长期使用可产生依赖性。',
     dosage:'癫痫：起始0.5mg tid，每3天增量0.5-1mg。成人最大量20mg/d。',
     storage:'遮光，密封保存。',
     interactions:'与酒精及其他中枢抑制剂合用增强镇静作用。与丙戊酸合用可能诱发失神发作。' },
-  { id:'d030', name:'氨溴索片', en:'Ambroxol', category:'呼吸系统用药', subcategory:'祛痰药', type:'OTC',
+  { id:'d030', name:'氨溴索片', py:'AXS片', en:'Ambroxol', category:'呼吸系统用药', subcategory:'祛痰药', type:'OTC',
     indications:'用于急慢性呼吸道疾病引起的痰液黏稠、咳痰困难。',
     contraindications:'对本品过敏者。',
     adverse:'偶见恶心、胃部不适。',
     dosage:'成人一次30mg，一日3次。长期服用减为bid。',
     storage:'遮光，密封保存。',
     interactions:'与抗生素（阿莫西林、头孢呋辛等）合用可增加其在肺组织的浓度。' },
-  { id:'d031', name:'头孢呋辛酯片', en:'Cefuroxime Axetil', category:'抗生素', subcategory:'抗生素', type:'处方药',
+  { id:'d031', name:'头孢呋辛酯片', py:'TBFXZ片', en:'Cefuroxime Axetil', category:'抗生素', subcategory:'抗生素', type:'处方药',
     indications:'用于敏感菌所致的呼吸道、泌尿道、皮肤软组织感染等。手术预防用药。', contraindications:'头孢类过敏者禁用。',
     adverse:'常见腹泻、恶心；偶见皮疹。', dosage:'0.25-0.5g bid，餐后服用。', storage:'遮光密封。',
     interactions:'与氨基糖苷类合用增加肾毒性。' },
-  { id:'d032', name:'哌拉西林他唑巴坦', en:'Piperacillin/Tazobactam', category:'抗生素', subcategory:'抗生素', type:'处方药',
+  { id:'d032', name:'哌拉西林他唑巴坦', py:'哌LXLTZBT', en:'Piperacillin/Tazobactam', category:'抗生素', subcategory:'抗生素', type:'处方药',
     indications:'中重度感染：腹腔感染、肺炎、败血症等。', contraindications:'青霉素过敏者禁用。',
     adverse:'常见腹泻；偶见肝酶升高、血小板减少。', dosage:'4.5g q8h 静脉滴注。', storage:'遮光密封。',
     interactions:'与氨基糖苷类有协同作用。与甲氨蝶呤合用增加后者毒性。' },
-  { id:'d033', name:'美罗培南', en:'Meropenem', category:'抗生素', subcategory:'抗生素', type:'处方药（特殊使用级）',
+  { id:'d033', name:'美罗培南', py:'ML培南', en:'Meropenem', category:'抗生素', subcategory:'抗生素', type:'处方药（特殊使用级）', tag:'高危',
     indications:'多重耐药菌所致重症感染：腹腔感染、脑膜炎、败血症等。', contraindications:'碳青霉烯类过敏者禁用。',
     adverse:'常见腹泻、转氨酶升高；偶见癫痫。', dosage:'0.5-1g q8h 静脉滴注。', storage:'密封保存。',
     interactions:'与丙戊酸钠合用显著降低后者血药浓度（禁忌联用）。' },
-  { id:'d034', name:'万古霉素', en:'Vancomycin', category:'抗生素', subcategory:'抗生素', type:'处方药（特殊使用级）',
+  { id:'d034', name:'万古霉素', py:'WGMS', en:'Vancomycin', category:'抗生素', subcategory:'抗生素', type:'处方药（特殊使用级）', tag:'高危',
     indications:'MRSA等耐药G+菌重症感染。艰难梭菌相关性腹泻（口服）。', contraindications:'对本药过敏者。',
     adverse:'肾毒性、耳毒性、红人综合征。需监测血药谷浓度(10-20mg/L)。', dosage:'1g q12h 静脉滴注≥60min。', storage:'密封保存。',
     interactions:'与其他肾毒性药物合用增加肾损伤风险。' },
-  { id:'d035', name:'甲硝唑片', en:'Metronidazole', category:'抗生素', subcategory:'抗生素', type:'处方药',
+  { id:'d035', name:'甲硝唑片', py:'JXZ片', en:'Metronidazole', category:'抗生素', subcategory:'抗生素', type:'处方药',
     indications:'厌氧菌感染、滴虫病、阿米巴病。Hp根除方案组分。', contraindications:'妊娠早期禁用。',
     adverse:'金属味、恶心；服药期间尿液呈红棕色（正常现象）。', dosage:'0.4-0.5g bid-tid。', storage:'遮光密封。',
     interactions:'服药期间及停药7天内禁酒（双硫仑样反应）。与华法林合用增强抗凝作用。' },
-  { id:'d036', name:'氟康唑胶囊', en:'Fluconazole', category:'抗生素', subcategory:'抗真菌药', type:'处方药',
+  { id:'d036', name:'氟康唑胶囊', py:'FKZJN', en:'Fluconazole', category:'抗生素', subcategory:'抗真菌药', type:'处方药',
     indications:'念珠菌感染、隐球菌性脑膜炎。', contraindications:'对本药过敏者。',
     adverse:'常见恶心；偶见肝毒性。', dosage:'首剂0.4g，之后0.2g qd。', storage:'密封保存。',
     interactions:'与华法林合用增强抗凝。与磺脲类降糖药合用增加低血糖风险。' },
-  { id:'d037', name:'奥司他韦胶囊', en:'Oseltamivir', category:'抗生素', subcategory:'抗病毒药', type:'处方药',
+  { id:'d037', name:'奥司他韦胶囊', py:'ASTWJN', en:'Oseltamivir', category:'抗生素', subcategory:'抗病毒药', type:'处方药',
     indications:'用于成人和1岁以上儿童的甲型和乙型流感治疗及预防。症状出现48h内开始。', contraindications:'对本药过敏者。',
     adverse:'常见恶心、呕吐（与食物同服可减轻）。', dosage:'治疗：75mg bid×5天。预防：75mg qd。', storage:'密封保存。',
     interactions:'与丙磺舒合用可增加奥司他韦血药浓度。' },
-  { id:'d038', name:'恩替卡韦片', en:'Entecavir', category:'抗生素', subcategory:'抗病毒药', type:'处方药',
+  { id:'d038', name:'恩替卡韦片', py:'ETKW片', en:'Entecavir', category:'抗生素', subcategory:'抗病毒药', type:'处方药',
     indications:'慢性乙型肝炎。', contraindications:'对本药过敏者。',
     adverse:'偶见头痛、疲劳；罕见乳酸酸中毒。', dosage:'0.5mg qd，空腹服用（餐前/后≥2h）。', storage:'密封保存。',
     interactions:'与食物同服可显著降低吸收。' },
-  { id:'d039', name:'厄贝沙坦片', en:'Irbesartan', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
+  { id:'d039', name:'厄贝沙坦片', py:'厄贝ST片', en:'Irbesartan', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
     indications:'原发性高血压。合并高血压的2型糖尿病肾病。', contraindications:'妊娠中晚期禁用。',
     adverse:'偶见头晕、高钾血症。', dosage:'150mg qd，可增至300mg qd。', storage:'密封保存。',
     interactions:'与保钾利尿药或补钾制剂合用增加高钾风险。' },
-  { id:'d040', name:'比索洛尔片', en:'Bisoprolol', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
+  { id:'d040', name:'比索洛尔片', py:'BSLE片', en:'Bisoprolol', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
     indications:'高血压、冠心病、慢性心力衰竭。', contraindications:'严重心动过缓、Ⅱ度以上房室传导阻滞。',
     adverse:'常见心动过缓、乏力、肢端发冷。', dosage:'起始2.5-5mg qd，心衰最大10mg qd。', storage:'遮光密封。',
     interactions:'与维拉帕米合用禁。与地高辛合用增加心动过缓风险。' },
-  { id:'d041', name:'硝苯地平片', en:'Nifedipine', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
+  { id:'d041', name:'硝苯地平片', py:'XBDP片', en:'Nifedipine', category:'心血管系统用药', subcategory:'降压药', type:'处方药',
     indications:'高血压、心绞痛。', contraindications:'心源性休克、严重主动脉瓣狭窄。',
     adverse:'头痛、面部潮红、踝部水肿、反射性心悸（短效剂型）。', dosage:'控释片30mg qd；普通片10mg tid。', storage:'遮光密封。',
     interactions:'与CYP3A4抑制剂（葡萄柚汁）合用可能升高血药浓度。' },
-  { id:'d042', name:'螺内酯片', en:'Spironolactone', category:'心血管系统用药', subcategory:'利尿剂', type:'处方药',
+  { id:'d042', name:'螺内酯片', py:'LNZ片', en:'Spironolactone', category:'心血管系统用药', subcategory:'利尿剂', type:'处方药',
     indications:'心力衰竭、高血压、原醛症。', contraindications:'高钾血症、严重肾功能不全。',
     adverse:'高钾血症、男性乳房发育、月经紊乱。', dosage:'心衰：起始20mg qd。', storage:'密封保存。',
     interactions:'与ACEI/ARB合用增加高钾风险。与地高辛合用可增加地高辛血药浓度。' },
-  { id:'d043', name:'呋塞米片', en:'Furosemide', category:'心血管系统用药', subcategory:'利尿剂', type:'处方药',
+  { id:'d043', name:'呋塞米片', py:'FSM片', en:'Furosemide', category:'心血管系统用药', subcategory:'利尿剂', type:'处方药',
     indications:'水肿性疾病（心衰、肾衰、肝硬化）、高血压。', contraindications:'无尿者、严重电解质紊乱者。',
     adverse:'低钾、低钠、低氯性碱中毒、高尿酸血症、耳毒性。', dosage:'起始20-40mg qd-bid。', storage:'遮光密封。',
     interactions:'与氨基糖苷类合用增加耳毒性。与NSAIDs合用减弱利尿效果。' },
-  { id:'d044', name:'华法林钠片', en:'Warfarin Sodium', category:'血液系统用药', subcategory:'抗凝药', type:'处方药',
+  { id:'d044', name:'华法林钠片', py:'HFLN片', en:'Warfarin Sodium', category:'血液系统用药', subcategory:'抗凝药', type:'处方药', tag:'高危',
     indications:'房颤卒中预防、DVT/PE治疗和预防、心脏瓣膜置换术后。', contraindications:'活动性出血、妊娠期。',
     adverse:'出血（需监测INR）。', dosage:'初始2.5-3mg qd，根据INR调整（目标2.0-3.0）。', storage:'遮光密封。',
     interactions:'与多种药物（抗生素、NSAIDs、胺碘酮等）和食物（VK含量）相互作用。' },
-  { id:'d045', name:'艾司奥美拉唑肠溶片', en:'Esomeprazole', category:'消化系统用药', subcategory:'抗酸药', type:'处方药',
+  { id:'d045', name:'艾司奥美拉唑肠溶片', py:'ASAMLZCR片', en:'Esomeprazole', category:'消化系统用药', subcategory:'抗酸药', type:'处方药',
     indications:'消化性溃疡、反流性食管炎、根除Hp、NSAIDs相关溃疡预防。', contraindications:'对本药过敏者。',
     adverse:'常见头痛、腹泻；长期：骨质疏松、维生素B12缺乏、肠道感染风险。', dosage:'20-40mg qd，晨起空腹。', storage:'遮光密封。',
     interactions:'与氯吡格雷合用可能降低后者抗血小板效果。影响酮康唑等胃酸依赖药物吸收。' },
-  { id:'d046', name:'多潘立酮片', en:'Domperidone', category:'消化系统用药', subcategory:'止吐药', type:'处方药',
+  { id:'d046', name:'多潘立酮片', py:'DPLT片', en:'Domperidone', category:'消化系统用药', subcategory:'止吐药', type:'处方药',
     indications:'胃排空延缓、胃食管反流引起的恶心呕吐。', contraindications:'消化道出血、穿孔者禁用。',
     adverse:'偶见口干、头痛；罕见QT延长。', dosage:'10mg tid，餐前15-30min。', storage:'遮光密封。',
     interactions:'与酮康唑等CYP3A4抑制剂合用增加QT延长风险。' },
-  { id:'d047', name:'蒙脱石散', en:'Montmorillonite Powder', category:'消化系统用药', subcategory:'止泻药', type:'OTC',
+  { id:'d047', name:'蒙脱石散', py:'MTSS', en:'Montmorillonite Powder', category:'消化系统用药', subcategory:'止泻药', type:'OTC',
     indications:'成人及儿童急慢性腹泻。', contraindications:'对本品过敏者。',
     adverse:'偶见便秘。', dosage:'1袋（3g）tid，两餐之间服用。', storage:'密封保存。',
     interactions:'与其他药物间隔至少2小时服用，以免影响吸收。' },
-  { id:'d048', name:'瑞舒伐他汀钙片', en:'Rosuvastatin Calcium', category:'心血管系统用药', subcategory:'调脂药', type:'处方药',
+  { id:'d048', name:'瑞舒伐他汀钙片', py:'RSFT汀G片', en:'Rosuvastatin Calcium', category:'心血管系统用药', subcategory:'调脂药', type:'处方药',
     indications:'高胆固醇血症和混合型高脂血症。', contraindications:'活动性肝病、妊娠哺乳期。',
     adverse:'肌痛、肝酶升高；偶见蛋白尿。', dosage:'起始5-10mg qd，最大20mg qd。', storage:'密封保存。',
     interactions:'与吉非罗齐合用增加肌病风险。与环孢素、抗病毒药合用需减量。' },
-  { id:'d049', name:'格列美脲片', en:'Glimepiride', category:'内分泌系统用药', subcategory:'降糖药', type:'处方药',
+  { id:'d049', name:'格列美脲片', py:'GLMN片', en:'Glimepiride', category:'内分泌系统用药', subcategory:'降糖药', type:'处方药',
     indications:'用于饮食和运动控制不满意的2型糖尿病。', contraindications:'1型糖尿病、酮症酸中毒。',
     adverse:'低血糖、体重增加。', dosage:'起始1mg qd，早餐前服用。最大6mg qd。', storage:'密封保存。',
     interactions:'与氟康唑合用增强降糖作用。与β受体阻滞剂合用可能掩盖低血糖症状。' },
-  { id:'d050', name:'阿卡波糖片', en:'Acarbose', category:'内分泌系统用药', subcategory:'降糖药', type:'处方药',
+  { id:'d050', name:'阿卡波糖片', py:'AKBT片', en:'Acarbose', category:'内分泌系统用药', subcategory:'降糖药', type:'处方药',
     indications:'用于2型糖尿病（降低餐后血糖）。', contraindications:'肠梗阻、严重肾功能不全。',
     adverse:'常见腹胀、排气增多。', dosage:'起始50mg tid，与第一口饭同嚼服。最大200mg tid。', storage:'密封保存。',
     interactions:'与磺脲类/胰岛素合用增加低血糖风险（低血糖时需用葡萄糖纠正，蔗糖无效）。' },
-  { id:'d051', name:'胰岛素（甘精胰岛素）', en:'Insulin Glargine', category:'内分泌系统用药', subcategory:'降糖药', type:'处方药',
+  { id:'d051', name:'胰岛素（甘精胰岛素）', py:'YDS（GJYDS）', en:'Insulin Glargine', category:'内分泌系统用药', subcategory:'降糖药', type:'处方药', tag:'高危',
     indications:'1型/2型糖尿病的基础胰岛素治疗。', contraindications:'低血糖发作时。',
     adverse:'低血糖、注射部位脂肪增生。', dosage:'个体化，qd皮下注射（固定时间）。', storage:'未开封2-8℃，开封后<25℃，4周内用完。',
     interactions:'与糖皮质激素、甲状腺素合用可能减弱降糖效果。' },
-  { id:'d052', name:'甲氨蝶呤片', en:'Methotrexate', category:'抗肿瘤药', subcategory:'化疗药', type:'处方药',
+  { id:'d052', name:'甲氨蝶呤片', py:'JADL片', en:'Methotrexate', category:'抗肿瘤药', subcategory:'化疗药', type:'处方药', tag:'毒',
     indications:'类风湿关节炎、银屑病、滋养细胞肿瘤、急性白血病。', contraindications:'严重肝肾功能不全、妊娠哺乳期。',
     adverse:'骨髓抑制、肝毒性、口腔炎、间质性肺炎。', dosage:'RA：7.5-15mg qw。补充叶酸5mg qw（MTX后24h）。', storage:'遮光密封。',
     interactions:'与NSAIDs合用减少MTX排泄增加毒性。与磺胺类合用增加骨髓抑制。' },
-  { id:'d053', name:'来氟米特片', en:'Leflunomide', category:'抗肿瘤药', subcategory:'免疫治疗药', type:'处方药',
+  { id:'d053', name:'来氟米特片', py:'LFMT片', en:'Leflunomide', category:'抗肿瘤药', subcategory:'免疫治疗药', type:'处方药',
     indications:'类风湿关节炎、狼疮性肾炎。', contraindications:'严重肝功能损害、妊娠期。',
     adverse:'腹泻、肝酶升高、脱发。', dosage:'负荷量50mg qd×3天，维持量20mg qd。', storage:'密封保存。',
     interactions:'与其他肝毒性药物合用增加肝损伤风险。与华法林合用增强抗凝。' },
-  { id:'d054', name:'羟氯喹片', en:'Hydroxychloroquine', category:'抗肿瘤药', subcategory:'免疫治疗药', type:'处方药',
+  { id:'d054', name:'羟氯喹片', py:'QLK片', en:'Hydroxychloroquine', category:'抗肿瘤药', subcategory:'免疫治疗药', type:'处方药',
     indications:'类风湿关节炎、系统性红斑狼疮、光敏性疾病。', contraindications:'黄斑病变、6岁以下儿童。',
     adverse:'视网膜毒性（需每年眼科检查）、皮肤色素沉着、胃肠道反应。', dosage:'RA/SLE：0.2-0.4g qd。', storage:'遮光密封。',
     interactions:'与胺碘酮等增加QT延长风险。与地高辛合用增加地高辛血药浓度。' },
-  { id:'d055', name:'别嘌醇片', en:'Allopurinol', category:'解热镇痛药', subcategory:'抗痛风药', type:'处方药',
+  { id:'d055', name:'别嘌醇片', py:'BPC片', en:'Allopurinol', category:'解热镇痛药', subcategory:'抗痛风药', type:'处方药', tag:'毒',
     indications:'慢性高尿酸血症、痛风石、尿酸性肾病。', contraindications:'急性痛风发作时不可新用。',
     adverse:'皮疹（严重者超敏反应综合征），起始小剂量可减少。', dosage:'起始50-100mg qd，逐步增量至300mg qd。', storage:'密封保存。',
     interactions:'与硫唑嘌呤、6-MP合用显著增加后者毒性（禁忌联用）。与华法林合用增强抗凝。' },
-  { id:'d056', name:'苯溴马隆片', en:'Benzbromarone', category:'解热镇痛药', subcategory:'抗痛风药', type:'处方药',
+  { id:'d056', name:'苯溴马隆片', py:'BXML片', en:'Benzbromarone', category:'解热镇痛药', subcategory:'抗痛风药', type:'处方药',
     indications:'原发性高尿酸血症。', contraindications:'中度以上肾功能不全、肾结石。',
     adverse:'胃肠反应；偶见肝毒性。', dosage:'50mg qd，早餐后服。用药期间保证每日饮水>2000mL。', storage:'密封保存。',
     interactions:'与华法林合用增强抗凝。水杨酸类药物减弱其促尿酸排泄作用。' },
-  { id:'d057', name:'普瑞巴林胶囊', en:'Pregabalin', category:'神经系统用药', subcategory:'抗癫痫药', type:'处方药（精二）',
+  { id:'d057', name:'普瑞巴林胶囊', py:'PRBLJN', en:'Pregabalin', category:'神经系统用药', subcategory:'抗癫痫药', type:'处方药（精二）', tag:'精二',
     indications:'带状疱疹后神经痛、纤维肌痛、癫痫辅助治疗。', contraindications:'对本品过敏者。',
     adverse:'头晕、嗜睡、口干、体重增加。', dosage:'起始75mg bid，可增至150mg bid。', storage:'密封保存。',
     interactions:'与中枢抑制剂合用增强镇静作用。与噻唑烷二酮类合用增加体重增加和水肿风险。' },
-  { id:'d058', name:'卡马西平片', en:'Carbamazepine', category:'神经系统用药', subcategory:'抗癫痫药', type:'处方药',
+  { id:'d058', name:'卡马西平片', py:'KMXP片', en:'Carbamazepine', category:'神经系统用药', subcategory:'抗癫痫药', type:'处方药',
     indications:'癫痫（部分性发作）、三叉神经痛。', contraindications:'骨髓抑制、房室传导阻滞。',
     adverse:'头晕、嗜睡、皮疹（警惕Stevens-Johnson综合征）、白细胞减少。HLA-B*1502阳性者禁用。', dosage:'起始100mg bid，逐步增量。', storage:'遮光密封。',
     interactions:'强CYP3A4诱导剂，加速多种药物代谢（口服避孕药、华法林、环孢素）。' },
-  { id:'d059', name:'左乙拉西坦片', en:'Levetiracetam', category:'神经系统用药', subcategory:'抗癫痫药', type:'处方药',
+  { id:'d059', name:'左乙拉西坦片', py:'ZYLXT片', en:'Levetiracetam', category:'神经系统用药', subcategory:'抗癫痫药', type:'处方药',
     indications:'部分性发作的添加治疗。', contraindications:'对本品过敏者。',
     adverse:'嗜睡、乏力、头晕。', dosage:'起始500mg bid，可增至1500mg bid。', storage:'密封保存。',
     interactions:'与其他抗癫痫药相比，药物相互作用少。' },
-  { id:'d060', name:'舍曲林片', en:'Sertraline', category:'神经系统用药', subcategory:'抗抑郁药', type:'处方药',
+  { id:'d060', name:'舍曲林片', py:'SQL片', en:'Sertraline', category:'神经系统用药', subcategory:'抗抑郁药', type:'处方药',
     indications:'抑郁症、强迫症、社交焦虑障碍、创伤后应激障碍。', contraindications:'与MAOIs合用禁。',
     adverse:'恶心、腹泻、失眠、性功能障碍。', dosage:'起始50mg qd，晨或晚服用。最大200mg qd。', storage:'密封保存。',
     interactions:'禁与MAOIs合用（间隔至少14天）。与NSAIDs/抗凝药合用增加出血风险。' },
-  { id:'d061', name:'氯化钾缓释片', en:'KCl SR Tablets', category:'营养支持药', subcategory:'电解质', type:'处方药',
+  { id:'d061', name:'氯化钾缓释片', py:'L化JHS片', en:'KCl SR Tablets', category:'营养支持药', subcategory:'电解质', type:'处方药', tag:'高危',
     indications:'各种原因引起的低钾血症的预防和治疗。', contraindications:'高钾血症、严重肾功能不全。',
     adverse:'口服后胃肠不适。', dosage:'0.5-1g bid-tid，餐后服。', storage:'密封保存。',
     interactions:'与ACEI/ARB、保钾利尿剂合用增加高钾血症风险。' },
-  { id:'d062', name:'琥珀酸亚铁片', en:'Ferrous Succinate', category:'血液系统用药', subcategory:'抗贫血药', type:'OTC',
+  { id:'d062', name:'琥珀酸亚铁片', py:'琥珀S亚T片', en:'Ferrous Succinate', category:'血液系统用药', subcategory:'抗贫血药', type:'OTC',
     indications:'缺铁性贫血的预防和治疗。', contraindications:'血色病、含铁血黄素沉着症。',
     adverse:'黑便（正常现象）、胃肠道不适、便秘。', dosage:'一次1-2片，一日1-3次。餐后服。', storage:'密封保存。',
     interactions:'与四环素类、喹诺酮类、抗酸药同服间隔2小时以上。VC同服可增加吸收。' },
-  { id:'d063', name:'叶酸片', en:'Folic Acid', category:'血液系统用药', subcategory:'抗贫血药', type:'OTC',
+  { id:'d063', name:'叶酸片', py:'YS片', en:'Folic Acid', category:'血液系统用药', subcategory:'抗贫血药', type:'OTC',
     indications:'巨幼细胞性贫血、妊娠期叶酸缺乏的预防（0.4mg qd）。MTX治疗时的补充。', contraindications:'对本品过敏者。',
     adverse:'罕见过敏反应。', dosage:'治疗量：5-10mg tid。预防量：0.4mg qd。', storage:'遮光密封。',
     interactions:'与苯妥英钠合用可能降低后者血药浓度。大剂量叶酸可掩盖B12缺乏。' },
-  { id:'d064', name:'左甲状腺素钠片', en:'Levothyroxine Sodium', category:'内分泌系统用药', subcategory:'甲状腺用药', type:'处方药',
+  { id:'d064', name:'左甲状腺素钠片', py:'ZJ状腺SN片', en:'Levothyroxine Sodium', category:'内分泌系统用药', subcategory:'甲状腺用药', type:'处方药',
     indications:'甲减的替代治疗。TSH抑制治疗（甲状腺癌术后）。', contraindications:'未纠正的肾上腺皮质功能不全。',
     adverse:'过量时出现甲亢症状。', dosage:'起始25-50μg qd，根据TSH每4-6周调整。清晨空腹，至少30min后进食。', storage:'遮光密封，<25℃。',
     interactions:'与钙剂、铁剂、含铝药物间隔≥4h服用。与含大豆制品间隔服用。' },
-  { id:'d065', name:'地高辛片', en:'Digoxin', category:'心血管系统用药', subcategory:'抗心律失常药', type:'处方药',
+  { id:'d065', name:'地高辛片', py:'DGX片', en:'Digoxin', category:'心血管系统用药', subcategory:'抗心律失常药', type:'处方药', tag:'高危',
     indications:'心力衰竭（尤其合并快速房颤）、房颤/房扑的心室率控制。', contraindications:'室颤、预激综合征合并房颤。',
     adverse:'心律失常、恶心、视觉异常（黄视/绿视）。治疗窗窄，需监测血药浓度（0.5-2.0ng/mL）。', dosage:'0.125-0.25mg qd。', storage:'密封保存。',
     interactions:'低钾、低镁增加中毒风险。与胺碘酮、维拉帕米合用增加血药浓度。' },
-  { id:'d066', name:'胺碘酮片', en:'Amiodarone', category:'心血管系统用药', subcategory:'抗心律失常药', type:'处方药',
+  { id:'d066', name:'胺碘酮片', py:'ADT片', en:'Amiodarone', category:'心血管系统用药', subcategory:'抗心律失常药', type:'处方药', tag:'高危',
     indications:'房颤复律及窦律维持、室性心律失常。', contraindications:'严重心动过缓、甲状腺功能异常者。',
     adverse:'肺毒性（监测肺功能）、甲状腺功能异常、肝毒性、角膜微粒沉积、皮肤蓝灰色色素沉着。', dosage:'负荷量0.2g tid×7天，维持0.2g qd。', storage:'遮光密封。',
     interactions:'与华法林合用增强抗凝（需减少华法林1/3-1/2）。与地高辛合用增加地高辛浓度。' },
-  { id:'d067', name:'阿仑膦酸钠片', en:'Alendronate Sodium', category:'内分泌系统用药', subcategory:'激素类', type:'处方药',
+  { id:'d067', name:'阿仑膦酸钠片', py:'AL膦SN片', en:'Alendronate Sodium', category:'内分泌系统用药', subcategory:'激素类', type:'处方药',
     indications:'骨质疏松症。', contraindications:'食管排空延迟、不能站立或端坐30min者。',
     adverse:'食管炎、食管糜烂。', dosage:'70mg qw，清晨空腹大量水送服，保持直立≥30min。', storage:'密封保存。',
     interactions:'与钙剂、抗酸药、含金属离子药物间隔≥30min服用。' },
-  { id:'d068', name:'坦索罗辛缓释胶囊', en:'Tamsulosin SR', category:'男科/泌尿科用药', subcategory:'前列腺用药', type:'处方药',
+  { id:'d068', name:'坦索罗辛缓释胶囊', py:'TSLXHSJN', en:'Tamsulosin SR', category:'男科/泌尿科用药', subcategory:'前列腺用药', type:'处方药',
     indications:'前列腺增生所致的排尿障碍。', contraindications:'体位性低血压史者。',
     adverse:'头晕、射精异常。', dosage:'0.2mg qd，餐后服。', storage:'密封保存。',
     interactions:'与PDE5抑制剂（西地那非等）合用增加低血压风险。与其他α受体阻滞剂合用注意血压。' },
-  { id:'d069', name:'非那雄胺片', en:'Finasteride', category:'男科/泌尿科用药', subcategory:'前列腺用药', type:'处方药',
+  { id:'d069', name:'非那雄胺片', py:'FNXA片', en:'Finasteride', category:'男科/泌尿科用药', subcategory:'前列腺用药', type:'处方药',
     indications:'前列腺增生、男性雄激素性脱发。', contraindications:'妇女和儿童。',
     adverse:'性欲减退、勃起功能障碍。', dosage:'BPH：5mg qd。脱发：1mg qd。', storage:'密封保存。',
     interactions:'无显著药物相互作用。但可降低血清PSA水平（约50%），解释PSA结果时需注意。' },
-  { id:'d070', name:'黄体酮胶囊', en:'Progesterone', category:'妇产科用药', subcategory:'激素类', type:'处方药',
+  { id:'d070', name:'黄体酮胶囊', py:'HTTJN', en:'Progesterone', category:'妇产科用药', subcategory:'激素类', type:'处方药',
     indications:'先兆流产、习惯性流产、月经失调。', contraindications:'严重肝病、血栓性疾病。',
     adverse:'头晕、嗜睡、乳房胀痛。', dosage:'先兆流产：0.2-0.3g/d分次服。', storage:'遮光密封。',
     interactions:'与CYP3A4诱导剂合用可能降低药效。' },
-  { id:'d071', name:'泼尼松片', en:'Prednisone', category:'内分泌系统用药', subcategory:'激素类', type:'处方药',
+  { id:'d071', name:'泼尼松片', py:'PNS片', en:'Prednisone', category:'内分泌系统用药', subcategory:'激素类', type:'处方药',
     indications:'过敏性疾病、自身免疫性疾病、炎症性疾病、淋巴系统肿瘤。', contraindications:'全身性真菌感染。',
     adverse:'长期：库欣综合征、骨质疏松、高血糖、感染风险增加。需逐步减量。', dosage:'5-60mg/d，按疾病调整。', storage:'遮光密封。',
     interactions:'与NSAIDs合用增加溃疡风险。与利福平合用加速代谢。与降糖药合用可能减弱降糖效果。' },
-  { id:'d072', name:'氯苯那敏片', en:'Chlorpheniramine', category:'呼吸系统用药', subcategory:'抗组胺药', type:'OTC',
+  { id:'d072', name:'氯苯那敏片', py:'LBN敏片', en:'Chlorpheniramine', category:'呼吸系统用药', subcategory:'抗组胺药', type:'OTC',
     indications:'过敏性鼻炎、荨麻疹等过敏性疾病。', contraindications:'新生儿、早产儿。',
     adverse:'嗜睡、口干。服药期间避免驾驶。', dosage:'4mg tid。', storage:'密封保存。',
     interactions:'与其他中枢抑制剂合用增强镇静。与MAOIs合用可能增强抗胆碱能作用。' },
-  { id:'d073', name:'吸入用布地奈德混悬液', en:'Budesonide Inhalation', category:'呼吸系统用药', subcategory:'平喘药', type:'处方药',
+  { id:'d073', name:'吸入用布地奈德混悬液', py:'吸入YBD奈德混悬Y', en:'Budesonide Inhalation', category:'呼吸系统用药', subcategory:'平喘药', type:'处方药',
     indications:'支气管哮喘。', contraindications:'对本品过敏者。',
     adverse:'口腔念珠菌感染、声音嘶哑（吸药后漱口可预防）。', dosage:'0.5-1mg bid 雾化吸入。', storage:'遮光密封。',
     interactions:'与CYP3A4强抑制剂合用可能增加全身暴露。' },
-  { id:'d074', name:'异丙托溴铵吸入剂', en:'Ipratropium Bromide', category:'呼吸系统用药', subcategory:'平喘药', type:'处方药',
+  { id:'d074', name:'异丙托溴铵吸入剂', py:'YBTX铵吸入J', en:'Ipratropium Bromide', category:'呼吸系统用药', subcategory:'平喘药', type:'处方药',
     indications:'COPD的支气管扩张治疗。', contraindications:'对阿托品类过敏者。',
     adverse:'口干、咳嗽。', dosage:'2-4喷 tid-qid。', storage:'遮光密封。',
     interactions:'与其他抗胆碱能药物合用增强作用。' },
-  { id:'d075', name:'乳果糖口服液', en:'Lactulose Oral Solution', category:'消化系统用药', subcategory:'止泻药', type:'OTC',
+  { id:'d075', name:'乳果糖口服液', py:'RGTKFY', en:'Lactulose Oral Solution', category:'消化系统用药', subcategory:'止泻药', type:'OTC',
     indications:'慢性功能性便秘。肝性脑病的辅助治疗。', contraindications:'半乳糖血症。',
     adverse:'初始腹胀，继续使用后缓解。', dosage:'15-30mL qd-bid。', storage:'密封保存。',
     interactions:'与其他泻药合用可能增加腹泻风险。' },
-  { id:'d076', name:'柳氮磺吡啶肠溶片', en:'Sulfasalazine', category:'消化系统用药', subcategory:'止泻药', type:'处方药',
+  { id:'d076', name:'柳氮磺吡啶肠溶片', py:'LDHB啶CR片', en:'Sulfasalazine', category:'消化系统用药', subcategory:'止泻药', type:'处方药',
     indications:'溃疡性结肠炎、克罗恩病、类风湿关节炎。', contraindications:'磺胺类过敏、肠梗阻。',
     adverse:'恶心、头痛、皮疹、男性不育（可逆）。', dosage:'起始0.5g bid，渐增至1g tid-qid。', storage:'密封保存。',
     interactions:'与叶酸合用可能影响叶酸吸收。与抗凝药合用增强抗凝。' },
-  { id:'d077', name:'美沙拉秦肠溶片', en:'Mesalazine', category:'消化系统用药', subcategory:'止泻药', type:'处方药',
+  { id:'d077', name:'美沙拉秦肠溶片', py:'MSL秦CR片', en:'Mesalazine', category:'消化系统用药', subcategory:'止泻药', type:'处方药',
     indications:'溃疡性结肠炎、克罗恩病。', contraindications:'严重肾功能损害、水杨酸过敏。',
     adverse:'腹泻、恶心、腹痛；罕见肾毒性。', dosage:'急性期1g qid；维持期0.5g tid。', storage:'密封保存。',
     interactions:'与硫唑嘌呤合用可能增加骨髓抑制风险。' },
-  { id:'d078', name:'西地那非片', en:'Sildenafil', category:'男科/泌尿科用药', subcategory:'勃起功能障碍药', type:'处方药',
+  { id:'d078', name:'西地那非片', py:'XDNF片', en:'Sildenafil', category:'男科/泌尿科用药', subcategory:'勃起功能障碍药', type:'处方药',
     indications:'勃起功能障碍、肺动脉高压。', contraindications:'与硝酸酯类药物合用禁。',
     adverse:'头痛、面部潮红、消化不良、视觉异常。', dosage:'ED：50mg 性活动前1h服用。', storage:'密封保存。',
     interactions:'禁与任何形式的硝酸酯类药物合用（严重低血压）。与α受体阻滞剂合用注意血压。' },
-  { id:'d079', name:'曲马多缓释片', en:'Tramadol SR', category:'解热镇痛药', subcategory:'阿片类', type:'处方药（精二）',
+  { id:'d079', name:'曲马多缓释片', py:'QMDHS片', en:'Tramadol SR', category:'解热镇痛药', subcategory:'阿片类', type:'处方药（精二）', tag:'精二',
     indications:'中度至重度疼痛。', contraindications:'严重呼吸抑制、急性酒精中毒。',
     adverse:'恶心、头晕、便秘、出汗。', dosage:'50-100mg q12h。', storage:'密封保存。',
     interactions:'与SSRI类抗抑郁药合用可能增加5-HT综合征风险。与其他中枢抑制剂合用增强呼吸抑制。' },
-  { id:'d080', name:'塞来昔布胶囊', en:'Celecoxib', category:'解热镇痛药', subcategory:'非甾体抗炎药', type:'处方药',
+  { id:'d080', name:'塞来昔布胶囊', py:'SLXBJN', en:'Celecoxib', category:'解热镇痛药', subcategory:'非甾体抗炎药', type:'处方药',
     indications:'骨关节炎、类风湿关节炎的疼痛和炎症。', contraindications:'磺胺类过敏、CABG围术期。',
     adverse:'消化道反应（较传统NSAIDs少）、心血管风险（剂量相关）。', dosage:'0.2g qd-bid。', storage:'密封保存。',
     interactions:'与华法林合用增加出血风险。与ACEI合用可能减弱降压效果。' },
-  { id:'d081', name:'阿托品眼用凝胶', en:'Atropine Eye Gel', category:'五官科用药', subcategory:'眼科用药', type:'处方药',
+  { id:'d081', name:'阿托品眼用凝胶', py:'AT品YYNJ', en:'Atropine Eye Gel', category:'五官科用药', subcategory:'眼科用药', type:'处方药',
     indications:'散瞳验光、虹膜睫状体炎。', contraindications:'闭角型青光眼。',
     adverse:'视物模糊、畏光、口干。', dosage:'遵医嘱使用。', storage:'遮光密封。',
     interactions:'与其他抗胆碱能药物合用增强作用。' },
-  { id:'d082', name:'左氧氟沙星滴眼液', en:'Levofloxacin Eye Drops', category:'五官科用药', subcategory:'眼科用药', type:'处方药',
+  { id:'d082', name:'左氧氟沙星滴眼液', py:'ZYFSXDYY', en:'Levofloxacin Eye Drops', category:'五官科用药', subcategory:'眼科用药', type:'处方药',
     indications:'细菌性结膜炎、角膜炎。', contraindications:'喹诺酮类过敏者。',
     adverse:'一过性眼刺激。', dosage:'1-2滴，q2-4h。', storage:'遮光密封。',
     interactions:'与其他眼用制剂间隔≥5min使用。' },
-  { id:'d083', name:'糠酸莫米松鼻喷雾剂', en:'Mometasone Nasal Spray', category:'五官科用药', subcategory:'耳鼻喉用药', type:'处方药',
+  { id:'d083', name:'糠酸莫米松鼻喷雾剂', py:'KSMMSBPWJ', en:'Mometasone Nasal Spray', category:'五官科用药', subcategory:'耳鼻喉用药', type:'处方药',
     indications:'过敏性鼻炎。', contraindications:'鼻部手术后未愈。',
     adverse:'鼻出血、咽喉刺激。', dosage:'每侧鼻孔2喷 qd。', storage:'密封保存。',
     interactions:'与CYP3A4强抑制剂合用可能增加全身暴露。' },
-  { id:'d084', name:'开塞露', en:'Glycerin Enema', category:'消化系统用药', subcategory:'止泻药', type:'OTC',
+  { id:'d084', name:'开塞露', py:'KSL', en:'Glycerin Enema', category:'消化系统用药', subcategory:'止泻药', type:'OTC',
     indications:'偶发性便秘。', contraindications:'无。',
     adverse:'直肠刺激感。', dosage:'1支 纳肛，保留数分钟。', storage:'密封保存。',
     interactions:'无显著药物相互作用。' },
@@ -616,6 +633,251 @@ Step 5：高剂量ICS-LABA + 附加治疗
 • 抑制生成：别嘌醇（起始50-100mg qd）、非布司他
 • 促进排泄：苯溴马隆
 • 急性期不启动降尿酸治疗，已使用者不中断` },
+  { id:'g011', system:'消化系统', title:'质子泵抑制剂临床应用指南', year:'2024', content:`一、常用PPI
+奥美拉唑 20mg / 艾司奥美拉唑 20-40mg / 泮托拉唑 40mg / 雷贝拉唑 10-20mg
+
+二、适应证
+1. 消化性溃疡：疗程十二指肠4周/胃6-8周
+2. GERD：初始治疗4-8周，维持治疗最低有效剂量
+3. Hp根除：标准剂量bid，疗程14天
+4. NSAIDs相关溃疡预防：标准剂量qd
+5. 上消化道出血：大剂量PPI 80mg iv bolus + 8mg/h持续输注72h
+
+三、合理使用原则
+• 用最低有效剂量、最短疗程
+• 长期使用（>1年）需评估利弊：骨质疏松、B12缺乏、肠道感染（艰难梭菌）、社区获得性肺炎风险增加
+• 应激性溃疡预防仅限于高危患者：机械通气>48h、凝血功能障碍
+
+四、停药建议
+• 疗程≤4周可骤停
+• 长期使用者建议逐步减量：减量50%/周至停药，防反跳性胃酸高分泌` },
+  { id:'g012', system:'抗感染', title:'围手术期抗菌药物预防指南', year:'2024', content:`一、基本原则
+• Ⅰ类切口原则上不预防用药
+• Ⅱ类切口建议预防用药（切皮前30-60min给药）
+• Ⅲ/Ⅳ类切口治疗性使用
+• 一般手术预防用药≤24h，心脏手术可延长至48h
+
+二、常用方案
+清洁手术（有高危因素）：头孢唑林1-2g或头孢呋辛1.5g
+结直肠手术：头孢西丁2g或头孢曲松2g+甲硝唑0.5g
+妇科手术：头孢唑林2g±甲硝唑0.5g
+骨科关节置换：头孢唑林2g（体重>120kg用3g）
+
+三、特殊人群
+青霉素过敏：克林霉素+庆大霉素或万古霉素
+MRSA高危：加用万古霉素
+手术时间>2倍药物半衰期或失血>1500mL：追加一剂
+
+四、常见错误
+• 术后用药时间过长（>48h）
+• 使用广谱抗生素替代窄谱（三代头孢代替一代）
+• 不必要的联合用药` },
+  { id:'g013', system:'血液系统', title:'华法林抗凝治疗中国专家共识', year:'2024', content:`一、适应证
+• 非瓣膜性房颤卒中预防（TIA2DS2-VASc≥2分）
+• 静脉血栓栓塞症（DVT/PE）治疗和二级预防
+• 心脏瓣膜置换术后
+
+二、INR目标范围
+• 一般抗凝：INR 2.0-3.0
+• 机械瓣（二尖瓣）：INR 2.5-3.5
+• 高龄/高出血风险：INR 1.8-2.5
+
+三、剂量与监测
+• 初始剂量：2.5-3mg qd（中国人建议2.5mg起始）
+• 第3-4天首次测INR
+• 稳定前每周监测，稳定后每4周监测
+• 一次漏服：发现时立即补服；次日发现则跳过，不可加倍
+
+四、INR异常处理
+INR 3.0-4.5（无出血）：减量或跳过一次，监测
+INR 4.5-10（无出血）：停1-2次+维生素K1 1-2.5mg po
+INR>10（无出血）：停华法林+维生素K1 5mg po
+任何INR+严重出血：停华法林+维生素K1 10mg iv+PCC
+
+五、围手术期桥接
+• 低血栓风险：术前5天停，术后恢复
+• 高血栓风险：停华法林→低分子肝素桥接` },
+  { id:'g014', system:'神经系统', title:'慢性疼痛药物治疗指南', year:'2024', content:`一、WHO三阶梯止痛
+第一阶梯（轻度NRS 1-3）
+对乙酰氨基酚、NSAIDs（布洛芬、塞来昔布）
+第二阶梯（中度NRS 4-6）
+弱阿片类：曲马多50-100mg q6-8h、可待因±NSAIDs
+第三阶梯（重度NRS 7-10）
+强阿片类：吗啡、羟考酮、芬太尼透皮贴
+
+二、神经病理性疼痛
+一线：加巴喷丁/普瑞巴林、TCAs（阿米替林）、SNRIs（度洛西汀）
+二线：曲马多、利多卡因贴片
+三线：强阿片类
+
+三、阿片类安全使用
+• 起始短效、剂量个体化、按需给药→按时给药
+• 预防便秘（常规联合缓泻药）
+• 预防恶心（前3-5天甲氧氯普胺）
+• 定期评估"4A"：镇痛/Analgesia、活动/Activity、不良反应/Adverse effects、异常行为/Aberrant behavior
+• 避免与苯二氮䓬类合用（呼吸抑制风险）
+
+四、癌痛管理
+• 阿片类无天花板效应，按需增加剂量
+• 神经病理性癌痛：阿片类+加巴喷丁/普瑞巴林
+• 骨转移痛：阿片类+NSAIDs+放疗` },
+  { id:'g015', system:'消化系统', title:'Hp根除治疗全国专家共识', year:'2024', content:`一、根除适应证
+强烈推荐：消化性溃疡（无论活动/静止）、胃MALT淋巴瘤
+推荐：慢性胃炎伴消化不良、长期PPI使用者、胃癌家族史、不明原因缺铁性贫血
+
+二、根除方案（铋剂四联14天）
+方案1：PPI标准剂量bid + 铋剂220mg bid + 阿莫西林1g bid + 克拉霉素0.5g bid
+方案2：PPI标准剂量bid + 铋剂220mg bid + 阿莫西林1g bid + 甲硝唑0.4g tid
+方案3：PPI标准剂量bid + 铋剂220mg bid + 阿莫西林1g bid + 四环素0.5g qid
+方案4：PPI标准剂量bid + 铋剂220mg bid + 阿莫西林1g bid + 呋喃唑酮0.1g bid
+
+三、青霉素过敏者
+• 甲硝唑+四环素+铋剂+PPI
+• 克拉霉素+甲硝唑+铋剂+PPI
+
+四、根除后评估
+• 停药≥4周后复查C13/C14呼气试验
+• 一线根除失败→换方案（避免重复使用克拉霉素/甲硝唑）
+• 二线仍失败→药敏试验指导` },
+  { id:'g016', system:'内分泌系统', title:'骨质疏松诊疗指南', year:'2024', content:`一、诊断标准
+• DXA骨密度：T值≤-2.5（骨质疏松）
+• -2.5<T值<-1.0（骨量减少）
+• 脆性骨折史即诊断为骨质疏松
+
+二、基础治疗
+• 钙剂：1000-1200mg/d（饮食+补充剂）
+• 维生素D3：800-1200IU/d，维持血清25(OH)D≥30ng/mL
+• 负重运动、预防跌倒
+
+三、药物治疗指征
+• T值≤-2.5（无论有无骨折）
+• 骨量减少+脆性骨折
+• FRAX评估高骨折风险
+
+四、药物选择
+一线口服：阿仑膦酸钠70mg qw / 唑来膦酸5mg iv每年一次
+替代：地舒单抗60mg sc 每6月一次
+绝经后早期：雌激素/SERMs（雷洛昔芬）
+高骨折风险：特立帕肽（促骨形成，疗程≤24月）
+中成药辅助：补肾壮骨类中药
+
+五、疗程与监测
+• 双膦酸盐口服5年、静脉3年后评估
+• 低风险：停药观察（药物假期）
+• 高风险：继续治疗或更换药物
+• 每年复查骨密度` },
+  { id:'g017', system:'心血管系统', title:'心房颤动抗凝治疗指南', year:'2024', content:`一、卒中风险评估 CHA2DS2-VASc
+C：心衰 1分
+H：高血压 1分
+A2：年龄≥75岁 2分
+D：糖尿病 1分
+S2：卒中/TIA/血栓栓塞史 2分
+V：血管疾病（心梗/PAD） 1分
+A：年龄65-74岁 1分
+Sc：女性 1分
+≥2分（男）/≥3分（女）：推荐抗凝
+
+二、出血风险评估 HAS-BLED
+H：高血压 SBP>160 1分
+A：肝/肾功能异常 各1分
+S：卒中史 1分
+B：出血史/倾向 1分
+L：INR不稳定 1分
+E：年龄>65岁 1分
+D：药物（抗血小板/NSAIDs）/饮酒 各1分
+≥3分：高出血风险，需密切监测
+
+三、抗凝选择
+首选：DOACs（达比加群、利伐沙班、阿哌沙班、依度沙班）
+次选：华法林（INR 2.0-3.0）
+机械瓣：仅限华法林
+CKD 4-5期：华法林（DOACs证据有限）
+
+四、特殊情况
+• 围手术期：DOACs术前停24-48h，术后止血后恢复
+• 合并冠心病PCI：三联→双联抗栓（DOAC+氯吡格雷）
+• 颅内出血后：多学科评估是否重启抗凝` },
+  { id:'g018', system:'血液系统', title:'肾性贫血诊疗指南', year:'2024', content:`一、诊断标准
+• 男性Hb<130g/L，女性<120g/L
+• 排除其他原因（缺铁、炎症、溶血等）
+• eGFR<60且Hb降低
+
+二、治疗靶目标
+• Hb目标：110-120g/L（不超过130g/L）
+• 铁蛋白：200-500μg/L
+• TSAT：20-50%
+
+三、铁剂补充
+口服：琥珀酸亚铁0.1-0.2g tid、多糖铁复合物
+静脉：蔗糖铁100mg iv qw-biweekly（累积量1000mg后评估）
+先用铁剂使铁储备充足后再用ESA
+
+四、ESA使用
+起始时机：Hb<100g/L
+rhEPO：50-100IU/kg qw（皮下/静脉）
+达依泊汀α：起始20-40μg qw
+剂量调整：Hb月增速1-2g/dL为目标
+Hb>115g/L减量25%，>130g/L暂停
+
+五、ESA低反应
+常见原因：铁缺乏（最常见）、炎症/感染、继发性甲旁亢、铝中毒、营养不良
+处理：纠正可逆因素后增加ESA剂量25-50%
+
+六、HIF-PHI（新型口服药）
+罗沙司他：起始70-100mg tiw（非透析）/ 100-120mg tiw（透析），根据Hb调整` },
+  { id:'g019', system:'抗肿瘤', title:'化疗止吐指南', year:'2024', content:`一、化疗致吐风险分级
+高致吐（>90%）：顺铂、环磷酰胺≥1.5g/m²
+中致吐（30-90%）：奥沙利铂、卡铂、阿霉素
+低致吐（10-30%）：紫杉醇、多西他赛、5-FU
+轻微（<10%）：长春碱类
+
+二、高致吐方案
+急性期（D1）：NK1受体拮抗剂+5-HT3受体拮抗剂+地塞米松12mg±奥氮平5mg
+延迟期（D2-4）：地塞米松8mg bid±NK1受体拮抗剂±奥氮平5mg qd
+
+三、中致吐方案
+急性期：5-HT3受体拮抗剂+地塞米松12mg
+延迟期：地塞米松8mg qd或5-HT3受体拮抗剂
+
+四、低致吐
+地塞米松8mg 单药
+
+五、常用止吐药
+5-HT3拮抗剂：昂丹司琼8mg bid、格拉司琼1mg bid、帕洛诺司琼0.25mg iv（长效）
+NK1拮抗剂：阿瑞匹坦125mg D1、80mg D2-3
+地塞米松：注意高血糖、失眠副作用
+奥氮平：2.5-5mg qd（注意嗜睡）
+甲氧氯普胺：10-20mg q6h（仅用于低致吐或补救）` },
+  { id:'g020', system:'内分泌系统', title:'糖皮质激素临床应用指导原则', year:'2024', content:`一、常用制剂与等效剂量
+短效：氢化可的松20mg （生物半衰期8-12h）
+中效：泼尼松5mg、甲泼尼龙4mg（12-36h）
+长效：地塞米松0.75mg（36-54h）
+等效抗炎剂量：泼尼松5mg = 甲泼尼龙4mg = 地塞米松0.75mg = 氢化可的松20mg
+
+二、给药方案
+• 清晨顿服（符合生理节律，减少HPA轴抑制）
+• 隔日疗法（中效制剂，减少副作用）
+• 短期冲击（≤5天）：无需逐渐减量
+• 长期（>3周）：需根据病情和HPA轴功能逐步减量
+减量原则：每1-2周减量2.5-5mg泼尼松等效量
+
+三、主要副作用及预防
+高血糖：监测，必要时降糖药
+高血压/水钠潴留：限钠、监测血压
+骨质疏松：补充钙剂+维生素D，必要时双膦酸盐
+消化道溃疡：高危者联合PPI预防
+感染风险：用药前筛查TB/HBV，注意机会性感染
+白内障/青光眼：眼科定期检查
+精神症状：告知患者可能情绪波动
+
+四、特殊人群
+妊娠：泼尼松/甲泼尼龙（胎盘代谢率高，胎儿暴露少）
+儿童：用最小有效剂量，监测生长发育
+老年人：同时补钙和VitD，防骨折
+
+五、撤药综合征处理
+症状：乏力、关节痛、肌痛、情绪低落
+处理：减慢减量速度，回到上一有效剂量` },
 ];
 
 // ═══ 法规数据 ═══
@@ -731,5 +993,9 @@ const GUIDE_SYSTEMS = [
   { system:'呼吸系统', icon:'🫁', items:GUIDELINES.filter(g=>g.system==='呼吸系统') },
   { system:'消化系统', icon:'🫄', items:GUIDELINES.filter(g=>g.system==='消化系统') },
   { system:'内分泌系统', icon:'🩸', items:GUIDELINES.filter(g=>g.system==='内分泌系统') },
+  { system:'抗感染', icon:'🦠', items:GUIDELINES.filter(g=>g.system==='抗感染') },
+  { system:'神经系统', icon:'🧠', items:GUIDELINES.filter(g=>g.system==='神经系统') },
+  { system:'血液系统', icon:'🩸', items:GUIDELINES.filter(g=>g.system==='血液系统') },
+  { system:'抗肿瘤', icon:'🎗️', items:GUIDELINES.filter(g=>g.system==='抗肿瘤') },
   { system:'法律法规', icon:'📋', items:LAWS },
 ];

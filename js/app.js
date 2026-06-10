@@ -1,6 +1,6 @@
 // ═══ 合并自定义数据 ───
-function allDrugs() { const c=JSON.parse(localStorage.getItem('custom_data')||'{"drugs":[],"guidelines":[]}'); return [...DRUGS, ...c.drugs]; }
-function allGuides() { const c=JSON.parse(localStorage.getItem('custom_data')||'{"drugs":[],"guidelines":[]}'); return [...GUIDELINES, ...c.guidelines]; }
+function allDrugs() { try{const c=JSON.parse(localStorage.getItem('custom_data')||'{"drugs":[],"guidelines":[]}');return[...DRUGS,...(c.drugs||[])];}catch(e){return DRUGS;} }
+function allGuides() { try{const c=JSON.parse(localStorage.getItem('custom_data')||'{"drugs":[],"guidelines":[]}');return[...GUIDELINES,...(c.guidelines||[])];}catch(e){return GUIDELINES;} }
 function findDrug(id) { return allDrugs().find(d=>d.id===id); }
 
 // ═══ Toast ───
@@ -117,11 +117,22 @@ function initApp() {
 // ═══ 时钟 ───
 // ═══ 时钟 ───
 (function updateClock(){
-  const t=new Date();
-  const s=t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
+  const s=new Date().getHours().toString().padStart(2,'0')+':'+new Date().getMinutes().toString().padStart(2,'0');
   for(let i=1;i<=12;i++){ const c=document.getElementById('clock'+i); if(c)c.textContent=s; }
-  setTimeout(updateClock,60000-(t.getSeconds()*1000));
+  setTimeout(updateClock,10000);
 })();
+
+// ═══ 左滑返回 ───
+let touchStartX=0,touchStartY=0;
+document.addEventListener('touchstart',e=>{
+  touchStartX=e.touches[0].clientX;
+  touchStartY=e.touches[0].clientY;
+},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-touchStartX;
+  const dy=e.changedTouches[0].clientY-touchStartY;
+  if(touchStartX<40 && dx>80 && Math.abs(dx)>Math.abs(dy)*1.5){ goBack(); }
+},{passive:true});
 
 // ═══ 首页 ───
 function renderHome() {
@@ -163,16 +174,17 @@ function renderKnowledge() {
       </div>
     `).join('');
     if(kw){
-      const dmatches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw));
+      const dmatches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase()===kw);
       if(dmatches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配药品 (${dmatches.length})</div>`+dmatches.map(d=>`<div class="list-card" onclick="pushScreen('detail');renderDetail('${d.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${d.name}</div><div class="desc">${d.category} · ${d.indications.slice(0,30)}…</div></div></div>`).join('');
     }
   } else {
     let cats= DISEASE_CATEGORIES;
     if(kw) cats=cats.filter(c=>c.name.includes(kw)||c.subs.some(s=>s.includes(kw)));
-    kb.innerHTML=cats.map(c=>`
-      <div class="cat-card"><div class="cat-header"><span class="cat-name">${c.name}</span><span class="cat-arrow">›</span></div>
-      <div class="cat-subs">${c.subs.map(s=>`<span class="cat-sub">${s}</span>`).join('')}</div></div>
-    `).join('');
+    kb.innerHTML=cats.map(c=>`\n      <div class="cat-card">\n        <div class="cat-header" onclick="showDiseaseList('${c.name}')"><span class="cat-name">${c.name}</span><span class="cat-arrow">›</span></div>\n        <div class="cat-subs">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();openDisease('${s}')">${s}</span>`).join('')}</div>\n      </div>\n    `).join('');
+    if(kw){
+      const matches=DISEASES.filter(d=>d.name.includes(kw));
+      if(matches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配疾病</div>`+matches.map(d=>`<div class="list-card" onclick="openDisease('${d.name}')"><div class="icon-box">🦠</div><div class="info"><div class="name">${d.name}</div><div class="desc">${(d.desc||'').slice(0,40)}…</div></div></div>`).join('');
+    }
   }
 
   document.getElementById('kb-search').oninput=renderKnowledge;
@@ -235,11 +247,22 @@ function openGuide(gid) {
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:20px">${g.title}</div>
     <div style="font-size:12px;color:var(--text-light);display:flex;gap:6px"><span class="badge badge-blue">${g.system||'法律法规'}</span><span>${g.year||''}</span></div>
-    <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${g.content||''}</p></div>
+    <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(g.content||'')}</p></div>
   `;
 }
 
 // ═══ 药品详情 ───
+function tagBadge(tag){
+  const map={高危:'<span class="tag-high-risk">高危</span>',精二:'<span class="tag-psych">精二</span>',毒:'<span class="tag-toxic">毒</span>',麻:'<span class="tag-narc">麻</span>'};
+  return tag?map[tag]||'':'';
+}
+
+function hlText(t){
+  if(!window._lastQuery) return t;
+  var re=new RegExp('('+window._lastQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+  return t.replace(re,'<mark style="background:#FEF08A;padding:1px 2px;border-radius:2px">$1</mark>');
+}
+
 function renderDetail(drugId) {
   const d=findDrug(drugId); if(!d) return;
   addRecent(drugId);
@@ -250,7 +273,7 @@ function renderDetail(drugId) {
   dc.innerHTML=`
     <div class="detail-hero">
       <div class="detail-name">${d.name}</div>
-      <div class="detail-badges"><span class="badge badge-green">${d.category}</span><span class="badge badge-blue">${d.type}</span></div>
+      <div class="detail-badges"><span class="badge badge-green">${d.category}</span><span class="badge badge-blue">${d.type}</span>${tagBadge(d.tag)}</div>
       <div class="detail-actions">
         <button class="btn btn-outline" id="detail-fav"><span style="color:${fav?'var(--danger)':'var(--primary)'}">${fav?'❤️':'🤍'}</span> ${fav?'已收藏':'收藏'}</button>
         <button class="btn btn-outline" id="detail-cmp">⚖️ 加入对比</button>
@@ -351,29 +374,41 @@ function initCompare() {
 function initSearch() {
   function doSearch(q) {
     if(q.length<1) return;
+    window._lastQuery=q;
     document.getElementById('search-results-input').value=q;
     pushScreen('search');
-    const results=document.getElementById('search-results');
-    const dr=allDrugs().filter(d=>d.name.toLowerCase().includes(q)||d.indications.includes(q)||d.category.includes(q));
-    const gd=allGuides().filter(g=>g.title.toLowerCase().includes(q)||g.system.includes(q));
-    const dis= DISEASE_CATEGORIES.flatMap(c=>c.subs).filter(s=>s.includes(q));
-    const lw=LAWS.filter(l=>l.title.toLowerCase().includes(q));
-    const rd=HEALTH_EDU.filter(h=>h.title.toLowerCase().includes(q)||h.content.toLowerCase().includes(q)||h.cat.includes(q));
-    const inf=INFUSION_DATA.filter(i=>i.drug.toLowerCase().includes(q)||i.note.toLowerCase().includes(q)||i.cat.includes(q)||(i.interact||'').includes(q));
-    const total=dr.length+dis.length+gd.length+lw.length+rd.length+inf.length;
+    var results=document.getElementById('search-results');
+    var dr=[],gd=[],dis=[],lw=[],rd=[],inf=[];
+    try{dr=allDrugs().filter(function(d){return d.name.toLowerCase().indexOf(q)>=0||d.indications.toLowerCase().indexOf(q)>=0||d.category.toLowerCase().indexOf(q)>=0||d.subcategory.toLowerCase().indexOf(q)>=0||(d.py||'').toLowerCase().indexOf(q)===0;});}catch(e){}
+    try{gd=allGuides().filter(function(g){return g.title.toLowerCase().indexOf(q)>=0||g.system.toLowerCase().indexOf(q)>=0||(g.content||'').toLowerCase().indexOf(q)>=0;});}catch(e){}
+    try{dis=DISEASES.filter(function(d){return d.name.toLowerCase().indexOf(q)>=0||d.desc.toLowerCase().indexOf(q)>=0||d.cat.toLowerCase().indexOf(q)>=0;});}catch(e){}
+    try{lw=LAWS.filter(function(l){return l.title.toLowerCase().indexOf(q)>=0||(l.content||'').toLowerCase().indexOf(q)>=0;});}catch(e){}
+    try{rd=HEALTH_EDU.filter(function(h){return h.title.toLowerCase().indexOf(q)>=0||h.content.toLowerCase().indexOf(q)>=0||h.cat.toLowerCase().indexOf(q)>=0;});}catch(e){}
+    try{inf=INFUSION_DATA.filter(function(i){return i.drug.toLowerCase().indexOf(q)>=0||i.note.toLowerCase().indexOf(q)>=0||i.cat.toLowerCase().indexOf(q)>=0||(i.interact||'').toLowerCase().indexOf(q)>=0||(i.vehicle||'').toLowerCase().indexOf(q)>=0;});}catch(e){}
+    var total=dr.length+dis.length+gd.length+lw.length+rd.length+inf.length;
     document.getElementById('result-count').textContent=total+'个结果';
+    function hl(t){var re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');return t.replace(re,'<mark style="background:#FEF08A;padding:1px 2px;border-radius:2px">$1</mark>');}
     results.innerHTML='';
-    if(dr.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title drugs">💊 药品 (${dr.length})</div>${dr.map(d=>`<div class="result-item" data-drug="${d.id}">${d.name}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')}</div>`;
-    if(dis.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title diseases">🦠 疾病 (${dis.length})</div>${dis.map(d=>`<div class="result-item">${d}</div>`).join('')}</div>`;
-    if(gd.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title guides">📋 指南 (${gd.length})</div>${gd.map(g=>`<div class="result-item">${g.title}</div>`).join('')}</div>`;
-    if(lw.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title guides">📜 法规 (${lw.length})</div>${lw.map(l=>`<div class="result-item" onclick="openGuide('${l.id}')">${l.title}</div>`).join('')}</div>`;
-    if(rd.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title" style="color:#D97706">📖 科普教育 (${rd.length})</div>${rd.map(h=>`<div class="result-item" onclick="openHealthEdu('${h.id}')">${h.title}<span class="badge badge-blue" style="margin-left:auto;font-size:10px">${h.cat}</span></div>`).join('')}</div>`;
-    if(inf.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title" style="color:#7C3AED">💉 输液配伍 (${inf.length})</div>${inf.map(i=>`<div class="result-item" onclick="openInfusion('${i.id}')">${i.drug}<span class="badge badge-blue" style="margin-left:auto;font-size:10px">${i.cat}</span></div>`).join('')}</div>`;
+    if(dr.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title drugs">💊 药品 (${dr.length})</div>${dr.map(d=>`<div class="result-item" data-drug="${d.id}">${hl(d.name)}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')}</div>`;
+    if(dis.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title diseases">🦠 疾病 (${dis.length})</div>${dis.map(d=>`<div class="result-item" onclick="openDisease('${d.name}')">${hl(d.name)}<span class="badge badge-blue" style="margin-left:auto">${d.cat}</span></div>`).join('')}</div>`;
+    if(gd.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title guides">📋 指南 (${gd.length})</div>${gd.map(g=>`<div class="result-item" data-gid="${g.id}">${hl(g.title)}</div>`).join('')}</div>`;
+    if(lw.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title guides">📜 法规 (${lw.length})</div>${lw.map(l=>`<div class="result-item" data-lid="${l.id}">${hl(l.title)}</div>`).join('')}</div>`;
+    if(rd.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title" style="color:#D97706">📖 科普教育 (${rd.length})</div>${rd.map(h=>`<div class="result-item" data-hid="${h.id}">${hl(h.title)}<span class="badge badge-blue" style="margin-left:auto;font-size:10px">${h.cat}</span></div>`).join('')}</div>`;
+    if(inf.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title" style="color:#7C3AED">💉 输液配伍 (${inf.length})</div>${inf.map(i=>`<div class="result-item" data-iid="${i.id}">${hl(i.drug)}<span class="badge badge-blue" style="margin-left:auto;font-size:10px">${i.cat}</span></div>`).join('')}</div>`;
     if(total===0) results.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">未找到相关内容</div>';
-    results.querySelectorAll('.result-item[data-drug]').forEach(r=>r.onclick=()=>{ pushScreen('detail'); renderDetail(r.dataset.drug); });
+    try{results.querySelectorAll('.result-item[data-drug]').forEach(function(r){r.onclick=function(){pushScreen('detail');renderDetail(r.dataset.drug);};});}catch(e){}
+    try{results.querySelectorAll('.result-item[data-gid]').forEach(function(r){r.onclick=function(){openGuide(r.dataset.gid);};});}catch(e){}
+    try{results.querySelectorAll('.result-item[data-lid]').forEach(function(r){r.onclick=function(){openGuide(r.dataset.lid);};});}catch(e){}
+    try{results.querySelectorAll('.result-item[data-hid]').forEach(function(r){r.onclick=function(){openHealthEdu(r.dataset.hid);};});}catch(e){}
+    try{results.querySelectorAll('.result-item[data-iid]').forEach(function(r){r.onclick=function(){openInfusion(r.dataset.iid);};});}catch(e){}
   }
   document.getElementById('home-search-input').addEventListener('keydown',e=>{ if(e.key==='Enter') doSearch(e.target.value.toLowerCase().trim()); });
   document.getElementById('search-results-input').addEventListener('keydown',e=>{ if(e.key==='Enter') doSearch(e.target.value.toLowerCase().trim()); });
+  // 点击搜索图标也触发
+  document.getElementById('home-search').querySelector('svg').addEventListener('click',()=>{
+    const v=document.getElementById('home-search-input').value.toLowerCase().trim();
+    if(v) doSearch(v);
+  });
 }
 
 // ═══ 个人中心 ───
@@ -429,7 +464,7 @@ function openHealthEdu(hid) {
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:20px">${h.title}</div>
     <div style="font-size:12px;color:var(--text-light)">${h.cat}</div>
-    <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${h.content||''}</p></div>
+    <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(h.content||'')}</p></div>
   `;
 }
 
@@ -461,10 +496,41 @@ function openInfusion(iid) {
     <div class="info-card"><div class="info-label">输液载体</div><div class="info-value">${i.vehicle||'—'}</div></div>
     <div class="info-card"><div class="info-label">浓度</div><div class="info-value">${i.conc||'—'}</div></div>
     <div class="info-card"><div class="info-label">输注速度</div><div class="info-value">${i.speed||'—'}</div></div>
-    ${i.interact?`<div class="info-card"><div class="info-label danger">配伍禁忌</div><div class="info-value">${i.interact}</div></div>`:''}
-    ${i.detail?`<div class="info-card"><div class="info-label danger">细节</div><div class="info-value">${i.detail}</div></div>`:''}
-    <div class="info-card"><div class="info-label">注意事项</div><div class="info-value" style="white-space:pre-wrap">${i.note||''}</div></div>
+    ${i.interact?`<div class="info-card"><div class="info-label danger">配伍禁忌</div><div class="info-value">${hlText(i.interact)}</div></div>`:''}
+    ${i.detail?`<div class="info-card"><div class="info-label danger">细节</div><div class="info-value">${hlText(i.detail)}</div></div>`:''}
+    <div class="info-card"><div class="info-label">注意事项</div><div class="info-value" style="white-space:pre-wrap">${hlText(i.note||'')}</div></div>
   `;
+}
+
+function showDiseaseList(catName) {
+  const dr=allDrugs().filter(d=>d.indications.includes(catName)||d.category.includes(catName));
+  const ds=DISEASES.filter(d=>d.cat===catName);
+  pushScreen('search');
+  document.getElementById('search-results-input').value=catName;
+  const sr=document.getElementById('search-results');
+  let html='';
+  if(ds.length>0) html+=`<div class="result-group"><div class="result-group-title diseases">🦠 ${catName} (${ds.length})</div>`+ds.map(d=>`<div class="result-item" onclick="openDisease('${d.name}')">${d.name}</div>`).join('')+`</div>`;
+  if(dr.length>0) html+=`<div class="result-group"><div class="result-group-title drugs">💊 相关药品 (${dr.length})</div>`+dr.map(d=>`<div class="result-item" onclick="pushScreen('detail');renderDetail('${d.id}')">${d.name}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')+`</div>`;
+  sr.innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--text-light)">暂无数据</div>';
+}
+
+function openDisease(name) {
+  const d=DISEASES.find(x=>x.name===name);
+  const drugs=allDrugs().filter(dr=>dr.indications.toLowerCase().includes(name.slice(0,3).toLowerCase())||dr.category.includes(name.slice(0,3)));
+  const guides=allGuides().filter(g=>g.title.includes(name)||g.content.includes(name));
+  if(!d && drugs.length===0 && guides.length===0){ toast('暂无数据'); return; }
+  pushScreen('label');
+  let html='<div class="section-title" style="font-size:22px">'+name+'</div>';
+  if(d) html+=`
+    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px"><span class="badge badge-blue">${d.cat}</span></div>
+    <div class="info-card"><div class="info-label">定义</div><div class="info-value">${hlText(d.desc)}</div></div>
+    <div class="info-card"><div class="info-label">症状</div><div class="info-value">${hlText(d.symptoms)}</div></div>
+    <div class="info-card"><div class="info-label">诊断</div><div class="info-value">${hlText(d.diagnosis)}</div></div>
+    <div class="info-card"><div class="info-label">治疗原则</div><div class="info-value">${hlText(d.treatment)}</div></div>`;
+  if(drugs.length>0) html+=`<div class="section-title" style="margin-top:8px">💊 相关药品 (${drugs.length})</div>`+drugs.slice(0,6).map(dr=>`<div class="list-card" onclick="pushScreen('detail');renderDetail('${dr.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${dr.name}</div><div class="desc">${dr.category} · ${(dr.indications||'').slice(0,30)}…</div></div></div>`).join('');
+  if(guides.length>0) html+=`<div class="section-title" style="margin-top:8px">📋 相关指南</div>`+guides.slice(0,3).map(g=>`<div class="list-card" onclick="openGuide('${g.id}')"><div class="icon-box">📋</div><div class="info"><div class="name">${g.title}</div><div class="desc">${g.system} · ${g.year}</div></div></div>`).join('');
+  if(!d && drugs.length===0) html+='<div style="text-align:center;padding:40px;color:var(--text-light)">该疾病暂未收录详细信息</div>';
+  document.getElementById('label-content').innerHTML=html;
 }
 
 // ═══ 启动：检查已登录 ───

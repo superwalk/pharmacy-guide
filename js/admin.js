@@ -1,16 +1,14 @@
 // ═══ 内容管理 ═══
-// admin/editor 可在 App 内直接增删改药品和指南
-
 function initAdmin() {
   if (!isEditor()) { toast('无权限访问'); goBack(); return; }
 
   document.querySelectorAll('#admin-tabs .segment-item').forEach(t => {
-    const handler = () => {
+    t.onclick = () => {
       document.querySelectorAll('#admin-tabs .segment-item').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
       renderAdminList(t.dataset.tab);
-      const labels = { drugs: '+ 新增药品', guidelines: '+ 新增指南', categories: '+ 新增分类' };
-      document.getElementById('admin-add-btn').textContent = labels[t.dataset.tab];
+      const labels = { drugs:'+ 新增药品', guidelines:'+ 新增指南', education:'+ 新增科普', infusion:'+ 新增配伍', diseases:'+ 新增疾病' };
+      document.getElementById('admin-add-btn').textContent = labels[t.dataset.tab] || '+ 新增';
     };
   });
 
@@ -18,7 +16,9 @@ function initAdmin() {
     const t = document.querySelector('#admin-tabs .segment-item.active').dataset.tab;
     if (t === 'drugs') showDrugEditor();
     else if (t === 'guidelines') showGuidelineEditor();
-    else showCategoryEditor();
+    else if (t === 'education') showEduEditor();
+    else if (t === 'infusion') showInfEditor();
+    else if (t === 'diseases') showDiseaseEditor();
   };
 
   renderAdminList('drugs');
@@ -26,74 +26,94 @@ function initAdmin() {
 
 function renderAdminList(type) {
   const list = document.getElementById('admin-list');
+  var html = '';
   if (type === 'drugs') {
     const drugs = allDrugs();
-    const cd = JSON.parse(localStorage.getItem('custom_data') || '{"drugs":[],"guidelines":[]}');
-    list.innerHTML = drugs.map((d, i) => {
-      const isCustom = i >= DRUGS.length;
-      return `<div class="cat-card" style="margin-bottom:8px">
+    html = drugs.map((d, i) => `
+      <div class="cat-card" style="margin-bottom:8px">
         <div class="cat-header">
-          <div style="flex:1;min-width:0">
-            <span class="cat-name">${esc(d.name)}</span>
-            <span class="badge badge-green" style="margin-left:6px">${esc(d.category)}</span>
-            ${isCustom ? '<span class="badge badge-blue" style="margin-left:6px">自定义</span>' : ''}
-          </div>
+          <div style="flex:1;min-width:0"><span class="cat-name">${esc(d.name)}</span><span class="badge badge-green" style="margin-left:6px">${esc(d.category)}</span></div>
           <div style="display:flex;gap:6px;flex-shrink:0">
             <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="drug">编辑</button>
             <button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="${i}" data-type="drug">删除</button>
           </div>
         </div>
-        <div style="font-size:12px;color:var(--text-light)">适应症：${esc(d.indications?.slice(0, 50) || '')}…</div>
-      </div>`;
-    }).join('');
-    list.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => {
-      const idx = parseInt(b.dataset.edit);
-      const d = allDrugs()[idx];
-      showDrugEditor(d, idx);
-    });
-    list.querySelectorAll('[data-del]').forEach(b => b.onclick = () => deleteItem('drug', parseInt(b.dataset.del)));
+        <div style="font-size:12px;color:var(--text-light)">适应症：${esc(d.indications?.slice(0,50)||'')}…</div>
+      </div>`).join('');
   } else if (type === 'guidelines') {
-    // 合并指南 + 法规
-    const all = [...allGuides(), ...LAWS.map(l => ({ ...l, system: '法律法规', isLaw: true }))];
-    const customData = JSON.parse(localStorage.getItem('custom_data') || '{"guidelines":[]}');
-    list.innerHTML = all.map((g, i) => {
-      const builtinCount = GUIDELINES.length;
-      const isCustom = i >= builtinCount && !g.isLaw;
-      return `<div class="cat-card" style="margin-bottom:8px">
+    var all = [...allGuides(), ...LAWS];
+    html = all.map((g, i) => `
+      <div class="cat-card" style="margin-bottom:8px">
         <div class="cat-header">
-          <div style="flex:1;min-width:0">
-            <span class="cat-name">${esc(g.title)}</span>
-            <span class="badge badge-blue" style="margin-left:6px">${esc(g.system || '法律法规')}</span>
-            ${isCustom ? '<span class="badge badge-blue">自定义</span>' : ''}
-            ${g.isLaw ? '<span class="badge badge-blue">法规</span>' : ''}
-          </div>
+          <div style="flex:1;min-width:0"><span class="cat-name">${esc(g.title)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(g.system||'法规')}</span></div>
           <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="allgl">编辑</button>
-            <button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="${i}" data-type="allgl">删除</button>
+            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="guide">编辑</button>
+            <button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="${i}" data-type="guide">删除</button>
           </div>
         </div>
-        <div style="font-size:12px;color:var(--text-light)">${esc(g.year || '')} · ${esc(g.content?.slice(0, 50) || '')}…</div>
-      </div>`;
-    }).join('');
-    list.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => {
-      const idx = parseInt(b.dataset.edit);
-      const allItems = [...allGuides(), ...LAWS.map(l => ({ ...l, system: '法律法规', isLaw: true }))];
-      const g = allItems[idx];
-      showGuidelineEditor(g, idx);
-    });
-    list.querySelectorAll('[data-del]').forEach(b => b.onclick = () => deleteItem('allgl', parseInt(b.dataset.del)));
-  } else {
-    showCategoryEditor();
+        <div style="font-size:12px;color:var(--text-light)">${esc(g.year||'')} · ${esc((g.content||'').slice(0,50))}…</div>
+      </div>`).join('');
+  } else if (type === 'education') {
+    html = HEALTH_EDU.map((h, i) => `
+      <div class="cat-card" style="margin-bottom:8px">
+        <div class="cat-header">
+          <div style="flex:1;min-width:0"><span class="cat-name">${esc(h.title)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(h.cat)}</span></div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="edu">编辑</button>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-light)">${esc((h.content||'').slice(0,50))}…</div>
+      </div>`).join('');
+  } else if (type === 'infusion') {
+    html = INFUSION_DATA.map((inf, i) => `
+      <div class="cat-card" style="margin-bottom:8px">
+        <div class="cat-header">
+          <div style="flex:1;min-width:0"><span class="cat-name">${esc(inf.drug)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(inf.cat)}</span></div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="inf">编辑</button>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-light)">载体：${esc(inf.vehicle||'')} · 浓度：${esc(inf.conc||'')}</div>
+      </div>`).join('');
+  } else if (type === 'diseases') {
+    html = DISEASES.map((d, i) => `
+      <div class="cat-card" style="margin-bottom:8px">
+        <div class="cat-header">
+          <div style="flex:1;min-width:0"><span class="cat-name">${esc(d.name)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(d.cat)}</span></div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="disease">编辑</button>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-light)">${esc((d.desc||'').slice(0,50))}…</div>
+      </div>`).join('');
   }
+  list.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--text-light)">暂无数据</div>';
+  bindAdminEvents(type);
 }
 
+function bindAdminEvents(type) {
+  document.querySelectorAll('#admin-list [data-edit]').forEach(b => {
+    b.onclick = () => {
+      var i = parseInt(b.dataset.edit);
+      var t = b.dataset.type;
+      if (t === 'drug') { showDrugEditor(allDrugs()[i], i); }
+      else if (t === 'guide') { var all=[...allGuides(),...LAWS]; showGuidelineEditor(all[i], i); }
+      else if (t === 'edu') { showEduEditor(HEALTH_EDU[i], i); }
+      else if (t === 'inf') { showInfEditor(INFUSION_DATA[i], i); }
+      else if (t === 'disease') { showDiseaseEditor(DISEASES[i], i); }
+    };
+  });
+  document.querySelectorAll('#admin-list [data-del]').forEach(b => {
+    b.onclick = () => deleteItem(b.dataset.type, parseInt(b.dataset.del));
+  });
+}
+
+// ─── 编辑弹窗 ───
 function showDrugEditor(drug, index) {
-  const isNew = !drug;
-  const d = drug || { name: '', category: '', subcategory: '', type: '处方药', indications: '', contraindications: '', adverse: '', dosage: '', storage: '', interactions: '', label: '' };
-  showModal(
-    isNew ? '新增药品' : '编辑药品',
+  var isNew = !drug;
+  var d = drug || { name:'', category:'', subcategory:'', type:'处方药', indications:'', contraindications:'', adverse:'', dosage:'', storage:'', interactions:'', label:'' };
+  showModal(isNew?'新增药品':'编辑药品',
     `<div style="display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow-y:auto">
-      ${isNew ? '<input id="ed-id" value="custom_'+Date.now()+'" style="display:none">' : ''}
       <input id="ed-name" value="${esc(d.name)}" placeholder="药品名称 *">
       <input id="ed-cat" value="${esc(d.category)}" placeholder="分类 *">
       <input id="ed-subcat" value="${esc(d.subcategory||'')}" placeholder="子分类">
@@ -103,142 +123,122 @@ function showDrugEditor(drug, index) {
       <input id="ed-dosage" value="${esc(d.dosage)}" placeholder="用法用量">
       <input id="ed-storage" value="${esc(d.storage)}" placeholder="储存条件">
       <input id="ed-inter" value="${esc(d.interactions||'')}" placeholder="药物相互作用">
-      <textarea id="ed-label" style="min-height:100px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical" placeholder="完整说明书">${esc(d.label || '')}</textarea>
     </div>`,
-    [
-      { label: '取消' },
-      { label: isNew ? '新增' : '保存', primary: true, onClick: () => {
-        const newDrug = {
-          id: isNew ? 'custom_' + Date.now() : d.id,
-          name: peg('ed-name'), category: peg('ed-cat'), subcategory: peg('ed-subcat'),
-          type: '处方药', indications: peg('ed-ind'), contraindications: peg('ed-contra'),
-          adverse: peg('ed-adverse'), dosage: peg('ed-dosage'), storage: peg('ed-storage'),
-          interactions: peg('ed-inter'), label: peg('ed-label')
-        };
-        if (!newDrug.name || !newDrug.category || !newDrug.indications) { toast('名称/分类/适应症为必填'); return; }
-        const cd = JSON.parse(localStorage.getItem('custom_data') || '{"drugs":[],"guidelines":[]}');
-        if (isNew) { cd.drugs.unshift(newDrug); }
-        else if (index >= DRUGS.length) { cd.drugs[index - DRUGS.length] = newDrug; }
-        else {
-          // 内置药品：保存编辑到 custom_data 的 overlay
-          cd.drugOverlay = cd.drugOverlay || {};
-          cd.drugOverlay[d.id] = newDrug;
-        }
-        localStorage.setItem('custom_data', JSON.stringify(cd));
-        renderAdminList('drugs'); toast(isNew ? '新增成功' : '保存成功');
-        // 强制合并重新加载
-        updateAllData();
-      }}
-    ]);
+    [{label:'取消'},{label:isNew?'新增':'保存',primary:true,onClick:()=>{
+      var nd = { id:isNew? 'custom_'+Date.now(): d.id, name:peg('ed-name'), category:peg('ed-cat'), subcategory:peg('ed-subcat'), type:'处方药', indications:peg('ed-ind'), contraindications:peg('ed-contra'), adverse:peg('ed-adverse'), dosage:peg('ed-dosage'), storage:peg('ed-storage'), interactions:peg('ed-inter'), label:'' };
+      if(!nd.name||!nd.category||!nd.indications){toast('名称/分类/适应症为必填');return;}
+      var cd=getCust();
+      if(isNew){cd.drugs.unshift(nd);}else if(index>=DRUGS.length){cd.drugs[index-DRUGS.length]=nd;}else{cd.drugOverlay=cd.drugOverlay||{};cd.drugOverlay[d.id]=nd;}
+      saveCust(cd); renderAdminList('drugs'); toast(isNew?'新增成功':'保存成功');
+    }}]
+  );
 }
 
 function showGuidelineEditor(guide, index) {
-  const isNew = !guide;
-  const g = guide || { title: '', system: '', year: new Date().getFullYear().toString(), content: '' };
-  showModal(
-    isNew ? '新增指南' : '编辑' + (g.isLaw ? '法规' : '指南'),
+  var all=[...allGuides(),...LAWS];
+  var isNew=!guide;
+  var g=guide||{title:'',system:'',year:'',content:''};
+  showModal(isNew?'新增指南':'编辑指南',
     `<div style="display:flex;flex-direction:column;gap:10px">
       <input id="ed-gtitle" value="${esc(g.title)}" placeholder="标题 *">
-      <input id="ed-gsystem" value="${esc(g.system||'')}" placeholder="所属系统 *（如：心血管系统 / 法律法规）">
+      <input id="ed-gsystem" value="${esc(g.system||'')}" placeholder="所属系统 *">
       <input id="ed-gyear" value="${esc(g.year||'')}" placeholder="年份">
       <textarea id="ed-gcontent" style="min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical" placeholder="内容">${esc(g.content||'')}</textarea>
     </div>`,
-    [
-      { label: '取消' },
-      { label: isNew ? '新增' : '保存', primary: true, onClick: () => {
-        const newGL = {
-          id: g.id || 'gl_' + Date.now(),
-          title: peg('ed-gtitle'), system: peg('ed-gsystem'),
-          year: peg('ed-gyear'), content: peg('ed-gcontent')
-        };
-        if (!newGL.title || !newGL.system) { toast('标题和系统为必填'); return; }
-        const cd = JSON.parse(localStorage.getItem('custom_data') || '{"drugs":[],"guidelines":[]}');
-        if (isNew) { cd.guidelines.unshift(newGL); }
-        else if (index >= GUIDELINES.length) { cd.guidelines[index - GUIDELINES.length] = newGL; }
-        else {
-          // 内置指南：保存 overlay
-          cd.glOverlay = cd.glOverlay || {};
-          cd.glOverlay[g.id] = newGL;
-          // 也修改 LAWS overlay
-          if (g.isLaw) {
-            cd.lawOverlay = cd.lawOverlay || {};
-            cd.lawOverlay[g.id] = newGL;
-          }
-        }
-        localStorage.setItem('custom_data', JSON.stringify(cd));
-        renderAdminList('guidelines'); toast(isNew ? '新增成功' : '保存成功');
-        updateAllData();
-      }}
-    ]);
+    [{label:'取消'},{label:isNew?'新增':'保存',primary:true,onClick:()=>{
+      var ng={id:g.id||'gl_'+Date.now(),title:peg('ed-gtitle'),system:peg('ed-gsystem'),year:peg('ed-gyear'),content:peg('ed-gcontent')};
+      if(!ng.title||!ng.system){toast('标题和系统为必填');return;}
+      var cd=getCust();
+      if(isNew){cd.guidelines.unshift(ng);}else if(index>=GUIDELINES.length){cd.guidelines[index-GUIDELINES.length]=ng;}else{cd.glOverlay=cd.glOverlay||{};cd.glOverlay[g.id]=ng;}
+      saveCust(cd); renderAdminList('guidelines'); toast(isNew?'新增成功':'保存成功');
+    }}]
+  );
 }
 
-function showCategoryEditor() {
-  showModal('分类管理说明',
-    `<div style="font-size:13px;line-height:1.8;color:var(--text-body)">
-      <p><b>药品分类</b>和<b>疾病分类</b>的结构在 <code>js/data.js</code> 文件中。</p>
-      <p style="margin-top:8px">如需新增或修改分类，请：</p>
-      <p>1. 打开 js/data.js 文件</p>
-      <p>2. 找到 DRUG_CATEGORIES / DISEASE_CATEGORIES 数组</p>
-      <p>3. 添加/修改条目后保存</p>
-      <p>4. 重新部署即可生效</p>
-      <p style="margin-top:8px;color:var(--accent)">💡 药品和指南的增删改可在本页面直接操作</p>
+function showEduEditor(item, index) {
+  var isNew=!item;
+  var h=item||{cat:'',title:'',content:''};
+  showModal(isNew?'新增科普':'编辑科普',
+    `<div style="display:flex;flex-direction:column;gap:10px">
+      <input id="ed-ecat" value="${esc(h.cat)}" placeholder="分类 *">
+      <input id="ed-etitle" value="${esc(h.title)}" placeholder="标题 *">
+      <textarea id="ed-econtent" style="min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical" placeholder="内容">${esc(h.content||'')}</textarea>
     </div>`,
-    [{ label: '知道了', primary: true }]
+    [{label:'取消'},{label:isNew?'新增':'保存',primary:true,onClick:()=>{
+      var ne={id:h.id||'h_'+Date.now(),cat:peg('ed-ecat'),title:peg('ed-etitle'),content:peg('ed-econtent')};
+      if(!ne.title||!ne.cat){toast('分类和标题为必填');return;}
+      var cd=getCust();
+      cd.education=cd.education||[];
+      if(isNew){cd.education.unshift(ne);}else{var idx=cd.education.findIndex(x=>x.id===h.id);if(idx>=0)cd.education[idx]=ne;else{cd.eduOverlay=cd.eduOverlay||{};cd.eduOverlay[h.id]=ne;}}
+      saveCust(cd); renderAdminList('education'); toast(isNew?'新增成功':'保存成功');
+    }}]
+  );
+}
+
+function showInfEditor(item, index) {
+  var isNew=!item;
+  var inf=item||{cat:'',drug:'',vehicle:'',conc:'',speed:'',note:''};
+  showModal(isNew?'新增配伍':'编辑配伍',
+    `<div style="display:flex;flex-direction:column;gap:10px">
+      <input id="ed-idrug" value="${esc(inf.drug)}" placeholder="药品名 *">
+      <input id="ed-icat" value="${esc(inf.cat)}" placeholder="分类">
+      <input id="ed-ivehicle" value="${esc(inf.vehicle||'')}" placeholder="输液载体">
+      <input id="ed-iconc" value="${esc(inf.conc||'')}" placeholder="浓度">
+      <input id="ed-ispeed" value="${esc(inf.speed||'')}" placeholder="输注速度">
+      <textarea id="ed-inote" style="min-height:80px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical" placeholder="注意事项">${esc(inf.note||'')}</textarea>
+    </div>`,
+    [{label:'取消'},{label:isNew?'新增':'保存',primary:true,onClick:()=>{
+      var ni={id:inf.id||'i_'+Date.now(),drug:peg('ed-idrug'),cat:peg('ed-icat'),vehicle:peg('ed-ivehicle'),conc:peg('ed-iconc'),speed:peg('ed-ispeed'),note:peg('ed-inote')};
+      if(!ni.drug){toast('药品名为必填');return;}
+      var cd=getCust();
+      cd.infusion=cd.infusion||[];
+      if(isNew){cd.infusion.unshift(ni);}else{var idx=cd.infusion.findIndex(x=>x.id===inf.id);if(idx>=0)cd.infusion[idx]=ni;else{cd.infOverlay=cd.infOverlay||{};cd.infOverlay[inf.id]=ni;}}
+      saveCust(cd); renderAdminList('infusion'); toast(isNew?'新增成功':'保存成功');
+    }}]
+  );
+}
+
+function showDiseaseEditor(item, index) {
+  var isNew=!item;
+  var d=item||{name:'',cat:'',desc:'',symptoms:'',diagnosis:'',treatment:''};
+  showModal(isNew?'新增疾病':'编辑疾病',
+    `<div style="display:flex;flex-direction:column;gap:10px">
+      <input id="ed-dname" value="${esc(d.name)}" placeholder="名称 *">
+      <input id="ed-dcat" value="${esc(d.cat)}" placeholder="分类 *">
+      <input id="ed-ddesc" value="${esc(d.desc||'')}" placeholder="定义">
+      <input id="ed-dsympt" value="${esc(d.symptoms||'')}" placeholder="症状">
+      <input id="ed-ddiag" value="${esc(d.diagnosis||'')}" placeholder="诊断">
+      <input id="ed-dtreat" value="${esc(d.treatment||'')}" placeholder="治疗">
+    </div>`,
+    [{label:'取消'},{label:isNew?'新增':'保存',primary:true,onClick:()=>{
+      var nd={id:d.id||'ds_'+Date.now(),name:peg('ed-dname'),cat:peg('ed-dcat'),desc:peg('ed-ddesc'),symptoms:peg('ed-dsympt'),diagnosis:peg('ed-ddiag'),treatment:peg('ed-dtreat')};
+      if(!nd.name||!nd.cat){toast('名称和分类为必填');return;}
+      var cd=getCust();
+      cd.diseases=cd.diseases||[];
+      if(isNew){cd.diseases.unshift(nd);}else{var idx=cd.diseases.findIndex(x=>x.id===d.id);if(idx>=0)cd.diseases[idx]=nd;else{cd.disOverlay=cd.disOverlay||{};cd.disOverlay[d.id]=nd;}}
+      saveCust(cd); renderAdminList('diseases'); toast(isNew?'新增成功':'保存成功');
+    }}]
   );
 }
 
 function deleteItem(type, index) {
-  showModal('确认删除', '<p style="text-align:center;font-size:14px">此操作不可恢复，确认删除？</p>', [
-    { label: '取消' },
-    { label: '删除', primary: true, onClick: () => {
-      const cd = JSON.parse(localStorage.getItem('custom_data') || '{"drugs":[],"guidelines":[]}');
-      if (type === 'drug') {
-        if (index < DRUGS.length) { toast('内置药品请直接修改 js/data.js 文件后重新部署'); return; }
-        cd.drugs.splice(index - DRUGS.length, 1);
-      } else if (type === 'allgl') {
-        if (index < GUIDELINES.length) { toast('内置指南/法规请直接修改 js/data.js 文件后重新部署'); return; }
-        cd.guidelines.splice(index - GUIDELINES.length, 1);
-      }
-      localStorage.setItem('custom_data', JSON.stringify(cd));
-      renderAdminList(type === 'drug' ? 'drugs' : 'guidelines');
-      toast('已删除');
+  showModal('确认删除','<p style="text-align:center;font-size:14px">此操作不可恢复，确认删除？</p>',[
+    {label:'取消'},{label:'删除',primary:true,onClick:()=>{
+      var cd=getCust();
+      if(type==='drug'){if(index<DRUGS.length){toast('内置药品请在data.js中删除');return;}cd.drugs.splice(index-DRUGS.length,1);}
+      else if(type==='guide'){if(index<GUIDELINES.length){toast('内置指南请在data.js中删除');return;}cd.guidelines.splice(index-GUIDELINES.length,1);}
+      saveCust(cd); renderAdminList(type==='drug'?'drugs':'guidelines'); toast('已删除');
     }}
   ]);
 }
 
-// 合并 overlay 数据到实际展示
-function updateAllData() {
-  const cd = JSON.parse(localStorage.getItem('custom_data') || '{}');
-  if (cd.drugOverlay) {
-    Object.entries(cd.drugOverlay).forEach(([id, val]) => {
-      const idx = DRUGS.findIndex(d => d.id === id);
-      if (idx >= 0) Object.assign(DRUGS[idx], val);
-    });
-  }
-  if (cd.glOverlay) {
-    Object.entries(cd.glOverlay).forEach(([id, val]) => {
-      const idx = GUIDELINES.findIndex(g => g.id === id);
-      if (idx >= 0) Object.assign(GUIDELINES[idx], val);
-    });
-    // 更新 LAWS
-    if (cd.lawOverlay) {
-      Object.entries(cd.lawOverlay).forEach(([id, val]) => {
-        const idx = LAWS.findIndex(l => l.id === id);
-        if (idx >= 0) Object.assign(LAWS[idx], val);
-      });
-    }
-  }
-}
+function getCust(){ try{return JSON.parse(localStorage.getItem('custom_data')||'{"drugs":[],"guidelines":[]}');}catch(e){return {drugs:[],guidelines:[]};} }
+function saveCust(cd){ localStorage.setItem('custom_data',JSON.stringify(cd)); }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function peg(id){ return (document.getElementById(id)?.value||'').trim(); }
 
-// 启动时合并
-(function() { updateAllData(); })();
-
-function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-function peg(id) { return (document.getElementById(id)?.value || '').trim(); }
-
-// 绑定内容管理入口
 (function bindAdminMenu(){
-  const menu=document.querySelector('#menu-edit-content');
-  if(!menu){ setTimeout(bindAdminMenu,200); return; }
-  menu.onclick=()=>{ pushScreen('admin'); initAdmin(); };
+  var m=document.querySelector('#menu-edit-content');
+  if(!m){setTimeout(bindAdminMenu,200);return;}
+  m.onclick=()=>{pushScreen('admin');initAdmin();};
 })();
