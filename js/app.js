@@ -124,6 +124,7 @@ function renderHome() {
       const nav=card.dataset.nav;
       if(nav==='compare'){ pushScreen('compare'); renderCompare(); return; }
       if(nav==='calc'){ pushScreen('calc'); renderCalc(); return; }
+      if(nav==='healthedu'){ pushScreen('healthedu'); renderHealthEdu(); return; }
       if(card.dataset.tab) { showScreen(nav); document.querySelectorAll('#kb-tabs .segment-item').forEach(t=>t.classList.toggle('active',t.dataset.tab===card.dataset.tab)); renderKnowledge(); }
       else { showScreen(nav); }
     };
@@ -350,13 +351,15 @@ function initSearch() {
     const gd=allGuides().filter(g=>g.title.toLowerCase().includes(q)||g.system.includes(q));
     const dis= DISEASE_CATEGORIES.flatMap(c=>c.subs).filter(s=>s.includes(q));
     const lw=LAWS.filter(l=>l.title.toLowerCase().includes(q));
-    const total=dr.length+dis.length+gd.length+lw.length;
+    const rd=HEALTH_EDU.filter(h=>h.title.toLowerCase().includes(q)||h.content.toLowerCase().includes(q)||h.cat.includes(q));
+    const total=dr.length+dis.length+gd.length+lw.length+rd.length;
     document.getElementById('result-count').textContent=total+'个结果';
     results.innerHTML='';
     if(dr.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title drugs">💊 药品 (${dr.length})</div>${dr.map(d=>`<div class="result-item" data-drug="${d.id}">${d.name}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')}</div>`;
     if(dis.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title diseases">🦠 疾病 (${dis.length})</div>${dis.map(d=>`<div class="result-item">${d}</div>`).join('')}</div>`;
     if(gd.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title guides">📋 指南 (${gd.length})</div>${gd.map(g=>`<div class="result-item">${g.title}</div>`).join('')}</div>`;
-    if(lw.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title guides">📜 法规 (${lw.length})</div>${lw.map(l=>`<div class="result-item">${l.title}</div>`).join('')}</div>`;
+    if(lw.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title guides">📜 法规 (${lw.length})</div>${lw.map(l=>`<div class="result-item" onclick="openGuide('${l.id}')">${l.title}</div>`).join('')}</div>`;
+    if(rd.length>0) results.innerHTML+=`<div class="result-group"><div class="result-group-title" style="color:#D97706">📖 科普教育 (${rd.length})</div>${rd.map(h=>`<div class="result-item" onclick="openHealthEdu('${h.id}')">${h.title}<span class="badge badge-blue" style="margin-left:auto;font-size:10px">${h.cat}</span></div>`).join('')}</div>`;
     if(total===0) results.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">未找到相关内容</div>';
     results.querySelectorAll('.result-item[data-drug]').forEach(r=>r.onclick=()=>{ pushScreen('detail'); renderDetail(r.dataset.drug); });
   }
@@ -390,6 +393,35 @@ function viewMyNotes() {
   me.style.display='none';
   ml.innerHTML=entries.map(([id,text])=>{ const d=findDrug(id); return d?`<div class="list-card" data-drug="${id}"><div class="icon-box">💊</div><div class="info"><div class="name">${d.name}</div><div class="desc">${text.slice(0,40)}…</div></div></div>`:''; }).join('');
   ml.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{ pushScreen('detail'); renderDetail(c.dataset.drug); }; });
+}
+
+// ═══ 科普教育 ─══
+function renderHealthEdu() {
+  const kw=(document.getElementById('he-search')?.value||'').toLowerCase();
+  const hl=document.getElementById('he-list');
+  const cats=[...new Set(HEALTH_EDU.map(h=>h.cat))];
+  let data=HEALTH_EDU;
+  if(kw) data=data.filter(h=>h.title.toLowerCase().includes(kw)||h.content.toLowerCase().includes(kw)||h.cat.includes(kw));
+  hl.innerHTML=cats.map(cat=>{
+    const items=data.filter(h=>h.cat===cat);
+    if(items.length===0) return '';
+    return `<div class="cat-card" style="margin-bottom:8px">
+      <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="true"><span class="cat-name">${cat}</span><span style="font-size:12px;color:var(--text-light)">${items.length} 篇 <span class="guide-arrow">▼</span></span></div>
+      <div class="guide-items">${items.map(h=>`<div class="guide-item" data-hid="${h.id}" style="display:flex;gap:6px;align-items:center;padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><span style="width:6px;height:6px;background:#D97706;border-radius:3px;flex-shrink:0"></span><span style="color:var(--text-body);flex:1">${h.title}</span></div>`).join('')}</div>
+    </div>`;
+  }).join('');
+  hl.querySelectorAll('.guide-item').forEach(item=>{ item.onclick=()=>openHealthEdu(item.dataset.hid); });
+  document.getElementById('he-search').oninput=renderHealthEdu;
+}
+
+function openHealthEdu(hid) {
+  const h=HEALTH_EDU.find(x=>x.id===hid); if(!h) return;
+  pushScreen('label');
+  document.getElementById('label-content').innerHTML=`
+    <div class="section-title" style="font-size:20px">${h.title}</div>
+    <div style="font-size:12px;color:var(--text-light)">${h.cat}</div>
+    <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${h.content||''}</p></div>
+  `;
 }
 
 // ═══ 启动：检查已登录 ───

@@ -1,5 +1,5 @@
 // ═══ 导航 ═══
-const SCREENS = ['home','knowledge','guidelines','favorites','detail','compare','search','profile','label','mynotes','calc'];
+const SCREENS = ['home','knowledge','guidelines','favorites','detail','compare','search','profile','label','mynotes','calc','healthedu'];
 const NAV_SCREENS = ['home','knowledge','guidelines','profile','compare'];
 let screenStack = ['home'];
 
