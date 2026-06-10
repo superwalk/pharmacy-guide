@@ -66,6 +66,7 @@ function loginSubmit() {
   setTimeout(()=>{
     const r=login(u,p);
     if(r.ok){
+      if(document.getElementById('remember-pw').checked) saveRemember(u,p);
       showLoginErr(e,'登录成功 ✓','success');
       setTimeout(()=>{ initApp(); },500);
     } else {
@@ -252,6 +253,7 @@ function openGuide(gid) {
     <div style="font-size:12px;color:var(--text-light);display:flex;gap:6px"><span class="badge badge-blue">${g.system||'法律法规'}</span><span>${g.year||''}</span></div>
     <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(g.content||'')}</p></div>
   `;
+  showEditBtn({type:'guide',id:gid});
 }
 
 // ═══ 药品详情 ───
@@ -297,6 +299,7 @@ function renderDetail(drugId) {
   document.getElementById('detail-fav').onclick=()=>{ toggleFav(drugId); renderDetail(drugId); };
   document.getElementById('detail-cmp').onclick=()=>{ addToCompare(drugId); };
   document.getElementById('detail-label').onclick=()=>{ pushScreen('label'); renderLabel(drugId); };
+  showEditBtn({type:'drug',id:drugId});
   document.getElementById('edit-note').onclick=()=>{ showModal('编辑备注',`<textarea id="note-textarea" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical">${note}</textarea>`,[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const t=document.getElementById('note-textarea').value; saveNote(drugId,t); renderDetail(drugId); }}]); };
 }
 
@@ -486,6 +489,8 @@ function openHealthEdu(hid) {
     <div style="font-size:12px;color:var(--text-light)">${h.cat}</div>
     <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(h.content||'')}</p></div>
   `;
+  showEditBtn({type:'edu',id:hid});
+  showEditBtn({type:'guide',id:gid});
 }
 
 // ═══ 输液配伍 ─══
@@ -551,6 +556,7 @@ function openDisease(name) {
   if(guides.length>0) html+=`<div class="section-title" style="margin-top:8px">📋 相关指南</div>`+guides.slice(0,3).map(g=>`<div class="list-card" onclick="openGuide('${g.id}')"><div class="icon-box">📋</div><div class="info"><div class="name">${g.title}</div><div class="desc">${g.system} · ${g.year}</div></div></div>`).join('');
   if(!d && drugs.length===0) html+='<div style="text-align:center;padding:40px;color:var(--text-light)">该疾病暂未收录详细信息</div>';
   document.getElementById('label-content').innerHTML=html;
+  showEditBtn({type:'disease',id:d.id});
 }
 
 function renderMedEdu(){
@@ -572,10 +578,29 @@ function openMedEdu(mid){
   var m=MED_EDU.find(function(x){return x.id===mid;}); if(!m) return;
   pushScreen('label');
   document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">'+m.drug+'</div><div style="font-size:12px;color:var(--text-light);margin-bottom:12px"><span class="badge badge-blue">'+m.cat+'</span></div><div class="info-card"><div class="info-label">交代要点</div><div class="info-value" style="font-size:16px;font-weight:600;color:var(--accent)">'+m.key+'</div></div><div class="info-card"><div class="info-label">详细说明</div><div class="info-value" style="white-space:pre-wrap">'+m.detail+'</div></div>';
+  showEditBtn({type:'med',id:mid});
+}
+
+var _currentEditItem=null;
+function showEditBtn(item){ _currentEditItem=item; var btn=document.getElementById('label-edit-btn'); if(btn&&isEditor()) btn.style.display='inline'; }
+function editCurrentItem(){
+  if(!_currentEditItem) return;
+  var t=_currentEditItem.type;
+  var id=_currentEditItem.id;
+  if(t==='drug'){ var d=allDrugs().find(function(x){return x.id===id;}); if(d) showDrugEditor(d, allDrugs().indexOf(d)); }
+  else if(t==='guide'){ var g=allGuides().find(function(x){return x.id===id;})||LAWS.find(function(x){return x.id===id;}); if(g) showGuidelineEditor(g, allGuides().indexOf(g)); }
+  else if(t==='disease'){ var ds=DISEASES.find(function(x){return x.id===id;}); if(ds) showDiseaseEditor(ds, DISEASES.indexOf(ds)); }
+  else if(t==='edu'){ var h=HEALTH_EDU.find(function(x){return x.id===id;}); if(h) showEduEditor(h, HEALTH_EDU.indexOf(h)); }
+  else if(t==='inf'){ var inf=INFUSION_DATA.find(function(x){return x.id===id;}); if(inf) showInfEditor(inf, INFUSION_DATA.indexOf(inf)); }
+  else if(t==='med'){ var m=MED_EDU.find(function(x){return x.id===id;}); if(m) toast('用药教育请在内容管理中编辑'); }
 }
 
 // ═══ 启动：检查已登录 ───
 (function(){
-  const savedUser=localStorage.getItem('currentUser');
-  if(savedUser){ const u=findUser(savedUser); if(u){ currentUser=u; setTimeout(initApp,200); } }
+  // 先尝试记住的密码登录
+  var rem=loadRemember();
+  if(rem){ var r=login(rem.u,rem.p); if(r.ok){ setTimeout(initApp,200); return; } else { clearRemember(); } }
+  // 再尝试上次登录的session
+  var savedUser=localStorage.getItem('currentUser');
+  if(savedUser){ var u=findUser(savedUser); if(u){ currentUser=u; setTimeout(initApp,200); } }
 })();

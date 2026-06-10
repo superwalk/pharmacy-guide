@@ -125,6 +125,23 @@ function logout() {
   localStorage.removeItem('currentUser');
 }
 
+function saveRemember(username, password) {
+  var data={u:username, p:password, exp:Date.now()+15*24*3600*1000};
+  localStorage.setItem('remember_login', JSON.stringify(data));
+}
+
+function loadRemember() {
+  try{
+    var data=JSON.parse(localStorage.getItem('remember_login'));
+    if(!data||Date.now()>data.exp) return null;
+    return data;
+  }catch(e){return null;}
+}
+
+function clearRemember() {
+  localStorage.removeItem('remember_login');
+}
+
 function isEditor() { return currentUser && (currentUser.role === 'admin' || currentUser.role === 'editor'); }
 
 function updateNickname(newName) {
