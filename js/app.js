@@ -149,13 +149,15 @@ function renderKnowledge() {
     let cats=DRUG_CATEGORIES;
     if(kw) cats=cats.filter(c=>c.name.includes(kw)||c.subs.some(s=>s.includes(kw)));
     kb.innerHTML=cats.map(c=>`
-      <div class="cat-card" data-cat="${c.id}">
-        <div class="cat-header"><span class="cat-name">${c.name}</span><span class="cat-arrow">›</span></div>
-        <div class="cat-subs">${c.subs.map(s=>`<span class="cat-sub" data-sub="${s}">${s}</span>`).join('')}</div>
+      <div class="cat-card">
+        <div class="cat-header" onclick="showDrugList('cat','${c.id}')"><span class="cat-name">${c.name}</span><span class="cat-arrow">›</span></div>
+        <div class="cat-subs">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();showDrugList('sub','${s}')">${s}</span>`).join('')}</div>
       </div>
     `).join('');
-    kb.querySelectorAll('.cat-sub').forEach(s=>{ s.onclick=e=>{ e.stopPropagation(); const sub=s.dataset.sub; const drugs=allDrugs().filter(d=>d.subcategory===sub); if(drugs.length>0){ pushScreen('detail'); renderDetail(drugs[0].id); } }; });
-    kb.querySelectorAll('.cat-card').forEach(c=>{ c.onclick=()=>{ const catName=c.dataset.cat; const drugs=allDrugs().filter(d=>d.category.includes(DRUG_CATEGORIES.find(x=>x.id===catName)?.name||'')); if(drugs.length>0){ pushScreen('detail'); renderDetail(drugs[0].id); } }; });
+    if(kw){
+      const dmatches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw));
+      if(dmatches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配药品 (${dmatches.length})</div>`+dmatches.map(d=>`<div class="list-card" onclick="pushScreen('detail');renderDetail('${d.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${d.name}</div><div class="desc">${d.category} · ${d.indications.slice(0,30)}…</div></div></div>`).join('');
+    }
   } else {
     let cats= DISEASE_CATEGORIES;
     if(kw) cats=cats.filter(c=>c.name.includes(kw)||c.subs.some(s=>s.includes(kw)));
@@ -166,9 +168,23 @@ function renderKnowledge() {
   }
 
   document.getElementById('kb-search').oninput=renderKnowledge;
-
-  // 指南搜索
   const gs=document.getElementById('guide-search'); if(gs) gs.oninput=renderGuidelines;
+}
+
+function showDrugList(type,id){
+  let drugs;
+  if(type==='cat'){
+    const cat=DRUG_CATEGORIES.find(c=>c.id===id);
+    drugs=allDrugs().filter(d=>d.category.includes(cat?.name||''));
+  } else {
+    drugs=allDrugs().filter(d=>d.subcategory===id);
+  }
+  if(drugs.length===0){ toast('该分类下暂无药品'); return; }
+  pushScreen('search');
+  const label=type==='cat'?DRUG_CATEGORIES.find(c=>c.id===id)?.name||id:id;
+  document.getElementById('search-results-input').value=label;
+  const sr=document.getElementById('search-results');
+  sr.innerHTML=`<div class="result-group"><div class="result-group-title drugs">💊 ${label} (${drugs.length})</div>`+drugs.map(d=>`<div class="result-item" onclick="pushScreen('detail');renderDetail('${d.id}')">${d.name}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')+`</div>`;
 }
 
 // ═══ 指南法规 ───
