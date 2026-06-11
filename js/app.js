@@ -117,12 +117,18 @@ function loginSubmit() {
       b.textContent='登 录'; b.style.opacity='1';
       if(r.msg.includes('不存在')){
         showLoginErr(e,'❌ 用户「'+u+'」不存在，请检查用户名是否正确','error');
+        toast('❌ 用户「'+u+'」不存在');
         document.getElementById('login-user').select();
+      } else if(r.msg.includes('锁定')){
+        showLoginErr(e,'⚠️ '+r.msg,'warn');
+        toast('🔒 账户已锁定，请稍后再试');
       } else if(r.msg.includes('密码')){
         showLoginErr(e,'❌ 密码错误，请重新输入','error');
+        toast('❌ 密码错误，请重新输入');
         document.getElementById('login-pw').select();
       } else {
         showLoginErr(e,'⚠️ '+r.msg,'warn');
+        toast(r.msg);
       }
     }
   },400);
