@@ -497,6 +497,9 @@ function renderProfile() {
   const roleMap={admin:'管理员',editor:'内容编辑',user:'普通用户'};
   document.getElementById('profile-role').textContent=roleMap[currentUser.role]||'普通用户';
   document.getElementById('menu-edit-content').style.display=isEditor()?'flex':'none';
+  // 用户管理仅admin可见
+  var um=document.getElementById('menu-user-mgmt');
+  if(um) um.style.display=(currentUser.role==='admin')?'flex':'none';
 }
 function initProfileMenus() {
   document.getElementById('edit-nickname-btn').onclick=()=>{ showModal('修改昵称','<input id="new-nickname" placeholder="输入新昵称" value="'+currentUser.nickname+'">',[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const n=document.getElementById('new-nickname').value.trim(); if(n) updateNickname(n); }}]); };
@@ -505,6 +508,8 @@ function initProfileMenus() {
   document.getElementById('menu-logout').onclick=()=>{ logout(); location.reload(); };
   // 使用帮助
   document.getElementById('menu-guide').onclick=()=>{ pushScreen('label'); var guide=isEditor()?ADMIN_GUIDE:USER_GUIDE; document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">📖 使用帮助</div><div class="label-doc" style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">'+guide+'</div>'; };
+  // 用户管理（仅admin）
+  document.getElementById('menu-user-mgmt').onclick=()=>{ pushScreen('label'); renderUserListInLabel(); };
   // 编辑记录菜单（函数在 admin.js 中定义）
   var elog=document.getElementById('menu-edit-log');
   if(elog) elog.onclick=()=>{ showEditLogs(); };
@@ -678,6 +683,74 @@ function editCurrentItem(){
 }
 
 // 查看指南全文
+// 用户管理（admin专用，在我的→用户管理中显示）
+function renderUserListInLabel(){
+  var users=getUsers();
+  var html='<div class="section-title" style="font-size:22px">👥 用户管理</div>';
+  html+='<button class="btn btn-primary btn-full" style="margin:8px 0" id="um-add-btn">+ 新增用户</button>';
+  html+='<div id="um-list"></div>';
+  document.getElementById('label-content').innerHTML=html;
+  document.getElementById('um-add-btn').onclick=function(){ showUserEditor(); };
+  refreshUMList();
+}
+
+function refreshUMList(){
+  var users=getUsers();
+  var roleLabel={admin:'管理员',editor:'编辑',user:'普通用户'};
+  var container=document.getElementById('um-list');
+  if(!container) return;
+  container.innerHTML='';
+  if(users.length===0){ container.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">暂无用户</div>'; return; }
+  users.forEach(function(u){
+    var row=document.createElement('div');
+    row.className='list-card';
+    row.style.cssText='display:flex;align-items:center;gap:8px';
+    row.innerHTML='<div class="icon-box">👤</div><div class="info" style="flex:1"><div class="name">'+escHTML(u.username)+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+escHTML(u.nickname||'')+'</div></div><button class="btn btn-sm btn-outline" style="margin-right:4px">编辑</button><button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)">删除</button>';
+    row.querySelectorAll('button')[0].onclick=function(){ showUserEditor(u); };
+    row.querySelectorAll('button')[1].onclick=function(){
+      if(u.username===currentUser.username){ toast('不能删除自己'); return; }
+      showModal('确认删除','<p>确定删除用户 <b>'+escHTML(u.username)+'</b>？</p>',[{label:'取消'},{label:'删除',primary:true,style:'background:var(--danger)',onClick:function(){
+        removeUser(u.username);
+        addEditLog('用户',u.username,'删除');
+        refreshUMList();
+        toast('已删除');
+      }}]);
+    };
+    container.appendChild(row);
+  });
+}
+
+function showUserEditor(user){
+  var isNew=!user;
+  var u=user||{};
+  showModal(isNew?'新增用户':'编辑用户',
+    '<div style="display:flex;flex-direction:column;gap:8px">'+
+    '<input id="ed-uname" placeholder="用户名" value="'+escHTML(u.username||'')+'" '+(isNew?'':'disabled')+'>'+
+    '<input id="ed-upass" placeholder="密码" value="'+escHTML(u.password||'')+'">'+
+    '<input id="ed-unick" placeholder="昵称" value="'+escHTML(u.nickname||'')+'">'+
+    '<select id="ed-urole"><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>编辑</option><option value="admin" '+(u.role==='admin'?'selected':'')+'>管理员</option></select>'+
+    '</div>',
+    [{label:'取消'},{label:'保存',primary:true,onClick:function(){
+      var uname=document.getElementById('ed-uname').value.trim();
+      var upass=document.getElementById('ed-upass').value.trim();
+      var unick=document.getElementById('ed-unick').value.trim();
+      var urole=document.getElementById('ed-urole').value;
+      if(!uname||!upass){ toast('用户名和密码不能为空'); return; }
+      if(isNew){
+        var r=addUser({username:uname,password:upass,nickname:unick||uname,role:urole||'user'});
+        if(!r.ok){ toast(r.msg); return; }
+        addEditLog('用户',uname,'新增');
+      } else {
+        updateUser(u.username,{password:upass,nickname:unick||u.nickname,role:urole||'user'});
+        addEditLog('用户',u.username,'编辑');
+      }
+      refreshUMList(); toast(isNew?'新增成功':'保存成功');
+    }}]
+  );
+}
+
+function escHTML(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 function viewGuideFull(gid){
   var g=allGuides().find(function(x){return x.id===gid;});
   if(!g){ toast('未找到指南'); return; }
