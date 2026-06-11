@@ -287,7 +287,21 @@ function openGuide(gid) {
     <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(g.content||'')}</p></div>
   `;
   var md=extractMentionedDrugs(g.content||'');
-  if(md.length>0) document.getElementById('label-content').insertAdjacentHTML('beforeend','<div class="section-title" style="margin-top:8px">💊 指南提及药品</div>'+md.map(function(d){return '<div class="list-card" onclick="pushScreen("detail");renderDetail("'+d.id+'\")" style="cursor:pointer"><div class="icon-box">💊</div><div class="info"><div class="name">'+d.name+'</div><div class="desc">'+d.category+'</div></div></div>';}).join(''));
+  if(md.length>0){
+    var titleEl=document.createElement('div');
+    titleEl.className='section-title';
+    titleEl.style.marginTop='8px';
+    titleEl.textContent='💊 指南提及药品';
+    document.getElementById('label-content').appendChild(titleEl);
+    md.forEach(function(d){
+      var card=document.createElement('div');
+      card.className='list-card';
+      card.style.cursor='pointer';
+      card.innerHTML='<div class="icon-box">💊</div><div class="info"><div class="name">'+d.name+'</div><div class="desc">'+d.category+'</div></div>';
+      card.onclick=function(){ pushScreen('detail'); renderDetail(d.id); };
+      document.getElementById('label-content').appendChild(card);
+    });
+  }
   showEditBtn({type:'guide',id:gid}); addRecent(gid,'guide');
   var fnBtn=document.createElement('button');
   fnBtn.className='btn btn-outline btn-sm';
