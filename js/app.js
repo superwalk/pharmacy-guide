@@ -545,7 +545,7 @@ function showChangelog(){
     var logs=getChangelog();
     showModal('编辑更新日志',
       '<p style="font-size:12px;color:var(--text-light);margin-bottom:8px">每行一条，日期格式：YYYY-MM-DD 内容</p>'
-      +'<textarea id="changelog-editor" style="width:100%;min-height:200px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:13px;resize:vertical">'+esc(logs.join('\n'))+'</textarea>',
+      +'<textarea id="changelog-editor" style="width:100%;min-height:200px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:13px;resize:vertical">'+escHTML(logs.join('\n'))+'</textarea>',
       [{label:'取消'},{label:'保存',primary:true,onClick:function(){
         var val=document.getElementById('changelog-editor').value.trim();
         if(!val){ toast('内容不能为空'); return; }
@@ -575,8 +575,9 @@ function initProfileMenus() {
   // 编辑记录菜单（函数在 admin.js 中定义）
   var elog=document.getElementById('menu-edit-log');
   if(elog) elog.onclick=()=>{ showEditLogs(); };
-  // 版本更新
-  document.getElementById('menu-changelog').onclick=showChangelog;
+  // 更新日志
+  var clBtn=document.getElementById('menu-changelog');
+  if(clBtn) clBtn.addEventListener('click',showChangelog);
   document.querySelectorAll('.menu-item[data-nav]').forEach(m=>{ m.onclick=()=>showScreen(m.dataset.nav); });
 }
 
