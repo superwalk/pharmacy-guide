@@ -632,6 +632,86 @@ function doSyncOneUser(user, token) {
   });
 }
 
+// ═══ 单独导出药品/疾病到GitHub ═══
+function syncItemToGitHub(item) {
+  var token = localStorage.getItem(GITHUB_TOKEN_KEY);
+  if (!token) {
+    showModal('GitHub 令牌',
+      '<p style="font-size:12px;color:var(--text-light);margin-bottom:8px">需要先设置 GitHub Token 才能同步。</p>'
+      +'<input id="github-token-input" type="password" placeholder="输入 GitHub Token" style="width:100%">'
+      +'<label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--text-light)"><input type="checkbox" id="save-token-cb" checked> 记住此令牌</label>',
+      [{label:'取消'},{label:'确认同步',primary:true,onClick:function(){
+        var tk = document.getElementById('github-token-input').value.trim();
+        if (!tk) { toast('请输入令牌'); return; }
+        if (document.getElementById('save-token-cb').checked) {
+          localStorage.setItem(GITHUB_TOKEN_KEY, tk);
+        }
+        doSyncItem(item, tk);
+      }}]
+    );
+    return;
+  }
+  doSyncItem(item, token);
+}
+
+function doSyncItem(item, token) {
+  var ctName = '';
+  var ctData = null;
+  if (item.type === 'drug') {
+    var d = allDrugs().find(function(x){return x.id===item.id;});
+    if (!d) { toast('药品不存在'); return; }
+    ctName = d.name;
+    ctData = {name:d.name, category:d.category, subcategory:d.subcategory||'', type:d.type, indications:d.indications||'', contraindications:d.contraindications||'', adverse:d.adverse||'', dosage:d.dosage||'', storage:d.storage||'', interactions:d.interactions||''};
+  } else if (item.type === 'disease') {
+    var ds = DISEASES.find(function(x){return x.id===item.id;});
+    if (!ds) { toast('疾病不存在'); return; }
+    ctName = ds.name;
+    ctData = {name:ds.name, cat:ds.cat, desc:ds.desc||'', symptoms:ds.symptoms||'', diagnosis:ds.diagnosis||'', treatment:ds.treatment||''};
+  } else {
+    toast('不支持的类型'); return;
+  }
+
+  var exp = {
+    exportTime: new Date().toISOString(),
+    appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.0',
+    item_type: item.type,
+    item: ctData
+  };
+
+  var now = new Date();
+  var ts = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+'-'+String(now.getMinutes()).padStart(2,'0');
+  var filename = 'data/exports/'+item.type+'_'+ctName.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g,'_')+'_'+ts+'.json';
+  var content = btoa(unescape(encodeURIComponent(JSON.stringify(exp, null, 2))));
+
+  toast('⏳ 正在导出 '+ctName+' 到仓库…');
+
+  fetch('https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+filename+'?ref='+GITHUB_BRANCH, {
+    headers: { 'Authorization': 'Bearer '+token, 'Accept': 'application/vnd.github.v3+json' }
+  }).then(function(r){
+    return r.json().then(function(body){ return {status: r.status, sha: body.sha}; });
+  }).then(function(result){
+    var body = {
+      message: '📱 导出'+(item.type==='drug'?'药品':'疾病')+'：'+ctName,
+      content: content,
+      branch: GITHUB_BRANCH
+    };
+    if (result.sha) body.sha = result.sha;
+    return fetch('https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+filename, {
+      method: 'PUT',
+      headers: { 'Authorization': 'Bearer '+token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+      body: JSON.stringify(body)
+    });
+  }).then(function(r){
+    if (r.status === 201 || r.status === 200) {
+      toast('✅ '+ctName+' 已导出到仓库');
+    } else {
+      return r.json().then(function(e){ throw new Error(e.message || '同步失败'); });
+    }
+  }).catch(function(e){
+    toast('❌ 同步失败：'+e.message);
+  });
+}
+
 function buildExportData() {
   try {
     var users = [];

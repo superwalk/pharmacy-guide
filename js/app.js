@@ -303,7 +303,14 @@ function renderKnowledge() {
 
 function bindGuideSearch(){
   var gs=document.getElementById('guide-search');
-  if(gs){ gs.oninput=renderGuidelines; }
+  if(gs && !gs._guideBound){
+    gs._guideBound = true;
+    gs.addEventListener('input', renderGuidelines);
+    // 兼容某些浏览器 oninput 不触发的情况
+    gs.addEventListener('keyup', function(e){
+      if(e.key==='Backspace'||e.key==='Delete'||e.key.length===1) renderGuidelines();
+    });
+  }
 }
 
 function showDrugList(type,id){
@@ -328,11 +335,14 @@ function renderGuidelines() {
   bindGuideSearch();
   const kw=(document.getElementById('guide-search')?.value||'').toLowerCase();
   const gl=document.getElementById('guide-list');
+  if(!gl) return;
   let systems=getGuideSystems();
   if(kw){
     systems=systems.map(function(s){
-      return {system:s.system,icon:s.icon,items:s.items.filter(function(g){return g.title.toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||g.system.toLowerCase().indexOf(kw)>=0||(g.py||'').toLowerCase().indexOf(kw)>=0||genPy(g.title).toLowerCase().indexOf(kw)>=0||genPy(g.system).toLowerCase().indexOf(kw)>=0;})};
+      return {system:s.system,icon:s.icon,items:s.items.filter(function(g){return (g.title||'').toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||(g.system||'').toLowerCase().indexOf(kw)>=0||(g.py||'').toLowerCase().indexOf(kw)>=0||genPy(g.title||'').toLowerCase().indexOf(kw)>=0||genPy(g.system||'').toLowerCase().indexOf(kw)>=0;});};
     }).filter(function(s){return s.items.length>0;});
+  } else if(!kw){
+    // 搜索框清空后恢复默认全部展开(折叠)状态
   }
   gl.innerHTML=systems.map((s,i)=>`
     <div class="cat-card" style="margin-bottom:8px">
@@ -427,6 +437,7 @@ function getGuideSystems() {
 function renderDetail(drugId) {
   const d=findDrug(drugId); if(!d) return;
   addRecent(drugId);
+  _currentEditItem = {type:'drug', id:drugId};
   const fav=isFav(drugId);
   const notes=getNotes();
   const note=notes[drugId]||'';
@@ -441,13 +452,17 @@ function renderDetail(drugId) {
         <button class="btn btn-outline" id="detail-cmp">⚖️ 加入对比</button>
         <button class="btn btn-primary" id="detail-label">📄 说明书</button>
       </div>
+      ${isEditor()?`<div style="display:flex;justify-content:flex-end;align-items:center;gap:6px"><button class="btn btn-sm btn-outline" id="export-detail-btn" title="上传到仓库">☁️</button><button class="btn btn-sm btn-outline" id="edit-detail-btn">编辑</button></div>`:''}
     </div>
     <div id="detail-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
   document.getElementById('detail-fav').onclick=()=>{ toggleFav(drugId); renderDetail(drugId); };
   document.getElementById('detail-cmp').onclick=()=>{ addToCompare(drugId); };
   document.getElementById('detail-label').onclick=()=>{ pushScreen('label'); renderLabel(drugId); };
-  showEditBtn({type:'drug',id:drugId});
+  if(isEditor()){
+    document.getElementById('edit-detail-btn').onclick = editCurrentItem;
+    document.getElementById('export-detail-btn').onclick = function(){ syncItemToGitHub({type:'drug',id:drugId}); };
+  }
   // 按需加载详情
   loadDrugDetail(drugId, function(full) {
     var detail = full || d;
@@ -842,13 +857,14 @@ function showDiseaseList(catName) {
 
 function openDisease(name) {
   const d=DISEASES.find(x=>x.name===name);
+  if(d) _currentEditItem = {type:'disease', id:d.id};
   const drugs=allDrugs().filter(dr=>dr.indications.toLowerCase().includes(name.slice(0,3).toLowerCase())||dr.category.toLowerCase().includes(name.slice(0,3)));
   const guides=allGuides().filter(g=>g.title.includes(name)||(g.content&&g.content.includes(name)));
   if(!d && drugs.length===0 && guides.length===0){ toast('暂无数据'); return; }
   pushScreen('label');
   let html='<div class="section-title" style="font-size:22px">'+name+'</div>';
   if(d) html+=`
-    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span></span>${isEditor()?'<button class="btn btn-sm btn-outline" onclick="editCurrentItem()">编辑</button>':''}</div>
+    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span></span>${isEditor()?'<span style="display:flex;gap:6px"><button class="btn btn-sm btn-outline" onclick="syncItemToGitHub({type:\'disease\',id:\''+d.id+'\'})" title="上传到仓库">☁️</button><button class="btn btn-sm btn-outline" onclick="editCurrentItem()">编辑</button></span>':''}</div>
     <div id="disease-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>`;
   if(drugs.length>0) html+=`<div class="section-title" style="margin-top:8px">💊 相关药品 (${drugs.length})</div>`+drugs.slice(0,6).map(dr=>`<div class="list-card" onclick="pushScreen('detail');renderDetail('${dr.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${dr.name}</div><div class="desc">${dr.category} · ${(dr.indications||'').slice(0,30)}…</div></div></div>`).join('');
   if(guides.length>0) html+=`<div class="section-title" style="margin-top:8px">📋 相关指南</div>`+guides.slice(0,3).map(g=>`<div class="list-card" onclick="openGuide('${g.id}')"><div class="icon-box">📋</div><div class="info"><div class="name">${g.title}</div><div class="desc">${g.system} · ${g.year}</div></div></div>`).join('');
