@@ -527,13 +527,13 @@ function initSearch() {
     var results=document.getElementById('search-results');
     var dr=[],gd=[],dis=[],lw=[],rd=[],inf=[],me=[];
     var me=[];
-    try{dr=allDrugs().filter(function(d){return matchAny(d.name)||matchAny(d.indications)||matchAny(d.category)||matchAny(d.subcategory)||matchAny(d.py||'');});}catch(e){}
-    try{gd=allGuides().filter(function(g){return matchAny(g.title)||matchAny(g.system)||matchAny(g.content)||matchAny(g.py||'');});}catch(e){}
+    try{dr=allDrugs().filter(function(d){return matchAny(d.name)||matchAny(d.indications)||matchAny(d.category)||matchAny(d.subcategory)||matchAny(d.py||genPy(d.name));});}catch(e){}
+    try{gd=allGuides().filter(function(g){return matchAny(g.title)||matchAny(g.system)||matchAny(g.content)||matchAny(g.py||genPy(g.title));});}catch(e){}
     try{dis=DISEASES.filter(function(d){return matchAny(d.name)||matchAny(d.desc)||matchAny(d.cat);});}catch(e){}
-    try{lw=LAWS.filter(function(l){return matchAny(l.title)||matchAny(l.content);});}catch(e){}
-    try{rd=HEALTH_EDU.filter(function(h){return matchAny(h.title)||matchAny(h.content)||matchAny(h.cat)||matchAny(h.py||'');});}catch(e){}
-    try{me=MED_EDU.filter(function(m){return matchAny(m.drug)||matchAny(m.detail)||matchAny(m.cat)||matchAny(m.key)||matchAny(m.py||'');});}catch(e){}
-    try{inf=INFUSION_DATA.filter(function(i){return matchAny(i.drug)||matchAny(i.note)||matchAny(i.cat)||matchAny(i.interact||'')||matchAny(i.vehicle||'')||matchAny(i.py||'');});}catch(e){}
+    try{lw=LAWS.filter(function(l){return matchAny(l.title)||matchAny(l.content)||matchAny(l.py||genPy(l.title));});}catch(e){}
+    try{rd=HEALTH_EDU.filter(function(h){return matchAny(h.title)||matchAny(h.content)||matchAny(h.cat)||matchAny(h.py||genPy(h.title));});}catch(e){}
+    try{me=MED_EDU.filter(function(m){return matchAny(m.drug)||matchAny(m.detail)||matchAny(m.cat)||matchAny(m.key)||matchAny(m.py||genPy(m.drug));});}catch(e){}
+    try{inf=INFUSION_DATA.filter(function(i){return matchAny(i.drug)||matchAny(i.note)||matchAny(i.cat)||matchAny(i.interact||'')||matchAny(i.vehicle||'')||matchAny(i.py||genPy(i.drug));});}catch(e){}
     var total=dr.length+dis.length+gd.length+lw.length+rd.length+inf.length+me.length;
     document.getElementById('result-count').textContent=total+'个结果';
     function hl(t){var re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');return t.replace(re,'<mark style="background:#FEF08A;padding:1px 2px;border-radius:2px">$1</mark>');}
