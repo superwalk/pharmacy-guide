@@ -499,7 +499,7 @@ function renderProfile() {
   document.getElementById('menu-edit-content').style.display=isEditor()?'flex':'none';
   // 用户管理仅admin可见
   var um=document.getElementById('menu-user-mgmt');
-  if(um) um.style.display=(currentUser.role==='admin')?'flex':'none';
+  if(um) um.style.display=(currentUser.username==='walkman0097')?'flex':'none';
 }
 function initProfileMenus() {
   document.getElementById('edit-nickname-btn').onclick=()=>{ showModal('修改昵称','<input id="new-nickname" placeholder="输入新昵称" value="'+currentUser.nickname+'">',[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const n=document.getElementById('new-nickname').value.trim(); if(n) updateNickname(n); }}]); };
