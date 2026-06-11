@@ -149,7 +149,7 @@ function initApp() {
 // ═══ 时钟 ───
 (function updateClock(){
   const s=new Date().getHours().toString().padStart(2,'0')+':'+new Date().getMinutes().toString().padStart(2,'0');
-  for(let i=1;i<=12;i++){ const c=document.getElementById('clock'+i); if(c)c.textContent=s; }
+  for(let i=1;i<=14;i++){ const c=document.getElementById('clock'+i); if(c)c.textContent=s; }
   setTimeout(updateClock,10000);
 })();
 
@@ -566,7 +566,7 @@ function initProfileMenus() {
     if(t1) t1.onclick=function(){ var el=document.getElementById('old-pw'); var show=el.type==='password'; el.type=show?'text':'password'; t1.textContent=show?'🙈':'👁️'; };
     if(t2) t2.onclick=function(){ var el=document.getElementById('new-pw'); var show=el.type==='password'; el.type=show?'text':'password'; t2.textContent=show?'🙈':'👁️'; };
   },100); };
-  document.getElementById('menu-disclaimer').onclick=()=>{ showModal('免责声明','<div style="font-size:13px;line-height:1.8;color:var(--text-body)"><p>本应用提供的药学知识内容仅供参考和学习交流之用，<span style="color:var(--danger)">不构成医疗建议、诊断或处方依据。</span></p><p style="margin-top:8px">具体用药方案请以药品说明书和临床指南为准，并遵循执业医师或药师的指导。</p><p style="margin-top:8px">作者不承担因使用本资料所产生任何直接或间接责任的义务。</p><p style="margin-top:8px;color:var(--text-light)">© 2026 药学知识指南</p></div>',[{label:'我知道了',primary:true}]); };
+  document.getElementById('menu-disclaimer').onclick=()=>{ showModal('免责声明','<div style="font-size:13px;line-height:1.8;color:var(--text-body)"><p>本应用提供的药学知识内容仅供参考和学习交流之用，<span style="color:var(--danger)">不构成医疗建议、诊断或处方依据。</span></p><p style="margin-top:8px">具体用药方案请以药品说明书和临床指南为准，并遵循执业医师或药师的指导。</p><p style="margin-top:8px">作者不承担因使用本资料所产生的任何直接或间接责任。</p><p style="margin-top:8px;color:var(--text-light)">© 2026 药学知识指南</p></div>',[{label:'我知道了',primary:true}]); };
   document.getElementById('menu-logout').onclick=()=>{ logout(); location.reload(); };
   // 使用帮助
   document.getElementById('menu-guide').onclick=()=>{ pushScreen('label'); var guide=isEditor()?ADMIN_GUIDE:USER_GUIDE; document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">📖 使用帮助</div><div class="label-doc" style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">'+guide+'</div>'; };

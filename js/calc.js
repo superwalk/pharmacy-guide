@@ -117,9 +117,9 @@ function renderCalc() {
 
 function calcCard(title,id,desc,body){ return `
 <div class="detail-hero" style="margin-bottom:14px" id="calc-${id}">
-  <div style="font-size:16px;font-family:var(--font-heading);font-weight:700;color:var(--primary-dark);cursor:pointer" onclick="toggleCalcSection(this,'calc-${id}')">${title} <span class="calc-arrow" style="float:right;font-size:12px">▼</span></div>
+  <div style="font-size:16px;font-family:var(--font-heading);font-weight:700;color:var(--primary-dark);cursor:pointer" onclick="toggleCalcSection(this,'calc-${id}')">${title} <span class="calc-arrow" style="float:right;font-size:12px">▶</span></div>
   <div style="font-size:11px;color:var(--text-light);margin-bottom:6px">${desc}</div>
-  <div class="calc-body">${body}</div>
+  <div class="calc-body" style="display:none">${body}</div>
 </div>`;}
 
 function toggleCalcSection(header,id){
