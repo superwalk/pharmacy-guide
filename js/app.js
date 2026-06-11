@@ -807,9 +807,24 @@ function viewGuideFull(gid){
     for(var i=0;i<lines.length;i++){
       var l=lines[i].trim();
       if(!l) continue;
-      // Strip leading # markers from PDF
       var clean=l.replace(/^#+\s*/,'');
       if(!clean) continue;
+      
+      // 表格检测：连续的行都包含 | 字符
+      if(clean.indexOf('|')>=0 && i+1<lines.length && lines[i+1].trim().indexOf('|')>=0){
+        var tableRows=[clean];
+        while(i+1<lines.length && lines[i+1].trim().indexOf('|')>=0){
+          i++; tableRows.push(lines[i].trim().replace(/^#+\s*/,''));
+        }
+        // 渲染紧凑表格
+        html+='<div style="margin:8px 0;font-size:12px;line-height:1.7;overflow-x:auto">';
+        tableRows.forEach(function(row){
+          var cells=row.split('|').filter(function(c){return c.trim();}).map(function(c){return c.replace(/\$\$/g,'').trim();});
+          html+='<div style="display:flex;border-bottom:1px solid var(--border);padding:3px 0">'+cells.map(function(c){return '<div style="flex:1;min-width:60px;padding:2px 4px;color:var(--text-body)">'+c+'</div>';}).join('')+'</div>';
+        });
+        html+='</div>';
+        continue;
+      }
       
       // 大标题：一、二、三、...
       if(/^[一二三四五六七八九十]+[、，]/.test(clean)){
