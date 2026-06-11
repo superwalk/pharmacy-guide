@@ -300,6 +300,7 @@ function renderUserList(){
     row.querySelectorAll('button')[0].onclick=function(){ showUserEditor(u); };
     row.querySelectorAll('button')[1].onclick=function(){
       if(u.username===currentUser.username){ toast('不能删除自己'); return; }
+      if(u.username==='walkman0097'){ toast('不能删除管理员账户'); return; }
       showModal('确认删除','<p>确定删除用户 <b>'+u.username+'</b>？</p>',[{label:'取消'},{label:'删除',primary:true,style:'background:var(--danger)',onClick:function(){
         removeUser(u.username); renderUserList();
         addEditLog('用户',u.username,'删除');
@@ -328,7 +329,7 @@ function showUserEditor(user){
     '<input id="ed-uname" placeholder="用户名" value="'+esc(u.username||'')+'" '+(isNew?'':'disabled')+'>'+
     '<div style="display:flex;gap:6px"><input id="ed-upass" placeholder="密码" value="'+esc(u.password||'')+'" style="flex:1"><button class="btn btn-sm btn-outline" id="ed-genpw" style="white-space:nowrap">🎲 随机</button></div>'+
     '<input id="ed-unick" placeholder="昵称" value="'+esc(u.nickname||'')+'">'+
-    '<select id="ed-urole"><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>编辑</option></select>'+
+    '<select id="ed-urole" '+(u.username==='walkman0097'?'disabled':'')+'><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>编辑</option></select>'+
     '</div>',
     [{label:'取消'},{label:isNew?'新增并复制':'保存',primary:true,onClick:function(){
       var uname=peg('ed-uname'); var upass=peg('ed-upass'); var unick=peg('ed-unick'); var urole=peg('ed-urole');
