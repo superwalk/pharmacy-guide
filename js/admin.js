@@ -173,7 +173,7 @@ function showDrugEditor(drug, index) {
       if(!nd.name||!nd.category||!nd.indications){toast('名称/分类/适应症为必填');return;}
       var cd=getCust();
       if(isNew){cd.drugs.unshift(nd);}else if(index>=DRUGS.length){cd.drugs[index-DRUGS.length]=nd;}else{cd.drugOverlay=cd.drugOverlay||{};cd.drugOverlay[d.id]=nd;}
-      saveCust(cd); renderAdminList('drugs'); addEditLog('疾病',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('drugs'); addEditLog('药品',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
     }}]
   );
 }
@@ -194,7 +194,7 @@ function showGuidelineEditor(guide, index) {
       if(!ng.title||!ng.system){toast('标题和系统为必填');return;}
       var cd=getCust();
       if(isNew){cd.guidelines.unshift(ng);}else if(index>=GUIDELINES.length){cd.guidelines[index-GUIDELINES.length]=ng;}else{cd.glOverlay=cd.glOverlay||{};cd.glOverlay[g.id]=ng;}
-      saveCust(cd); renderAdminList('guidelines'); addEditLog('疾病',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('guidelines'); addEditLog('指南',ng.title,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
     }}]
   );
 }
@@ -214,7 +214,7 @@ function showEduEditor(item, index) {
       var cd=getCust();
       cd.education=cd.education||[];
       if(isNew){cd.education.unshift(ne);}else{var idx=cd.education.findIndex(x=>x.id===h.id);if(idx>=0)cd.education[idx]=ne;else{cd.eduOverlay=cd.eduOverlay||{};cd.eduOverlay[h.id]=ne;}}
-      saveCust(cd); renderAdminList('education'); addEditLog('疾病',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('education'); addEditLog('科普',ne.title,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
     }}]
   );
 }
@@ -237,7 +237,7 @@ function showInfEditor(item, index) {
       var cd=getCust();
       cd.infusion=cd.infusion||[];
       if(isNew){cd.infusion.unshift(ni);}else{var idx=cd.infusion.findIndex(x=>x.id===inf.id);if(idx>=0)cd.infusion[idx]=ni;else{cd.infOverlay=cd.infOverlay||{};cd.infOverlay[inf.id]=ni;}}
-      saveCust(cd); renderAdminList('infusion'); addEditLog('疾病',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('infusion'); addEditLog('配伍',ni.drug,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
     }}]
   );
 }
