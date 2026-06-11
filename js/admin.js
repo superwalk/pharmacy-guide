@@ -26,7 +26,7 @@ function showEditLogs() {
     html += '<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn btn-sm btn-outline" onclick="clearEditLogs()">清空记录</button></div>';
     logs.forEach(function(l) {
       var color = l.action === '新增' ? 'var(--primary)' : (l.action === '删除' ? 'var(--danger)' : 'var(--accent)');
-      html += '<div class="list-card"><div class="icon-box" style="font-size:12px">' + l.action + '</div><div class="info"><div class="name">' + l.name + '</div><div class="desc" style="font-size:11px">操作人：' + l.user + ' · ' + l.type + ' · ' + l.time + '</div></div></div>';
+      html += '<div class="list-card"><div class="icon-box" style="font-size:12px">' + l.action + '</div><div class="info"><div class="name">' + l.name + '</div><div class="desc" style="font-size:11px">' + l.user + '昵称 · ' + l.type + ' · ' + l.time + '</div></div></div>';
     });
   }
   document.getElementById('label-content').innerHTML = html;
