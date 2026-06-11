@@ -513,6 +513,50 @@ function renderProfile() {
   var um=document.getElementById('menu-user-mgmt');
   if(um) um.style.display=(currentUser.username==='walkman0097')?'flex':'none';
 }
+// ═══ 版本更新 ───
+var APP_VERSION='1.0.0';
+var CHANGELOG_KEY='changelog_custom';
+var DEFAULT_CHANGELOG=[
+  '2026-06-11  保护管理员角色不可降级，所有页面增加返回顶部按钮',
+  '2026-06-10  新增计算工具、输液配伍模块，药品库扩充至84种',
+  '2026-06-09  新增拼音搜索、收藏功能、记住密码',
+  '2026-06-08  初始发布：药品/疾病分类、指南法规、用药教育'
+];
+function getChangelog(){
+  try{ var s=localStorage.getItem(CHANGELOG_KEY); if(s) return JSON.parse(s); }catch(e){}
+  localStorage.setItem(CHANGELOG_KEY,JSON.stringify(DEFAULT_CHANGELOG));
+  return DEFAULT_CHANGELOG.slice();
+}
+function showChangelog(){
+  pushScreen('label');
+  var logs=getChangelog();
+  var isAdmin=currentUser.username==='walkman0097';
+  var html='<div style="font-size:28px;font-weight:800;color:var(--primary);margin:4px 0 2px">v'+APP_VERSION+'</div>'
+    +'<div style="font-size:12px;color:var(--text-light);margin-bottom:16px">药学知识指南 · 更新日志</div>';
+  logs.forEach(function(l){
+    var m=l.match(/^(\d{4}-\d{2}-\d{2})\s+(.+)/);
+    if(m) html+='<div style="margin:10px 0;display:flex;gap:8px;align-items:flex-start"><span style="font-size:11px;color:var(--text-light);white-space:nowrap;margin-top:2px">'+m[1]+'</span><span style="font-size:14px;line-height:1.6;color:var(--text-body)">'+m[2]+'</span></div>';
+    else html+='<div style="margin:6px 0 6px 48px;font-size:14px;color:var(--text-body)">'+l+'</div>';
+  });
+  if(isAdmin) html+='<button class="btn btn-outline btn-full" id="edit-changelog-btn" style="margin-top:20px">✏️ 编辑更新日志</button>';
+  document.getElementById('label-content').innerHTML=html;
+  var btn=document.getElementById('edit-changelog-btn');
+  if(btn) btn.onclick=function(){
+    var logs=getChangelog();
+    showModal('编辑更新日志',
+      '<p style="font-size:12px;color:var(--text-light);margin-bottom:8px">每行一条，日期格式：YYYY-MM-DD 内容</p>'
+      +'<textarea id="changelog-editor" style="width:100%;min-height:200px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:13px;resize:vertical">'+esc(logs.join('\n'))+'</textarea>',
+      [{label:'取消'},{label:'保存',primary:true,onClick:function(){
+        var val=document.getElementById('changelog-editor').value.trim();
+        if(!val){ toast('内容不能为空'); return; }
+        var lines=val.split('\n').filter(function(l){return l.trim();});
+        localStorage.setItem(CHANGELOG_KEY,JSON.stringify(lines));
+        toast('更新日志已保存');
+        showChangelog();
+      }}]
+    );
+  };
+}
 function initProfileMenus() {
   document.getElementById('edit-nickname-btn').onclick=()=>{ showModal('修改昵称','<input id="new-nickname" placeholder="输入新昵称" value="'+currentUser.nickname+'">',[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const n=document.getElementById('new-nickname').value.trim(); if(n) updateNickname(n); }}]); };
   document.getElementById('menu-change-pw').onclick=()=>{ showModal('修改密码','<div style="position:relative"><input id="old-pw" type="password" placeholder="原密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw">👁️</span></div><div style="position:relative;margin-top:8px"><input id="new-pw" type="password" placeholder="新密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw2">👁️</span></div>',[{label:'取消'},{label:'确认修改',primary:true,onClick:()=>{ const o=document.getElementById('old-pw').value; const n=document.getElementById('new-pw').value; if(!n||n.length<4){ toast('密码至少4位'); return; } const r=changePassword(o,n); if(!r.ok) toast(r.msg); else toast('密码已修改，下次登录生效'); }}]);
@@ -531,6 +575,8 @@ function initProfileMenus() {
   // 编辑记录菜单（函数在 admin.js 中定义）
   var elog=document.getElementById('menu-edit-log');
   if(elog) elog.onclick=()=>{ showEditLogs(); };
+  // 版本更新
+  document.getElementById('menu-changelog').onclick=showChangelog;
   document.querySelectorAll('.menu-item[data-nav]').forEach(m=>{ m.onclick=()=>showScreen(m.dataset.nav); });
 }
 
