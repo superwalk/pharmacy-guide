@@ -411,16 +411,8 @@ const GUIDE_SYSTEMS = [
   { system:'眼科', icon:'👁️', items:GUIDELINES.filter(g=>g.system==='眼科') },
   { system:'药学', icon:'💊', items:GUIDELINES.filter(g=>g.system==='药学') },
   { system:'腔镜机器人', icon:'🤖', items:GUIDELINES.filter(g=>g.system==='腔镜机器人') },
-  { system:'其他', icon:'📑', items:GUIDELINES.filter(g=>g.system==='其他') },
-  { system:'心血管系统', icon:'❤️', items:GUIDELINES.filter(g=>g.system==='心血管系统') },
-  { system:'呼吸系统', icon:'🫁', items:GUIDELINES.filter(g=>g.system==='呼吸系统') },
-  { system:'消化系统', icon:'🫄', items:GUIDELINES.filter(g=>g.system==='消化系统') },
-  { system:'内分泌系统', icon:'🩸', items:GUIDELINES.filter(g=>g.system==='内分泌系统') },
-  { system:'抗感染', icon:'🦠', items:GUIDELINES.filter(g=>g.system==='抗感染') },
-  { system:'神经系统', icon:'🧠', items:GUIDELINES.filter(g=>g.system==='神经系统') },
-  { system:'血液系统', icon:'🩸', items:GUIDELINES.filter(g=>g.system==='血液系统') },
-  { system:'抗肿瘤', icon:'🎗️', items:GUIDELINES.filter(g=>g.system==='抗肿瘤') },
   { system:'法律法规', icon:'📋', items:LAWS },
+  { system:'其他', icon:'📑', items:GUIDELINES.filter(g=>g.system==='其他') },
 ];
 
 // ═══ 用药教育 ═══
