@@ -235,14 +235,12 @@ function updateNickname(newName) {
 
 function changePassword(oldPw, newPw) {
   if (!currentUser) return { ok:false, msg:'未登录' };
-  const u = findUser(currentUser.username);
+  var users = getUsers();
+  var u = users.find(function(x){ return x.username === currentUser.username; });
   if (u.password !== oldPw) return { ok:false, msg:'原密码错误' };
   u.password = newPw;
   currentUser.password = newPw;
-  const saved = JSON.parse(localStorage.getItem('user_' + currentUser.username) || '{}');
-  saved.password = newPw;
-  localStorage.setItem('user_' + currentUser.username, JSON.stringify(saved));
-  saveUsers(getUsers()); // 持久化到用户列表
+  saveUsers(users); // 保存修改后的数组，不能重新getUsers
   clearRemember(); // 密码变更后15天免登录失效
   return { ok:true };
 }
