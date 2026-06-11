@@ -1,0 +1,10 @@
+{
+  "id": "ds005",
+  "cat": "心血管疾病",
+  "name": "心力衰竭",
+  "py": "XLSJ",
+  "desc": "各种心脏结构/功能异常导致心室充盈或射血能力受损的临床综合征。",
+  "symptoms": "呼吸困难、乏力、水肿。",
+  "diagnosis": "BNP/NT-proBNP升高+心脏超声LVEF评估。",
+  "treatment": "新四联：ARNI+β-blocker+MRA+SGLT2i。"
+}

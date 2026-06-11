@@ -1,0 +1,10 @@
+{
+  "id": "ds011",
+  "cat": "内分泌疾病",
+  "name": "甲亢",
+  "py": "JK",
+  "desc": "甲状腺激素分泌过多。最常见：Graves病。",
+  "symptoms": "心悸、多汗、手抖、消瘦。",
+  "diagnosis": "TSH↓ + FT3/FT4↑。",
+  "treatment": "抗甲状腺药物±放射性碘或手术。"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "ds081",
+  "cat": "精神心理疾病",
+  "name": "焦虑障碍",
+  "py": "JL",
+  "desc": "过度担心和紧张的心理障碍。",
+  "symptoms": "过度担忧、紧张不安、心悸、失眠。",
+  "diagnosis": "临床评估+HAMA量表。",
+  "treatment": "SSRI/SNRI+CBT+苯二氮䓬类短期使用。"
+}

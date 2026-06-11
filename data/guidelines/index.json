@@ -1,0 +1,240 @@
+[
+  {
+    "id": "g001",
+    "title": "中国高血压防治指南 2024",
+    "system": "心血管系统",
+    "year": "2024",
+    "py": "ZGGXYFZZN"
+  },
+  {
+    "id": "g002",
+    "title": "心力衰竭诊疗指南 2023",
+    "system": "心血管系统",
+    "year": "2023",
+    "py": "XLSJZLZN"
+  },
+  {
+    "id": "g003",
+    "title": "中国血脂管理指南 2023",
+    "system": "心血管系统",
+    "year": "2023",
+    "py": "ZGXZGLZN"
+  },
+  {
+    "id": "g004",
+    "title": "抗血小板治疗中国专家共识",
+    "system": "心血管系统",
+    "year": "2022",
+    "py": "KXXBZLZGZJGS"
+  },
+  {
+    "id": "g005",
+    "title": "社区获得性肺炎诊治指南",
+    "system": "呼吸系统",
+    "year": "2023",
+    "py": "SQHDXFYZZZN"
+  },
+  {
+    "id": "g006",
+    "title": "COPD诊治指南 2024",
+    "system": "呼吸系统",
+    "year": "2024",
+    "py": "COPDZZZN"
+  },
+  {
+    "id": "g007",
+    "title": "支气管哮喘防治指南",
+    "system": "呼吸系统",
+    "year": "2023",
+    "py": "ZQGXCFZZN"
+  },
+  {
+    "id": "g008",
+    "title": "消化性溃疡诊疗规范",
+    "system": "消化系统",
+    "year": "2022",
+    "py": "XHXKYZLGF"
+  },
+  {
+    "id": "g009",
+    "title": "中国2型糖尿病防治指南",
+    "system": "内分泌系统",
+    "year": "2024",
+    "py": "ZGXTNBFZZN"
+  },
+  {
+    "id": "g010",
+    "title": "痛风诊疗指南",
+    "system": "内分泌系统",
+    "year": "2023",
+    "py": "TFZLZN"
+  },
+  {
+    "id": "g011",
+    "title": "质子泵抑制剂临床应用指南",
+    "system": "消化系统",
+    "year": "2024",
+    "py": "ZZBYZJLCYYZN"
+  },
+  {
+    "id": "g012",
+    "title": "围手术期抗菌药物预防指南",
+    "system": "抗感染",
+    "year": "2024",
+    "py": "WSSQKJYWYFZN"
+  },
+  {
+    "id": "g013",
+    "title": "华法林抗凝治疗中国专家共识",
+    "system": "血液系统",
+    "year": "2024",
+    "py": "HFLKNZLZGZJGS"
+  },
+  {
+    "id": "g014",
+    "title": "慢性疼痛药物治疗指南",
+    "system": "神经系统",
+    "year": "2024",
+    "py": "MXTTYWZLZN"
+  },
+  {
+    "id": "g015",
+    "title": "Hp根除治疗全国专家共识",
+    "system": "消化系统",
+    "year": "2024",
+    "py": "HPGCZLQGZJGS"
+  },
+  {
+    "id": "g016",
+    "title": "骨质疏松诊疗指南",
+    "system": "内分泌系统",
+    "year": "2024",
+    "py": "GZSSZLZN"
+  },
+  {
+    "id": "g017",
+    "title": "心房颤动抗凝治疗指南",
+    "system": "心血管系统",
+    "year": "2024",
+    "py": "XFCDKNZLZN"
+  },
+  {
+    "id": "g018",
+    "title": "肾性贫血诊疗指南",
+    "system": "血液系统",
+    "year": "2024",
+    "py": "SXPXZLZN"
+  },
+  {
+    "id": "g019",
+    "title": "化疗止吐指南",
+    "system": "抗肿瘤",
+    "year": "2024",
+    "py": "HLZTZN"
+  },
+  {
+    "id": "g020",
+    "title": "糖皮质激素临床应用指导原则",
+    "system": "内分泌系统",
+    "year": "2024",
+    "py": "TPZJSLCYYZDYZ"
+  },
+  {
+    "id": "g021",
+    "title": "碳青霉烯类抗菌药物临床应用专家共识",
+    "system": "抗感染",
+    "year": "2023",
+    "py": "TQMXLKJYWLCYYZJGS"
+  },
+  {
+    "id": "g022",
+    "title": "喹诺酮类抗菌药物临床应用指导意见",
+    "system": "抗感染",
+    "year": "2023",
+    "py": "KNTLKJYWLCYYZDYJ"
+  },
+  {
+    "id": "g023",
+    "title": "β-内酰胺类抗菌药物皮肤试验指导原则",
+    "system": "抗感染",
+    "year": "2021",
+    "py": "ΒNXALKJYWPFSYZDYZ"
+  },
+  {
+    "id": "g024",
+    "title": "中国心力衰竭诊断和治疗指南",
+    "system": "心血管系统",
+    "year": "2024",
+    "py": "ZGXLSJZDHZLZN"
+  },
+  {
+    "id": "g025",
+    "title": "抗血栓药物围手术期管理专家共识",
+    "system": "血液系统",
+    "year": "2020",
+    "py": "KXSYWWSSQGLZJGS"
+  },
+  {
+    "id": "g026",
+    "title": "卒中二级预防抗血小板治疗指南",
+    "system": "神经系统",
+    "year": "2024",
+    "py": "ZZEJYFKXXBZLZN"
+  },
+  {
+    "id": "g027",
+    "title": "非酒精性脂肪性肝病诊疗指南",
+    "system": "消化系统",
+    "year": "2024",
+    "py": "FJJXZFXGBZLZN"
+  },
+  {
+    "id": "g028",
+    "title": "慢性乙型肝炎防治指南",
+    "system": "消化系统",
+    "year": "2024",
+    "py": "MXYXGYFZZN"
+  },
+  {
+    "id": "g029",
+    "title": "维生素D及其类似物临床应用共识",
+    "system": "内分泌系统",
+    "year": "2024",
+    "py": "WSSDJQLSWLCYYGS"
+  },
+  {
+    "id": "g030",
+    "title": "静脉血栓栓塞症防治指南",
+    "system": "呼吸系统",
+    "year": "2024",
+    "py": "JMXSSSZFZZN"
+  },
+  {
+    "id": "g031",
+    "title": "直接口服抗凝药临床合理应用指南",
+    "system": "血液系统",
+    "year": "2024",
+    "py": "ZJKFKNYLCHLYYZN"
+  },
+  {
+    "id": "g032",
+    "title": "抗血小板药物临床应用中国专家共识",
+    "system": "血液系统",
+    "year": "2024",
+    "py": "KXXBYWLCYYZGZJGS"
+  },
+  {
+    "id": "g033",
+    "title": "口服降糖药物临床应用专家共识",
+    "system": "内分泌系统",
+    "year": "2024",
+    "py": "KFJTYWLCYYZJGS"
+  },
+  {
+    "id": "g034",
+    "title": "化疗药物临床应用管理规范",
+    "system": "抗肿瘤",
+    "year": "2024",
+    "py": "HLYWLCYYGLGF"
+  }
+]

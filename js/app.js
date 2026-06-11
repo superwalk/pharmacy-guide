@@ -3,22 +3,27 @@ function allDrugs() { try{const c=JSON.parse(localStorage.getItem('custom_data')
 function allGuides() { try{const c=JSON.parse(localStorage.getItem('custom_data')||'{"drugs":[],"guidelines":[]}');return[...GUIDELINES,...(c.guidelines||[])];}catch(e){return GUIDELINES;} }
 function findDrug(id) { return allDrugs().find(d=>d.id===id); }
 
-// ═══ 药品详情按需加载 ───
-var _drugDetailCache = {};
-function loadDrugDetail(id, cb) {
-  if (_drugDetailCache[id]) { if(cb) cb(_drugDetailCache[id]); return; }
+// ═══ 数据按需加载 ───
+var _detailCache = {};
+function _loadDetail(type, id, cb) {
+  if (_detailCache[type + '/' + id]) { if(cb) cb(_detailCache[type + '/' + id]); return; }
   var base = location.pathname.replace(/\/[^\/]*$/, '/');
   if (!base || base === '/') base = '/pharmacy-guide/';
-  fetch(base + 'data/drugs/' + id + '.json').then(function(r) {
+  fetch(base + 'data/' + type + '/' + id + '.json').then(function(r) {
     if (!r.ok) return;
     return r.json();
   }).then(function(data) {
-    if (data) { _drugDetailCache[id] = data; if(cb) cb(data); }
+    if (data) { _detailCache[type + '/' + id] = data; if(cb) cb(data); }
   }).catch(function() {
-    // 离线或网络错误，尝试从索引数据渲染
     if(cb) cb(null);
   });
 }
+function loadDrugDetail(id, cb) { _loadDetail('drugs', id, cb); }
+function loadDiseaseDetail(id, cb) { _loadDetail('diseases', id, cb); }
+function loadGuideDetail(id, cb) { _loadDetail('guidelines', id, cb); }
+function loadMedEduDetail(id, cb) { _loadDetail('mededu', id, cb); }
+function loadHealthEduDetail(id, cb) { _loadDetail('healthedu', id, cb); }
+function loadInfusionDetail(id, cb) { _loadDetail('infusion', id, cb); }
 
 // ═══ Toast ───
 function toast(msg, cb) {
@@ -328,8 +333,17 @@ function openGuide(gid) {
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:20px">${g.title}</div>
     <div style="font-size:12px;color:var(--text-light);display:flex;gap:6px"><span class="badge badge-blue">${g.system||'法律法规'}</span><span>${g.year||''}</span></div>
-    <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(g.content||'')}</p></div>
+    <div id="guide-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
+  showEditBtn({type:'guide',id:gid});
+  loadGuideDetail(gid, function(full) {
+    var detail = full || g;
+    var gb = document.getElementById('guide-body');
+    if(!gb) return;
+    gb.innerHTML = '<div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">'+hlText(detail.content||'')+'</p></div>';
+  });
+  return;
+}
   var md=extractMentionedDrugs(g.content||'');
   if(md.length>0){
     var titleEl=document.createElement('div');
@@ -694,7 +708,16 @@ function openHealthEdu(hid) {
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:20px">${h.title}</div>
     <div style="font-size:12px;color:var(--text-light)">${h.cat}</div>
-    <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(h.content||'')}</p></div>
+    <div id="healthedu-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
+  `;
+  showEditBtn({type:'edu',id:hid});
+  loadHealthEduDetail(hid, function(full) {
+    var detail = full || h;
+    var hb = document.getElementById('healthedu-body');
+    if(!hb) return;
+    hb.innerHTML = '<div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">'+hlText(detail.content||'')+'</p></div>';
+  });
+}
   `;
   showEditBtn({type:'edu',id:hid});
 }
@@ -724,13 +747,21 @@ function openInfusion(iid) {
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:22px">${i.drug}</div>
     <div style="font-size:13px;color:var(--text-light);margin-bottom:12px"><span class="badge badge-blue">${i.cat}</span></div>
-    <div class="info-card"><div class="info-label">输液载体</div><div class="info-value">${i.vehicle||'—'}</div></div>
-    <div class="info-card"><div class="info-label">浓度</div><div class="info-value">${i.conc||'—'}</div></div>
-    <div class="info-card"><div class="info-label">输注速度</div><div class="info-value">${i.speed||'—'}</div></div>
-    ${i.interact?`<div class="info-card"><div class="info-label danger">配伍禁忌</div><div class="info-value">${hlText(i.interact)}</div></div>`:''}
-    ${i.detail?`<div class="info-card"><div class="info-label danger">细节</div><div class="info-value">${hlText(i.detail)}</div></div>`:''}
-    <div class="info-card"><div class="info-label">注意事项</div><div class="info-value" style="white-space:pre-wrap">${hlText(i.note||'')}</div></div>
+    <div id="infusion-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>
   `;
+  showEditBtn({type:'inf',id:iid});
+  loadInfusionDetail(iid, function(full) {
+    var detail = full || i;
+    var ib = document.getElementById('infusion-body');
+    if(!ib) return;
+    ib.innerHTML = `
+    <div class="info-card"><div class="info-label">输液载体</div><div class="info-value">${detail.vehicle||'—'}</div></div>
+    <div class="info-card"><div class="info-label">浓度</div><div class="info-value">${detail.conc||'—'}</div></div>
+    <div class="info-card"><div class="info-label">输注速度</div><div class="info-value">${detail.speed||'—'}</div></div>
+    ${detail.interact?'<div class="info-card"><div class="info-label danger">配伍禁忌</div><div class="info-value">'+hlText(detail.interact)+'</div></div>':''}
+    ${detail.detail?'<div class="info-card"><div class="info-label danger">细节</div><div class="info-value">'+hlText(detail.detail)+'</div></div>':''}
+    <div class="info-card"><div class="info-label">注意事项</div><div class="info-value" style="white-space:pre-wrap">${hlText(detail.note||'')}</div></div>`;
+  });
 }
 
 function showDiseaseList(catName) {
@@ -748,21 +779,31 @@ function showDiseaseList(catName) {
 function openDisease(name) {
   const d=DISEASES.find(x=>x.name===name);
   const drugs=allDrugs().filter(dr=>dr.indications.toLowerCase().includes(name.slice(0,3).toLowerCase())||dr.category.toLowerCase().includes(name.slice(0,3)));
-  const guides=allGuides().filter(g=>g.title.includes(name)||g.content.includes(name));
+  const guides=allGuides().filter(g=>g.title.includes(name)||(g.content&&g.content.includes(name)));
   if(!d && drugs.length===0 && guides.length===0){ toast('暂无数据'); return; }
   pushScreen('label');
   let html='<div class="section-title" style="font-size:22px">'+name+'</div>';
   if(d) html+=`
     <div style="font-size:12px;color:var(--text-light);margin-bottom:12px"><span class="badge badge-blue">${d.cat}</span></div>
-    <div class="info-card"><div class="info-label">定义</div><div class="info-value">${hlText(d.desc)}</div></div>
-    <div class="info-card"><div class="info-label">症状</div><div class="info-value">${hlText(d.symptoms)}</div></div>
-    <div class="info-card"><div class="info-label">诊断</div><div class="info-value">${hlText(d.diagnosis)}</div></div>
-    <div class="info-card"><div class="info-label">治疗原则</div><div class="info-value">${hlText(d.treatment)}</div></div>`;
-  if(drugs.length>0) html+=`<div class="section-title" style="margin-top:8px">💊 相关药品 (${drugs.length})</div>`+drugs.slice(0,6).map(dr=>`<div class="list-card" onclick="pushScreen("detail");renderDetail("${dr.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${dr.name}</div><div class="desc">${dr.category} · ${(dr.indications||'').slice(0,30)}…</div></div></div>`).join('');
+    <div id="disease-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>`;
+  if(drugs.length>0) html+=`<div class="section-title" style="margin-top:8px">💊 相关药品 (${drugs.length})</div>`+drugs.slice(0,6).map(dr=>`<div class="list-card" onclick="pushScreen('detail');renderDetail('${dr.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${dr.name}</div><div class="desc">${dr.category} · ${(dr.indications||'').slice(0,30)}…</div></div></div>`).join('');
   if(guides.length>0) html+=`<div class="section-title" style="margin-top:8px">📋 相关指南</div>`+guides.slice(0,3).map(g=>`<div class="list-card" onclick="openGuide('${g.id}')"><div class="icon-box">📋</div><div class="info"><div class="name">${g.title}</div><div class="desc">${g.system} · ${g.year}</div></div></div>`).join('');
   if(!d && drugs.length===0) html+='<div style="text-align:center;padding:40px;color:var(--text-light)">该疾病暂未收录详细信息</div>';
   document.getElementById('label-content').innerHTML=html;
-  addRecent(d?d.id:name,'disease'); showEditBtn({type:'disease',id:d.id});
+  addRecent(d?d.id:name,'disease');
+  if(d) {
+    showEditBtn({type:'disease',id:d.id});
+    loadDiseaseDetail(d.id, function(full) {
+      var detail = full || d;
+      var db = document.getElementById('disease-body');
+      if(!db) return;
+      db.innerHTML = `
+        <div class="info-card"><div class="info-label">定义</div><div class="info-value">${hlText(detail.desc||'')}</div></div>
+        <div class="info-card"><div class="info-label">症状</div><div class="info-value">${hlText(detail.symptoms||'')}</div></div>
+        <div class="info-card"><div class="info-label">诊断</div><div class="info-value">${hlText(detail.diagnosis||'')}</div></div>
+        <div class="info-card"><div class="info-label">治疗原则</div><div class="info-value">${hlText(detail.treatment||'')}</div></div>`;
+    });
+  }
 }
 
 function renderMedEdu(){
@@ -783,8 +824,14 @@ function renderMedEdu(){
 function openMedEdu(mid){
   var m=MED_EDU.find(function(x){return x.id===mid;}); if(!m) return;
   pushScreen('label');
-  document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">'+m.drug+'</div><div style="font-size:12px;color:var(--text-light);margin-bottom:12px"><span class="badge badge-blue">'+m.cat+'</span></div><div class="info-card"><div class="info-label">交代要点</div><div class="info-value" style="font-size:16px;font-weight:600;color:var(--accent)">'+m.key+'</div></div><div class="info-card"><div class="info-label">详细说明</div><div class="info-value" style="white-space:pre-wrap">'+m.detail+'</div></div>';
+  document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">'+m.drug+'</div><div style="font-size:12px;color:var(--text-light);margin-bottom:12px"><span class="badge badge-blue">'+m.cat+'</span></div><div id="mededu-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>';
   showEditBtn({type:'med',id:mid});
+  loadMedEduDetail(mid, function(full) {
+    var detail = full || m;
+    var mb = document.getElementById('mededu-body');
+    if(!mb) return;
+    mb.innerHTML = '<div class="info-card"><div class="info-label">交代要点</div><div class="info-value" style="font-size:16px;font-weight:600;color:var(--accent)">'+detail.key+'</div></div><div class="info-card"><div class="info-label">详细说明</div><div class="info-value" style="white-space:pre-wrap">'+detail.detail+'</div></div>';
+  });
 }
 
 var _currentEditItem=null;
