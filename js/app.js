@@ -18,7 +18,7 @@ function showModal(title, content, actions) {
   const mb=document.getElementById('modal-box');
   mb.innerHTML=`<h3>${title}</h3>${content}<div class="modal-actions">${actions.map((a,i)=>`<button class="btn ${a.primary?'btn-primary':'btn-outline'}" data-modal-act="${i}">${a.label}</button>`).join('')}</div>`;
   ov.classList.add('show');
-  mb.querySelectorAll('[data-modal-act]').forEach(btn=>{ btn.onclick=()=>{ const a=actions[parseInt(btn.dataset.modalAct)]; if(a.onClick)a.onClick(); ov.classList.remove('show'); }; });
+  mb.querySelectorAll('[data-modal-act]').forEach(btn=>{ btn.onclick=()=>{ const a=actions[parseInt(btn.dataset.modalAct)]; var close=true; if(a.onClick) close=a.onClick(); if(close!==false) ov.classList.remove('show'); }; });
 }
 
 // ═══ storage 辅助 ───
@@ -510,7 +510,7 @@ function renderProfile() {
 }
 function initProfileMenus() {
   document.getElementById('edit-nickname-btn').onclick=()=>{ showModal('修改昵称','<input id="new-nickname" placeholder="输入新昵称" value="'+currentUser.nickname+'">',[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const n=document.getElementById('new-nickname').value.trim(); if(n) updateNickname(n); }}]); };
-  document.getElementById('menu-change-pw').onclick=()=>{ showModal('修改密码','<div style="position:relative"><input id="old-pw" type="password" placeholder="原密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw">👁️</span></div><div style="position:relative;margin-top:8px"><input id="new-pw" type="password" placeholder="新密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw2">👁️</span></div>',[{label:'取消'},{label:'确认修改',primary:true,onClick:()=>{ const o=document.getElementById('old-pw').value; const n=document.getElementById('new-pw').value; if(!n||n.length<4){ toast('密码至少4位'); return; } const r=changePassword(o,n); if(!r.ok) toast(r.msg); else toast('密码已修改，下次登录生效'); }}]);
+  document.getElementById('menu-change-pw').onclick=()=>{ showModal('修改密码','<div style="position:relative"><input id="old-pw" type="password" placeholder="原密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw">👁️</span></div><div style="position:relative;margin-top:8px"><input id="new-pw" type="password" placeholder="新密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw2">👁️</span></div>',[{label:'取消'},{label:'确认修改',primary:true,onClick:()=>{ const o=document.getElementById('old-pw').value; const n=document.getElementById('new-pw').value; if(!n||n.length<4){ toast('密码至少4位'); return false; } const r=changePassword(o,n); if(!r.ok){ toast(r.msg); return false; } toast('密码已修改，下次登录生效'); }}]);
   // 绑定小眼睛切换
   setTimeout(function(){
     var t1=document.getElementById('toggle-pw'); var t2=document.getElementById('toggle-pw2');
