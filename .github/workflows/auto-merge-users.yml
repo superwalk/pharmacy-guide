@@ -1,0 +1,21 @@
+name: 自动合并手机端新增用户
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/exports/*.json'
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: 合并导出数据
+        run: node .github/scripts/merge-exported-users.js
+      - name: 提交变更
+        run: |
+          git config user.name "pharmacy-bot"
+          git config user.email "bot@pharmacy-guide"
+          git add -A
+          git diff --staged --quiet && echo "No changes" || (git commit -m "auto: 合并手机端导出的用户到auth.js" && git push)
