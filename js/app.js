@@ -270,11 +270,11 @@ function renderGuidelines() {
   }
   gl.innerHTML=systems.map((s,i)=>`
     <div class="cat-card" style="margin-bottom:8px">
-      <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-group="${i}" data-expanded="true">
+      <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-group="${i}" data-expanded="false">
         <span class="cat-name">${s.icon} ${s.system}</span>
-        <span style="font-size:12px;color:var(--text-light)">${s.items.length} 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▼</span></span>
+        <span style="font-size:12px;color:var(--text-light)">${s.items.length} 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></span>
       </div>
-      <div class="guide-items" id="guide-group-${i}" style="display:flex;flex-wrap:wrap;gap:6px">${s.items.map(g=>`<span class="guide-item" data-gid="${g.id}" style="display:inline-block;padding:4px 10px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;white-space:nowrap">${g.title} <span style="color:var(--text-light)">${g.year||''}</span></span>`).join('')}</div>
+      <div class="guide-items" id="guide-group-${i}" style="display:none;flex-wrap:wrap;gap:6px">${s.items.map(g=>`<span class="guide-item" data-gid="${g.id}" style="display:inline-block;padding:4px 10px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;white-space:nowrap">${g.title} <span style="color:var(--text-light)">${g.year||''}</span></span>`).join('')}</div>
     </div>
   `).join('');
   if(systems.length===0&&kw) gl.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">未找到匹配的指南或法规</div>';
@@ -283,11 +283,11 @@ function renderGuidelines() {
 
 function toggleGuideGroup(header) {
   const gid=header.dataset.group;
-  const items=document.getElementById('guide-group-'+gid);
+  const items=gid!==undefined?document.getElementById('guide-group-'+gid):header.nextElementSibling;
   const arrow=header.querySelector('.guide-arrow');
   const expanded=header.dataset.expanded==='true';
-  if(expanded){ items.style.display='none'; arrow.style.transform='rotate(-90deg)'; header.dataset.expanded='false'; }
-  else { items.style.display='block'; arrow.style.transform='rotate(0deg)'; header.dataset.expanded='true'; }
+  if(expanded){ items.style.display='none'; arrow.style.transform='rotate(-90deg)'; arrow.textContent='▶'; header.dataset.expanded='false'; }
+  else { items.style.display='block'; arrow.style.transform='rotate(0deg)'; arrow.textContent='▼'; header.dataset.expanded='true'; }
 }
 
 function openGuide(gid) {
@@ -699,7 +699,7 @@ function renderMedEdu(){
   hl.innerHTML=cats.map(function(cat){
     var items=data.filter(function(m){return m.cat===cat;});
     if(items.length===0) return '';
-    return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="true"><span class="cat-name">'+cat+'</span><span style="font-size:12px;color:var(--text-light)">'+items.length+' 条 <span class="guide-arrow">▼</span></span></div><div class="guide-items">'+items.map(function(m){return '<div class="guide-item" data-meid="'+m.id+'" style="padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><div style="font-weight:600;color:var(--primary-dark)">'+m.drug+'</div><div style="color:var(--text-body);font-size:12px;margin-top:2px">'+m.key+'</div></div>';}).join('')+'</div></div>';
+    return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">'+cat+'</span><span style="font-size:12px;color:var(--text-light)">'+items.length+' 条 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></span></div><div class="guide-items" style="display:none">'+items.map(function(m){return '<div class="guide-item" data-meid="'+m.id+'" style="padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><div style="font-weight:600;color:var(--primary-dark)">'+m.drug+'</div><div style="color:var(--text-body);font-size:12px;margin-top:2px">'+m.key+'</div></div>';}).join('')+'</div></div>';
   }).join('');
   hl.querySelectorAll('.guide-item').forEach(function(item){item.onclick=function(){openMedEdu(item.dataset.meid);};});
   document.getElementById('me-search').oninput=renderMedEdu;
