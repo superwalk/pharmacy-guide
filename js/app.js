@@ -410,9 +410,22 @@ function renderFavorites() {
   const kw=(document.getElementById('fav-search').value||'').toLowerCase();
   let items=fv.map(id=>{ const d=findDrug(id); return d?{id,type:'drug',name:d.name,cat:d.category}:null; }).filter(Boolean).reverse();
   items=items.concat(allGuides().filter(g=>fv.includes(g.id)).map(g=>({id:g.id,type:'guide',name:g.title,cat:g.system})));
+  // 计算工具收藏
+  if(typeof findCalcTool==='function'){
+    fv.forEach(function(id){
+      if(id.indexOf('calc-')===0){
+        var cid=id.slice(5);
+        var ct=findCalcTool(cid);
+        if(ct) items.push({id:id,type:'calc',name:ct.name,cat:'🧮 '+ct.cat});
+      }
+    });
+  }
   if(kw) items=items.filter(i=>i.name.toLowerCase().includes(kw)||i.cat.includes(kw));
-  fl.innerHTML=items.map(i=>`<div class="list-card" data-id="${i.id}" data-type="${i.type}"><div class="icon-box">${i.type==='drug'?'💊':'📋'}</div><div class="info"><div class="name">${i.name}</div><div class="desc">${i.cat}</div></div></div>`).join('');
-  fl.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{ if(c.dataset.type==='drug'){ addRecent(c.dataset.id); addRecent(c.dataset.id,'drug'); } }; });
+  fl.innerHTML=items.map(i=>`<div class="list-card" data-id="${i.id}" data-type="${i.type}"><div class="icon-box">${i.type==='drug'?'💊':i.type==='guide'?'📋':'🧮'}</div><div class="info"><div class="name">${i.name}</div><div class="desc">${i.cat}</div></div></div>`).join('');
+  fl.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{ 
+    if(c.dataset.type==='drug'){ addRecent(c.dataset.id); addRecent(c.dataset.id,'drug'); }
+    else if(c.dataset.type==='calc'){ pushScreen('calc'); renderCalc(); setTimeout(function(){ var el=document.getElementById(c.dataset.id.replace('calc-','')); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); },300); }
+  }; });
   document.getElementById('fav-search').oninput=renderFavorites;
 }
 

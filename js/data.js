@@ -1486,6 +1486,18 @@ const MED_EDU = [
   { id:'m025', cat:'药物相互作用', drug:'PPI + 氯吡格雷', py:'PPILBGL', key:'抗血小板减弱', detail:'奥美拉唑、艾司奥美拉唑抑制CYP2C19酶，减少氯吡格雷活性代谢物生成。建议改用泮托拉唑、雷贝拉唑（影响较小），或直接使用替格瑞洛。' },
 ];
 
+// ═══ 计算工具元数据 ═══
+const CALC_TOOLS = [
+  { id:'weight', name:'儿童体重估算', cat:'体重' },
+  { id:'bsa', name:'体表面积 BSA', cat:'体表面积' },
+  { id:'potency', name:'抗生素效价单位换算', cat:'剂量换算' },
+  { id:'abx-renal', name:'抗生素肾功剂量调整', cat:'剂量调整' },
+  { id:'ddd', name:'抗生素 DDD 计算', cat:'DDD' },
+  { id:'ped', name:'儿科用量计算', cat:'剂量计算' },
+  { id:'surgery', name:'手术切口分类', cat:'手术' },
+  { id:'lab', name:'化验指标参考值', cat:'检验' },
+];
+
 const USER_GUIDE = `
 # 药学知识指南 — 使用手册
 

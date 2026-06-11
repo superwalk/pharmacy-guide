@@ -115,9 +115,16 @@ function renderCalc() {
   `;
 }
 
-function calcCard(title,id,desc,body){ return `
+function calcCard(title,id,desc,body){ 
+  var fid='calc-'+id;
+  var starred=isFav(fid)?'⭐':'☆';
+  return `
 <div class="detail-hero" style="margin-bottom:14px" id="calc-${id}">
-  <div style="font-size:16px;font-family:var(--font-heading);font-weight:700;color:var(--primary-dark);cursor:pointer" onclick="toggleCalcSection(this,'calc-${id}')">${title} <span class="calc-arrow" style="float:right;font-size:12px">▶</span></div>
+  <div style="font-size:16px;font-family:var(--font-heading);font-weight:700;color:var(--primary-dark);cursor:pointer;display:flex;align-items:center" onclick="toggleCalcSection(this,'calc-${id}')">
+    <span style="flex:1">${title}</span>
+    <span class="calc-star" style="font-size:16px;cursor:pointer;padding:4px 4px 4px 8px" onclick="event.stopPropagation();toggleCalcFav('${id}')" title="收藏此工具">${starred}</span>
+    <span class="calc-arrow" style="font-size:12px">▶</span>
+  </div>
   <div style="font-size:11px;color:var(--text-light);margin-bottom:6px">${desc}</div>
   <div class="calc-body" style="display:none">${body}</div>
 </div>`;}
@@ -128,6 +135,19 @@ function toggleCalcSection(header,id){
   const arrow=header.querySelector('.calc-arrow');
   if(body.style.display==='none'){ body.style.display='block'; arrow.textContent='▼'; }
   else { body.style.display='none'; arrow.textContent='▶'; }
+}
+// 计算工具收藏
+function toggleCalcFav(id){
+  var fid='calc-'+id;
+  toggleFav(fid);
+  // 刷新当前卡片星标状态
+  var star=document.querySelector('#calc-'+id+' .calc-star');
+  if(star) star.textContent=isFav(fid)?'⭐':'☆';
+  toast(isFav(fid)?'已收藏此工具':'已取消收藏');
+}
+// 查找计算工具
+function findCalcTool(id){
+  return (typeof CALC_TOOLS!=='undefined'?CALC_TOOLS:[]).find(function(c){return c.id===id;});
 }
 
 function filterCalcTools(){ const kw=document.getElementById('calc-filter').value.toLowerCase(); document.querySelectorAll('#calc-tools .detail-hero').forEach(el=>{ el.style.display=el.textContent.toLowerCase().includes(kw)?'block':'none'; }); }
