@@ -374,9 +374,16 @@ const MED_EDU = [
 // ═══ 计算工具元数据 ═══
 const CALC_TOOLS = [
   { id:'crcl', name:'肌酐清除率 CrCl', cat:'肾功' },
+  { id:'egfr', name:'eGFR 估算', cat:'肾功' },
+  { id:'childpugh', name:'Child-Pugh 评分', cat:'肝功' },
+  { id:'warfarin', name:'INR 与华法林调整', cat:'抗凝' },
+  { id:'equivalent', name:'等效剂量换算', cat:'剂量换算' },
+  { id:'steady', name:'稳态浓度与负荷剂量', cat:'TDM' },
   { id:'infusion', name:'输液速度与泵速', cat:'输液' },
   { id:'dilution', name:'浓度稀释计算', cat:'调配' },
   { id:'skin', name:'皮试液配置', cat:'调配' },
+  { id:'grandma', name:'医嘱标准化换算', cat:'调配' },
+  { id:'ageformula', name:'儿童年龄公式', cat:'儿科' },
   { id:'weight', name:'儿童体重估算', cat:'体重' },
   { id:'bsa', name:'体表面积 BSA', cat:'体表面积' },
   { id:'potency', name:'抗生素效价单位换算', cat:'剂量换算' },

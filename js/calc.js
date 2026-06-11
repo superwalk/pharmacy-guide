@@ -17,6 +17,108 @@ function renderCalc() {
         <button class="btn btn-primary btn-full" onclick="calcCrCl()">计算 CrCl</button>
         <div id="crcl-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
       `)}
+      ${calcCard('📊 eGFR 估算','egfr','CKD-EPI / MDRD — 慢性肾病分期更准确',`
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="egfr-sex" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px;border:1px solid var(--border)"><option value="male">男</option><option value="female">女</option></select>
+          <input id="egfr-age" type="number" placeholder="年龄(岁)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="egfr-scr" type="number" placeholder="血肌酐(μmol/L)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.1">
+          <select id="egfr-race" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)"><option value="nonblack">非黑人</option><option value="black">黑人</option></select>
+        </div>
+        <select id="egfr-formula" style="width:100%;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border);margin-bottom:8px"><option value="ckdepi">CKD-EPI 2009</option><option value="mdrd">MDRD 简化公式</option></select>
+        <button class="btn btn-primary btn-full" onclick="calcEGFR()">计算 eGFR</button>
+        <div id="egfr-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
+      ${calcCard('🟡 Child-Pugh 评分','childpugh','肝硬化严重程度评估 — 指导肝代谢药物剂量',`
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:8px">选择各项评分：</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="cp-bili" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 10px;font-size:12px;border:1px solid var(--border)"><option value="">胆红素</option><option value="1">&lt;34(1分)</option><option value="2">34-50(2分)</option><option value="3">&gt;50(3分)</option></select>
+          <select id="cp-alb" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 10px;font-size:12px;border:1px solid var(--border)"><option value="">白蛋白</option><option value="1">&gt;35(1分)</option><option value="2">28-35(2分)</option><option value="3">&lt;28(3分)</option></select>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="cp-pt" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 10px;font-size:12px;border:1px solid var(--border)"><option value="">PT延长</option><option value="1">&lt;4s(1分)</option><option value="2">4-6s(2分)</option><option value="3">&gt;6s(3分)</option></select>
+          <select id="cp-ascites" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 10px;font-size:12px;border:1px solid var(--border)"><option value="">腹水</option><option value="1">无(1分)</option><option value="2">轻度(2分)</option><option value="3">中重度(3分)</option></select>
+        </div>
+        <select id="cp-enceph" style="width:100%;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border);margin-bottom:8px"><option value="">肝性脑病</option><option value="1">无(1分)</option><option value="2">I-II级(2分)</option><option value="3">III-IV级(3分)</option></select>
+        <button class="btn btn-primary btn-full" onclick="calcChildPugh()">计算评分</button>
+        <div id="cp-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
+      ${calcCard('🩸 INR 与华法林调整','warfarin','根据目标 INR 范围调整华法林剂量',`
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="war-inr" type="number" placeholder="当前 INR" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.1">
+          <select id="war-target" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)"><option value="2-3">目标 2.0-3.0</option><option value="2.5-3.5">目标 2.5-3.5</option></select>
+        </div>
+        <input id="war-dose" type="number" placeholder="当前剂量(mg/日)" style="width:100%;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px;margin-bottom:8px" step="0.5">
+        <button class="btn btn-primary btn-full" onclick="calcWarfarin()">查看调整建议</button>
+        <div id="war-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
+      ${calcCard('💊 等效剂量换算','equivalent','糖皮质激素 / 阿片类 / 苯二氮䓬类 等效换算',`
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="eq-class" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)" onchange="updateEqDrugs()">
+            <option value="steroid">糖皮质激素</option><option value="opioid">阿片类</option><option value="benzo">苯二氮䓬类</option>
+          </select>
+          <select id="eq-from" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)"></select>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="eq-dose" type="number" placeholder="剂量" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.1">
+          <select id="eq-to" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)"></select>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="calcEquivalent()">换算</button>
+        <div id="eq-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
+      ${calcCard('📈 稳态浓度与负荷剂量','steady','基于 Vd 和 CL 计算负荷剂量与维持剂量',`
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="ss-vd" type="number" placeholder="表观分布容积 Vd(L)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.1">
+          <input id="ss-cl" type="number" placeholder="清除率 CL(L/h)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.1">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="ss-target" type="number" placeholder="目标浓度(mg/L)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.1">
+          <input id="ss-tau" type="number" placeholder="给药间隔(h)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="calcSteady()">计算</button>
+        <div id="ss-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
+      ${calcCard('👵 医嘱标准化换算','grandma','口头医嘱 → 标准配置（如"一支药用多少水"）',`
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="gm-drug" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)">
+            <option value="insulin">胰岛素 400U/10ml → 配成 40U/ml</option>
+            <option value="kcl">10% KCl 10ml → 1g/10ml</option>
+            <option value="nacl">0.9% NS → 等渗 154mmol/L</option>
+            <option value="gs">5% GS → 50g/L</option>
+            <option value="cacl">10% CaCl₂ 10ml → 1g/10ml</option>
+          </select>
+        </div>
+        <input id="gm-vol" type="number" placeholder="医嘱体积(ml)" style="width:100%;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px;margin-bottom:8px">
+        <button class="btn btn-primary btn-full" onclick="calcGrandma()">换算</button>
+        <div id="gm-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
+      ${calcCard('📐 儿童年龄公式','ageformula','Fried / Young / Clark 等经典儿科公式',`
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="af-formula" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)">
+            <option value="fried">Fried公式 (1-12岁)</option>
+            <option value="young">Young公式 (1-12岁)</option>
+            <option value="clark">Clark公式 (体重法)</option>
+          </select>
+          <input id="af-age" type="number" placeholder="年龄(岁)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px">
+        </div>
+        <input id="af-w" type="number" placeholder="体重(kg，Clark公式必填)" style="width:100%;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px;margin-bottom:8px" step="0.1">
+        <input id="af-adult" type="number" placeholder="成人剂量" style="width:100%;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px;margin-bottom:8px" step="0.1">
+        <button class="btn btn-primary btn-full" onclick="calcAgeFormula()">计算儿童剂量</button>
+        <div id="af-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
+      ${calcCard('💧 输液速度与泵速','infusion','滴速↔ml/h、μg/kg/min↔ml/h 双向换算',`
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="crcl-sex" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px;border:1px solid var(--border)"><option value="male">男</option><option value="female">女</option></select>
+          <input id="crcl-age" type="number" placeholder="年龄(岁)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="crcl-w" type="number" placeholder="体重(kg)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.1">
+          <input id="crcl-scr" type="number" placeholder="血肌酐(μmol/L)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.1">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="calcCrCl()">计算 CrCl</button>
+        <div id="crcl-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
       ${calcCard('💧 输液速度与泵速','infusion','滴速↔ml/h、μg/kg/min↔ml/h 双向换算',`
         <div style="display:flex;gap:8px;margin-bottom:8px">
           <select id="inf-mode" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)" onchange="toggleInfMode()">
@@ -296,6 +398,148 @@ function showSkinTest(){
 }
 
 function filterCalcTools(){ const kw=document.getElementById('calc-filter').value.toLowerCase(); document.querySelectorAll('#calc-tools .detail-hero').forEach(el=>{ el.style.display=el.textContent.toLowerCase().includes(kw)?'block':'none'; }); }
+
+// ═══ 新增计算函数 ═══
+
+// 1. eGFR
+function calcEGFR(){
+  var sex=document.getElementById('egfr-sex').value;
+  var age=parseFloat(document.getElementById('egfr-age').value);
+  var scr=parseFloat(document.getElementById('egfr-scr').value);
+  var race=document.getElementById('egfr-race').value;
+  var formula=document.getElementById('egfr-formula').value;
+  var r=document.getElementById('egfr-result');
+  if(!age||!scr){ r.textContent='请填写完整信息'; r.style.display='block'; return; }
+  var scrMg=scr/88.4;
+  var egfr;
+  if(formula==='ckdepi'){
+    var k=sex==='female'?0.7:0.9;
+    var a=sex==='female'?-0.329:-0.411;
+    var min=Math.min(scrMg/k,1);
+    var max=Math.max(scrMg/k,1);
+    egfr=141*Math.pow(min,a)*Math.pow(max,-1.209)*Math.pow(0.993,age);
+    if(sex==='female') egfr*=1.018;
+    if(race==='black') egfr*=1.159;
+  } else {
+    egfr=175*Math.pow(scrMg,-1.154)*Math.pow(age,-0.203);
+    if(sex==='female') egfr*=0.742;
+    if(race==='black') egfr*=1.212;
+  }
+  var stage=egfr>=90?'G1 肾功能正常或增高':egfr>=60?'G2 轻度下降':egfr>=45?'G3a 轻-中度下降':egfr>=30?'G3b 中-重度下降':egfr>=15?'G4 重度下降':'G5 肾衰竭';
+  var color=egfr>=60?'var(--primary)':egfr>=30?'var(--accent)':'var(--danger)';
+  r.style.display='block';
+  r.innerHTML='<div style="font-size:22px;font-weight:700;color:'+color+'">eGFR ≈ '+egfr.toFixed(1)+' mL/min/1.73m²</div><div style="margin-top:6px">'+stage+'</div><div style="font-size:11px;color:var(--text-light);margin-top:4px">'+(formula==='ckdepi'?'CKD-EPI 2009':'MDRD 简化公式')+' | Scr='+scr+'μmol/L</div>';
+}
+
+// 2. Child-Pugh
+function calcChildPugh(){
+  var bili=parseInt(document.getElementById('cp-bili').value)||0;
+  var alb=parseInt(document.getElementById('cp-alb').value)||0;
+  var pt=parseInt(document.getElementById('cp-pt').value)||0;
+  var ascites=parseInt(document.getElementById('cp-ascites').value)||0;
+  var enceph=parseInt(document.getElementById('cp-enceph').value)||0;
+  var r=document.getElementById('cp-result');
+  if(!bili||!alb||!pt||!ascites||!enceph){ r.textContent='请填写全部5项评分'; r.style.display='block'; return; }
+  var total=bili+alb+pt+ascites+enceph;
+  var grade=total<=6?'A级 (5-6分) 代偿良好':total<=9?'B级 (7-9分) 中度损害':'C级 (10-15分) 失代偿';
+  var color=total<=6?'var(--primary)':total<=9?'var(--accent)':'var(--danger)';
+  r.style.display='block';
+  r.innerHTML='<div style="font-size:22px;font-weight:700;color:'+color+'">'+total+' 分</div><div style="margin-top:6px">'+grade+'</div><div style="font-size:11px;color:var(--text-light);margin-top:4px">1年存活率：A级100% · B级80% · C级45%</div>';
+}
+
+// 3. 华法林调整
+function calcWarfarin(){
+  var inr=parseFloat(document.getElementById('war-inr').value);
+  var target=document.getElementById('war-target').value;
+  var dose=parseFloat(document.getElementById('war-dose').value);
+  var r=document.getElementById('war-result');
+  if(!inr||!dose){ r.textContent='请填写完整信息'; r.style.display='block'; return; }
+  var low=target==='2-3'?2.0:2.5;
+  var high=target==='2-3'?3.0:3.5;
+  var advice,color;
+  if(inr<low){ advice='INR低于目标，增加剂量 5-10%'; color='var(--accent)'; }
+  else if(inr>high){ advice='INR高于目标，减少剂量 5-10%'; color='var(--danger)'; }
+  else { advice='INR在目标范围内，维持当前剂量'; color='var(--primary)'; }
+  if(inr>4.5){ advice='INR>4.5，暂停用药，维生素K 1-2mg口服，次日复查'; color='var(--danger)'; }
+  if(inr>9){ advice='INR>9，暂停用药，维生素K 3-5mg口服，密切监测'; color='var(--danger)'; }
+  r.style.display='block';
+  r.innerHTML='<div style="font-size:18px;font-weight:700;color:'+color+'">'+advice+'</div><div style="font-size:12px;color:var(--text-light);margin-top:6px">当前 INR：'+inr+' | 目标：'+target+' | 当前剂量：'+dose+'mg/日</div>';
+}
+
+// 4. 等效剂量换算
+var EQ_DATA={
+  steroid:{'氢化可的松':1,'泼尼松':0.8,'泼尼松龙':0.8,'甲泼尼龙':0.8,'地塞米松':0.15,'倍他米松':0.15},
+  opioid:{'吗啡':1,'羟考酮':1.5,'芬太尼':0.1,'曲马多':0.1,'哌替啶':0.1},
+  benzo:{'地西泮':1,'劳拉西泮':0.5,'奥沙西泮':1,'氯硝西泮':0.25}
+};
+function updateEqDrugs(){
+  var cls=document.getElementById('eq-class').value;
+  var drugs=Object.keys(EQ_DATA[cls]);
+  var opts=drugs.map(function(d){return '<option value="'+d+'">'+d+'</option>';}).join('');
+  document.getElementById('eq-from').innerHTML=opts;
+  document.getElementById('eq-to').innerHTML=opts;
+}
+function calcEquivalent(){
+  var cls=document.getElementById('eq-class').value;
+  var fromDrug=document.getElementById('eq-from').value;
+  var toDrug=document.getElementById('eq-to').value;
+  var dose=parseFloat(document.getElementById('eq-dose').value);
+  var r=document.getElementById('eq-result');
+  if(!dose){ r.textContent='请输入剂量'; r.style.display='block'; return; }
+  var ratio=EQ_DATA[cls][fromDrug]/EQ_DATA[cls][toDrug];
+  var result=dose*ratio;
+  r.style.display='block';
+  r.innerHTML='<div style="font-size:20px;font-weight:700;color:var(--primary)">'+dose+fromDrug+' ≈ '+result.toFixed(2)+toDrug+'</div><div style="font-size:12px;color:var(--text-light);margin-top:4px">等效系数：'+fromDrug+'/'+toDrug+' = '+ratio.toFixed(3)+'</div>';
+}
+
+// 5. 稳态浓度与负荷剂量
+function calcSteady(){
+  var vd=parseFloat(document.getElementById('ss-vd').value);
+  var cl=parseFloat(document.getElementById('ss-cl').value);
+  var target=parseFloat(document.getElementById('ss-target').value);
+  var tau=parseFloat(document.getElementById('ss-tau').value);
+  var r=document.getElementById('ss-result');
+  if(!vd||!cl||!target||!tau){ r.textContent='请填写完整信息'; r.style.display='block'; return; }
+  var ld=target*vd;
+  var md=target*cl*tau;
+  var t12=(0.693*vd)/cl;
+  r.style.display='block';
+  r.innerHTML='<div style="font-size:18px;font-weight:700;color:var(--primary)">负荷剂量：'+ld.toFixed(1)+' mg</div><div style="font-size:18px;font-weight:700;color:var(--accent);margin-top:4px">维持剂量：'+md.toFixed(1)+' mg / '+tau+'h</div><div style="font-size:12px;color:var(--text-light);margin-top:6px">半衰期 t½ ≈ '+t12.toFixed(1)+' h | 达稳态约 '+Math.round(5*t12)+' h (5个半衰期)</div>';
+}
+
+// 6. 奶奶水换算
+var GM_DATA={
+  insulin:{name:'胰岛素',desc:'400U/10ml 原液',result:'取医嘱体积即 40U/ml，无需稀释'},
+  kcl:{name:'10% KCl',desc:'10ml = 1g KCl = 13.4mmol K⁺',result:'1ml = 0.1g = 1.34mmol，直接按医嘱加入输液'},
+  nacl:{name:'0.9% NS',desc:'0.9g/100ml = 154mmol/L Na⁺',result:'等渗溶液，可直接使用'},
+  gs:{name:'5% GS',desc:'5g/100ml = 50g/L 葡萄糖',result:'可直接使用，注意糖尿病患者'},
+  cacl:{name:'10% CaCl₂',desc:'10ml = 1g = 6.8mmol Ca²⁺',result:'1ml = 0.1g = 0.68mmol，缓慢静推'}
+};
+function calcGrandma(){
+  var drug=document.getElementById('gm-drug').value;
+  var vol=parseFloat(document.getElementById('gm-vol').value);
+  var r=document.getElementById('gm-result');
+  var data=GM_DATA[drug];
+  if(!vol){ r.textContent='请输入医嘱体积'; r.style.display='block'; return; }
+  r.style.display='block';
+  r.innerHTML='<div style="font-weight:700;color:var(--primary);margin-bottom:6px">'+data.name+'</div><div style="font-size:13px">'+data.desc+'</div><div style="font-size:13px;margin-top:6px;color:var(--accent)">'+data.result+'</div><div style="font-size:12px;color:var(--text-light);margin-top:4px">医嘱体积：'+vol+'ml</div>';
+}
+
+// 7. 儿童年龄公式
+function calcAgeFormula(){
+  var formula=document.getElementById('af-formula').value;
+  var age=parseFloat(document.getElementById('af-age').value);
+  var w=parseFloat(document.getElementById('af-w').value);
+  var adultDose=parseFloat(document.getElementById('af-adult').value);
+  var r=document.getElementById('af-result');
+  if(!age||!adultDose){ r.textContent='请填写完整信息'; r.style.display='block'; return; }
+  var childDose,formulaName;
+  if(formula==='fried'){ childDose=adultDose*age/12; formulaName='Fried公式：年龄/12 × 成人剂量'; }
+  else if(formula==='young'){ childDose=adultDose*age/(age+12); formulaName='Young公式：年龄/(年龄+12) × 成人剂量'; }
+  else { if(!w){ r.textContent='Clark公式需要体重'; r.style.display='block'; return; } childDose=adultDose*w/70; formulaName='Clark公式：体重/70 × 成人剂量'; }
+  r.style.display='block';
+  r.innerHTML='<div style="font-size:20px;font-weight:700;color:var(--primary)">儿童剂量 ≈ '+childDose.toFixed(2)+'</div><div style="font-size:12px;color:var(--text-light);margin-top:4px">'+formulaName+'</div>';
+}
 
 // ═══ DDD 计算 ═══
 const DDD_VALUES={ amoxicillin_po:{ddd:1.0,route:'口服/注射'},ceftriaxone:{ddd:2.0,route:'注射'},levofloxacin_po:{ddd:0.5,route:'口服/注射'},azithromycin_po:{ddd:0.5,route:'口服/注射'},moxifloxacin:{ddd:0.4,route:'口服/注射'},cefoperazone_sulb:{ddd:4.0,route:'注射'},piperacillin_tazo:{ddd:14.0,route:'注射'},vancomycin_iv:{ddd:2.0,route:'注射'},meropenem:{ddd:3.0,route:'注射'},metronidazole:{ddd:1.5,route:'口服/注射'},clindamycin:{ddd:1.8,route:'口服/注射'},linezolid:{ddd:1.2,route:'口服/注射'} };
