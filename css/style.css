@@ -103,7 +103,7 @@ svg{display:block}
 .cat-arrow{width:18px;height:18px;color:var(--muted-fg)}
 .cat-subs{display:flex;gap:8px;flex-wrap:wrap}
 .cat-items{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;transition:all .2s}
-.cat-sub{display:flex;align-items:center;height:26px;padding:0 8px;background:var(--bg);border-radius:6px;font-size:12px;font-weight:500;color:var(--primary)}
+.cat-sub{display:flex;align-items:center;justify-content:center;min-height:32px;padding:4px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:500;color:var(--primary);text-align:center;word-break:break-all}
 
 /* ── 详情页 ── */
 .detail-hero{background:var(--card);border-radius:var(--radius-xl);padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
