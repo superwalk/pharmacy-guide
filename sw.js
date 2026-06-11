@@ -1,4 +1,4 @@
-const CACHE = 'pharmacy-v49';
+const CACHE = 'pharmacy-v50';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/','/index.html','/css/style.css','/js/app.js','/js/auth.js','/js/data.js','/js/nav.js','/js/calc.js','/js/admin.js','/manifest.json'])));
 });

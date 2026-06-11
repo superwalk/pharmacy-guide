@@ -339,7 +339,7 @@ function renderGuidelines() {
   let systems=getGuideSystems();
   if(kw){
     systems=systems.map(function(s){
-      return {system:s.system,icon:s.icon,items:s.items.filter(function(g){return (g.title||'').toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||(g.system||'').toLowerCase().indexOf(kw)>=0||(g.py||'').toLowerCase().indexOf(kw)>=0||genPy(g.title||'').toLowerCase().indexOf(kw)>=0||genPy(g.system||'').toLowerCase().indexOf(kw)>=0;});};
+      return {system:s.system,icon:s.icon,items:s.items.filter(function(g){return (g.title||'').toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||(g.system||'').toLowerCase().indexOf(kw)>=0||(g.py||'').toLowerCase().indexOf(kw)>=0||genPy(g.title||'').toLowerCase().indexOf(kw)>=0||genPy(g.system||'').toLowerCase().indexOf(kw)>=0;})};
     }).filter(function(s){return s.items.length>0;});
   } else if(!kw){
     // 搜索框清空后恢复默认全部展开(折叠)状态
