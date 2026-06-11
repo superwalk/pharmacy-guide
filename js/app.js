@@ -289,7 +289,12 @@ function openGuide(gid) {
   var md=extractMentionedDrugs(g.content||'');
   if(md.length>0) document.getElementById('label-content').insertAdjacentHTML('beforeend','<div class="section-title" style="margin-top:8px">💊 指南提及药品</div>'+md.map(function(d){return '<div class="list-card" onclick="pushScreen("detail");renderDetail("'+d.id+'\")" style="cursor:pointer"><div class="icon-box">💊</div><div class="info"><div class="name">'+d.name+'</div><div class="desc">'+d.category+'</div></div></div>';}).join(''));
   showEditBtn({type:'guide',id:gid}); addRecent(gid,'guide');
-  document.getElementById('label-content').insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="viewGuideFull(\"'+gid+'\")" style="font-size:13px;padding:6px 16px">📄 查看全文</button></div>');
+  var fnBtn=document.createElement('button');
+  fnBtn.className='btn btn-outline btn-sm';
+  fnBtn.style.cssText='font-size:13px;padding:6px 16px;margin-top:12px';
+  fnBtn.textContent='📄 查看全文';
+  fnBtn.onclick=function(){ viewGuideFull(gid); };
+  document.getElementById('label-content').appendChild(fnBtn);
 }
 
 // ═══ 药品详情 ───
@@ -534,7 +539,12 @@ function openHealthEdu(hid) {
   var md=extractMentionedDrugs(g.content||'');
   if(md.length>0) document.getElementById('label-content').insertAdjacentHTML('beforeend','<div class="section-title" style="margin-top:8px">💊 指南提及药品</div>'+md.map(function(d){return '<div class="list-card" onclick="pushScreen("detail");renderDetail("'+d.id+'\")" style="cursor:pointer"><div class="icon-box">💊</div><div class="info"><div class="name">'+d.name+'</div><div class="desc">'+d.category+'</div></div></div>';}).join(''));
   showEditBtn({type:'guide',id:gid}); addRecent(gid,'guide');
-  document.getElementById('label-content').insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="viewGuideFull(\"'+gid+'\")" style="font-size:13px;padding:6px 16px">📄 查看全文</button></div>');
+  var fnBtn=document.createElement('button');
+  fnBtn.className='btn btn-outline btn-sm';
+  fnBtn.style.cssText='font-size:13px;padding:6px 16px;margin-top:12px';
+  fnBtn.textContent='📄 查看全文';
+  fnBtn.onclick=function(){ viewGuideFull(gid); };
+  document.getElementById('label-content').appendChild(fnBtn);
 }
 
 // ═══ 输液配伍 ─══
