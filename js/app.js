@@ -212,10 +212,13 @@ function renderKnowledge() {
   if(activeTab==='drug'){
     let cats=DRUG_CATEGORIES;
     if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw)));
-    kb.innerHTML=cats.map(c=>`
+    kb.innerHTML=cats.map((c,i)=>`
       <div class="cat-card">
-        <div class="cat-header" onclick="showDrugList('cat','${c.id}')"><span class="cat-name">${c.name}</span><span class="cat-arrow">›</span></div>
-        <div class="cat-subs">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();showDrugList('sub','${s}')">${s}</span>`).join('')}</div>
+        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${i})" data-cat-expanded="true">
+          <span class="cat-name">${c.name}</span>
+          <span class="cat-subs-count" style="font-size:12px;color:var(--text-light);margin-right:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▼</span></span>
+        </div>
+        <div class="cat-items" id="cat-group-${i}" style="display:block;padding:4px 12px 10px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();showDrugList('sub','${s}')">${s}</span>`).join('')}</div>
       </div>
     `).join('');
     if(kw){
@@ -226,7 +229,7 @@ function renderKnowledge() {
   } else {
     let cats= DISEASE_CATEGORIES;
     if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw)));
-    kb.innerHTML=cats.map(c=>`\n      <div class="cat-card">\n        <div class="cat-header" onclick="showDiseaseList('${c.name}')"><span class="cat-name">${c.name}</span><span class="cat-arrow">›</span></div>\n        <div class="cat-subs">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();openDisease('${s}')">${s}</span>`).join('')}</div>\n      </div>\n    `).join('');
+    kb.innerHTML=cats.map((c,i)=>`\n      <div class="cat-card">\n        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${100+i})" data-cat-expanded="true">\n          <span class="cat-name">${c.name}</span>\n          <span style="font-size:12px;color:var(--text-light);margin-right:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▼</span></span>\n        </div>\n        <div class="cat-items" id="cat-group-${100+i}" style="display:block;padding:4px 12px 10px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();openDisease('${s}')">${s}</span>`).join('')}</div>\n      </div>\n    `).join('');
     if(kw){
       const matches=DISEASES.filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase().includes(kw));
       if(matches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配疾病</div>`+matches.map(d=>`<div class="list-card" onclick="openDisease('${d.name}')"><div class="icon-box">🦠</div><div class="info"><div class="name">${d.name}</div><div class="desc">${(d.desc||'').slice(0,40)}…</div></div></div>`).join('');
@@ -289,6 +292,15 @@ function toggleGuideGroup(header) {
   const expanded=header.dataset.expanded==='true';
   if(expanded){ items.style.display='none'; arrow.style.transform='rotate(-90deg)'; arrow.textContent='▶'; header.dataset.expanded='false'; }
   else { items.style.display='block'; arrow.style.transform='rotate(0deg)'; arrow.textContent='▼'; header.dataset.expanded='true'; }
+}
+// 药品/疾病分类折叠
+function toggleCatGroup(header, idx) {
+  const items=document.getElementById('cat-group-'+idx);
+  const arrow=header.querySelector('.cat-arrow');
+  if(!items||!arrow) return;
+  const expanded=header.dataset.catExpanded==='true';
+  if(expanded){ items.style.display='none'; arrow.style.transform='rotate(-90deg)'; arrow.textContent='▶'; header.dataset.catExpanded='false'; }
+  else { items.style.display='block'; arrow.style.transform='rotate(0deg)'; arrow.textContent='▼'; header.dataset.catExpanded='true'; }
 }
 
 function openGuide(gid) {

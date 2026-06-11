@@ -102,6 +102,7 @@ svg{display:block}
 .cat-name{font-size:16px;font-family:var(--font-heading);font-weight:700;color:var(--primary-dark)}
 .cat-arrow{width:18px;height:18px;color:var(--muted-fg)}
 .cat-subs{display:flex;gap:8px;flex-wrap:wrap}
+.cat-items{display:flex;gap:8px;flex-wrap:wrap;transition:all .2s}
 .cat-sub{display:flex;align-items:center;height:26px;padding:0 8px;background:var(--bg);border-radius:6px;font-size:12px;font-weight:500;color:var(--primary)}
 
 /* ── 详情页 ── */
