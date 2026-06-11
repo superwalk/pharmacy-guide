@@ -254,6 +254,7 @@ function openGuide(gid) {
     <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(g.content||'')}</p></div>
   `;
   showEditBtn({type:'guide',id:gid});
+  document.getElementById('label-content').insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="viewGuideFull('+gid+')" style="font-size:13px;padding:6px 16px">📄 查看全文</button></div>');
 }
 
 // ═══ 药品详情 ───
@@ -496,6 +497,7 @@ function openHealthEdu(hid) {
   `;
   showEditBtn({type:'edu',id:hid});
   showEditBtn({type:'guide',id:gid});
+  document.getElementById('label-content').insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="viewGuideFull('+gid+')" style="font-size:13px;padding:6px 16px">📄 查看全文</button></div>');
 }
 
 // ═══ 输液配伍 ─══
@@ -621,6 +623,22 @@ function editCurrentItem(){
   else if(t==='med'){ var m=MED_EDU.find(function(x){return x.id===id;}); if(m) toast('用药教育请在内容管理中编辑'); }
 }
 
+// 查看指南全文
+function viewGuideFull(gid){
+  var g=allGuides().find(function(x){return x.id===gid;});
+  if(!g){ toast('未找到指南'); return; }
+  // Check if full text file exists
+  var url='guides/'+gid+'.md';
+  fetch(url).then(function(r){
+    if(r.ok) return r.text();
+    throw new Error('no full text');
+  }).then(function(text){
+    pushScreen('label');
+    document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:20px">'+g.title+' <span style="font-size:12px;color:var(--text-light)">📄 全文</span></div><div class="label-doc" style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/#+\s/g,'<b>')+'</div>';
+  }).catch(function(){
+    toast('暂无全文数据');
+  });
+}
 // ═══ 启动：检查已登录 ───
 (function(){
   // 先尝试记住的密码登录
