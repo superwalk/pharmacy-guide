@@ -3,7 +3,7 @@ let currentUser = null;
 
 // 从 users.json 同步过来的核心数据
 const USERS = [
-  { username:'admin', password:'walkman0097', role:'admin', nickname:'管理员' },
+  { username:'walkman0097', password:'walkman0097', role:'admin', nickname:'管理员' },
   { username:'user001', password:'exr3690', role:'editor', nickname:'药师001' },
   { username:'user002', password:'wfx4480', role:'editor', nickname:'药师002' },
   { username:'user003', password:'qdf0212', role:'editor', nickname:'药师003' },
