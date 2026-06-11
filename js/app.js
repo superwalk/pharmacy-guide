@@ -245,24 +245,24 @@ function renderKnowledge() {
     kb.innerHTML=cats.map((c,i)=>`
       <div class="cat-card">
         <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${i})" data-cat-expanded="true">
-          <span class="cat-name">${c.name}</span>
+          <span class="cat-name">${kw ? highlightKw(c.name, kw) : c.name}</span>
           <span class="cat-subs-count" style="font-size:12px;color:var(--text-light);margin-right:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▼</span></span>
         </div>
-        <div class="cat-items" id="cat-group-${i}" style="display:block;padding:4px 12px 10px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();showDrugList('sub','${s}')">${s}</span>`).join('')}</div>
+        <div class="cat-items" id="cat-group-${i}" style="display:block;padding:4px 12px 10px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();showDrugList('sub','${s}')">${kw ? highlightKw(s, kw) : s}</span>`).join('')}</div>
       </div>
     `).join('');
     if(kw){
       const dmatches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase().includes(kw)||genPy(d.name).toLowerCase().includes(kw));
-      if(dmatches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配药品 (${dmatches.length})</div>`+dmatches.map(d=>`<div class="list-card" data-drug="${d.id}" style="cursor:pointer"><div class="icon-box">💊</div><div class="info"><div class="name">${d.name}</div><div class="desc">${d.category} · ${d.indications.slice(0,30)}…</div></div></div>`).join('');
+      if(dmatches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配药品 (${dmatches.length})</div>`+dmatches.map(d=>`<div class="list-card" data-drug="${d.id}" style="cursor:pointer"><div class="icon-box">💊</div><div class="info"><div class="name">${highlightKw(d.name, kw)}</div><div class="desc">${highlightKw(d.category, kw)} · ${(d.indications||'').slice(0,30)}…</div></div></div>`).join('');
       kb.querySelectorAll('.list-card[data-drug]').forEach(function(c){c.onclick=function(){pushScreen('detail');renderDetail(c.dataset.drug);};});
     }
   } else {
     let cats= DISEASE_CATEGORIES;
     if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw))||genPy(c.name).toLowerCase().includes(kw)||c.subs.some(s=>genPy(s).toLowerCase().includes(kw)));
-    kb.innerHTML=cats.map((c,i)=>`\n      <div class="cat-card">\n        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${100+i})" data-cat-expanded="true">\n          <span class="cat-name">${c.name}</span>\n          <span style="font-size:12px;color:var(--text-light);margin-right:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▼</span></span>\n        </div>\n        <div class="cat-items" id="cat-group-${100+i}" style="display:block;padding:4px 12px 10px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();openDisease('${s}')">${s}</span>`).join('')}</div>\n      </div>\n    `).join('');
+    kb.innerHTML=cats.map((c,i)=>`\n      <div class="cat-card">\n        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${100+i})" data-cat-expanded="true">\n          <span class="cat-name">${kw ? highlightKw(c.name, kw) : c.name}</span>\n          <span style="font-size:12px;color:var(--text-light);margin-right:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▼</span></span>\n        </div>\n        <div class="cat-items" id="cat-group-${100+i}" style="display:block;padding:4px 12px 10px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();openDisease('${s}')">${kw ? highlightKw(s, kw) : s}</span>`).join('')}</div>\n      </div>\n    `).join('');
     if(kw){
       const matches=DISEASES.filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase().includes(kw)||genPy(d.name).toLowerCase().includes(kw));
-      if(matches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配疾病</div>`+matches.map(d=>`<div class="list-card" onclick="openDisease('${d.name}')"><div class="icon-box">🦠</div><div class="info"><div class="name">${d.name}</div><div class="desc">${(d.desc||'').slice(0,40)}…</div></div></div>`).join('');
+      if(matches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配疾病</div>`+matches.map(d=>`<div class="list-card" onclick="openDisease('${d.name}')"><div class="icon-box">🦠</div><div class="info"><div class="name">${highlightKw(d.name, kw)}</div><div class="desc">${(d.desc||'').slice(0,40)}…</div></div></div>`).join('');
     }
   }
 
@@ -308,7 +308,7 @@ function renderGuidelines() {
         <span class="cat-name">${s.icon} ${s.system}</span>
         <span style="font-size:12px;color:var(--text-light)">${s.items.length} 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></span>
       </div>
-      <div class="guide-items" id="guide-group-${i}" style="display:none;flex-wrap:wrap;gap:6px">${s.items.map(g=>`<span class="guide-item" data-gid="${g.id}" style="display:inline-block;padding:4px 10px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;white-space:nowrap">${g.title} <span style="color:var(--text-light)">${g.year||''}</span></span>`).join('')}</div>
+      <div class="guide-items" id="guide-group-${i}" style="display:none;flex-wrap:wrap;gap:6px">${s.items.map(g=>`<span class="guide-item" data-gid="${g.id}" style="display:inline-block;padding:4px 10px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;white-space:nowrap">${highlightKw(g.title, kw)} <span style="color:var(--text-light)">${g.year||''}</span></span>`).join('')}</div>
     </div>
   `).join('');
   if(systems.length===0&&kw) gl.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">未找到匹配的指南或法规</div>';
@@ -368,6 +368,13 @@ function hlText(t){
   if(!window._lastQuery) return t;
   var re=new RegExp('('+window._lastQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
   return t.replace(re,'<mark style="background:#FEF08A;padding:1px 2px;border-radius:2px">$1</mark>');
+}
+
+// 通用关键词高亮
+function highlightKw(text, kw) {
+  if (!kw || !text) return text || '';
+  var re = new RegExp('(' + kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+  return text.replace(re, '<mark style="background:#FEF08A;padding:1px 2px;border-radius:2px">$1</mark>');
 }
 
 function renderDetail(drugId) {
@@ -454,7 +461,7 @@ function renderFavorites() {
     });
   }
   if(kw) items=items.filter(i=>i.name.toLowerCase().includes(kw)||i.cat.includes(kw));
-  fl.innerHTML=items.map(i=>`<div class="list-card" data-id="${i.id}" data-type="${i.type}"><div class="icon-box">${i.type==='drug'?'💊':i.type==='guide'?'📋':'🧮'}</div><div class="info"><div class="name">${i.name}</div><div class="desc">${i.cat}</div></div></div>`).join('');
+  fl.innerHTML=items.map(i=>`<div class="list-card" data-id="${i.id}" data-type="${i.type}"><div class="icon-box">${i.type==='drug'?'💊':i.type==='guide'?'📋':'🧮'}</div><div class="info"><div class="name">${highlightKw(i.name, kw)}</div><div class="desc">${highlightKw(i.cat, kw)}</div></div></div>`).join('');
   fl.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{ 
     if(c.dataset.type==='drug'){ addRecent(c.dataset.id); addRecent(c.dataset.id,'drug'); }
     else if(c.dataset.type==='calc'){ pushScreen('calc'); renderCalc(); setTimeout(function(){ var el=document.getElementById(c.dataset.id.replace('calc-','')); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); },300); }
@@ -499,7 +506,7 @@ function initCompare() {
     if(kw.length<1){ res.style.display='none'; return; }
     const matches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw)||d.category.includes(kw)).slice(0,5);
     res.style.display='block';
-    res.innerHTML=matches.map(d=>`<div class="result-item" data-id="${d.id}">${d.name} <span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('');
+    res.innerHTML=matches.map(d=>`<div class="result-item" data-id="${d.id}">${highlightKw(d.name, kw)} <span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('');
     res.querySelectorAll('.result-item').forEach(r=>r.onclick=()=>{ addToCompare(r.dataset.id); document.getElementById('cmp-search').value=''; res.style.display='none'; });
   };
 }
@@ -706,7 +713,7 @@ function renderHealthEdu() {
     if(items.length===0) return '';
     return `<div class="cat-card" style="margin-bottom:8px">
       <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="true"><span class="cat-name">${cat}</span><span style="font-size:12px;color:var(--text-light)">${items.length} 篇 <span class="guide-arrow">▼</span></span></div>
-      <div class="guide-items">${items.map(h=>`<div class="guide-item" data-hid="${h.id}" style="display:flex;gap:6px;align-items:center;padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><span style="width:6px;height:6px;background:#D97706;border-radius:3px;flex-shrink:0"></span><span style="color:var(--text-body);flex:1">${h.title}</span></div>`).join('')}</div>
+      <div class="guide-items">${items.map(h=>`<div class="guide-item" data-hid="${h.id}" style="display:flex;gap:6px;align-items:center;padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><span style="width:6px;height:6px;background:#D97706;border-radius:3px;flex-shrink:0"></span><span style="color:var(--text-body);flex:1">${highlightKw(h.title, kw)}</span></div>`).join('')}</div>
     </div>`;
   }).join('');
   hl.querySelectorAll('.guide-item').forEach(item=>{ item.onclick=()=>openHealthEdu(item.dataset.hid); });
@@ -742,7 +749,7 @@ function renderInfusion() {
     if(items.length===0) return '';
     return `<div class="cat-card" style="margin-bottom:8px">
       <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="true"><span class="cat-name">${cat}</span><span style="font-size:12px;color:var(--text-light)">${items.length} 条 <span class="guide-arrow">▼</span></span></div>
-      <div class="guide-items">${items.map(i=>`<div class="guide-item" data-iid="${i.id}" style="display:flex;gap:6px;align-items:center;padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><span style="width:6px;height:6px;background:#7C3AED;border-radius:3px;flex-shrink:0"></span><span style="color:var(--text-body);flex:1;font-weight:600">${i.drug}</span><span style="font-size:11px;color:var(--text-light)">${i.vehicle||''}</span></div>`).join('')}</div>
+      <div class="guide-items">${items.map(i=>`<div class="guide-item" data-iid="${i.id}" style="display:flex;gap:6px;align-items:center;padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><span style="width:6px;height:6px;background:#7C3AED;border-radius:3px;flex-shrink:0"></span><span style="color:var(--text-body);flex:1;font-weight:600">${highlightKw(i.drug, kw)}</span><span style="font-size:11px;color:var(--text-light)">${i.vehicle||''}</span></div>`).join('')}</div>
     </div>`;
   }).join('');
   il.querySelectorAll('.guide-item').forEach(item=>{ item.onclick=()=>openInfusion(item.dataset.iid); });
@@ -823,7 +830,7 @@ function renderMedEdu(){
   hl.innerHTML=cats.map(function(cat){
     var items=data.filter(function(m){return m.cat===cat;});
     if(items.length===0) return '';
-    return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">'+cat+'</span><span style="font-size:12px;color:var(--text-light)">'+items.length+' 条 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></span></div><div class="guide-items" style="display:none">'+items.map(function(m){return '<div class="guide-item" data-meid="'+m.id+'" style="padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><div style="font-weight:600;color:var(--primary-dark)">'+m.drug+'</div><div style="color:var(--text-body);font-size:12px;margin-top:2px">'+m.key+'</div></div>';}).join('')+'</div></div>';
+    return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">'+cat+'</span><span style="font-size:12px;color:var(--text-light)">'+items.length+' 条 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></span></div><div class="guide-items" style="display:none">'+items.map(function(m){return '<div class="guide-item" data-meid="'+m.id+'" style="padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><div style="font-weight:600;color:var(--primary-dark)">'+highlightKw(m.drug, kw)+'</div><div style="color:var(--text-body);font-size:12px;margin-top:2px">'+m.key+'</div></div>';}).join('')+'</div></div>';
   }).join('');
   hl.querySelectorAll('.guide-item').forEach(function(item){item.onclick=function(){openMedEdu(item.dataset.meid);};});
   document.getElementById('me-search').oninput=renderMedEdu;
