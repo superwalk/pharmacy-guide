@@ -176,8 +176,8 @@ function renderHome() {
       if(nav==='healthedu'){ pushScreen('healthedu'); renderHealthEdu(); return; }
       if(nav==='infusion'){ pushScreen('infusion'); renderInfusion(); return; }
       if(nav==='mededu'){ pushScreen('mededu'); renderMedEdu(); return; }
-      if(card.dataset.tab) { showScreen(nav); document.querySelectorAll('#kb-tabs .segment-item').forEach(t=>t.classList.toggle('active',t.dataset.tab===card.dataset.tab)); renderKnowledge(); }
-      else { showScreen(nav); }
+      if(card.dataset.tab) { pushScreen(nav); document.querySelectorAll('#kb-tabs .segment-item').forEach(t=>t.classList.toggle('active',t.dataset.tab===card.dataset.tab)); renderKnowledge(); }
+      else { pushScreen(nav); }
     };
   });
   const rl=document.getElementById('recent-list');
