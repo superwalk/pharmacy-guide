@@ -1,0 +1,15 @@
+{
+  "id": "d082",
+  "name": "左氧氟沙星滴眼液",
+  "py": "ZYFSXDYY",
+  "en": "Levofloxacin Eye Drops",
+  "category": "五官科用药",
+  "subcategory": "眼科用药",
+  "type": "处方药",
+  "indications": "细菌性结膜炎、角膜炎。",
+  "contraindications": "喹诺酮类过敏者。",
+  "adverse": "一过性眼刺激。",
+  "dosage": "1-2滴，q2-4h。",
+  "storage": "遮光密封。",
+  "interactions": "与其他眼用制剂间隔≥5min使用。"
+}

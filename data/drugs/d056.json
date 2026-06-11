@@ -1,0 +1,15 @@
+{
+  "id": "d056",
+  "name": "苯溴马隆片",
+  "py": "BXMLP",
+  "en": "Benzbromarone",
+  "category": "解热镇痛药",
+  "subcategory": "抗痛风药",
+  "type": "处方药",
+  "indications": "原发性高尿酸血症。",
+  "contraindications": "中度以上肾功能不全、肾结石。",
+  "adverse": "胃肠反应；偶见肝毒性。",
+  "dosage": "50mg qd，早餐后服。用药期间保证每日饮水>2000mL。",
+  "storage": "密封保存。",
+  "interactions": "与华法林合用增强抗凝。水杨酸类药物减弱其促尿酸排泄作用。"
+}

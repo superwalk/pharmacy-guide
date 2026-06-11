@@ -1,0 +1,15 @@
+{
+  "id": "d080",
+  "name": "塞来昔布胶囊",
+  "py": "SLXBJN",
+  "en": "Celecoxib",
+  "category": "解热镇痛药",
+  "subcategory": "非甾体抗炎药",
+  "type": "处方药",
+  "indications": "骨关节炎、类风湿关节炎的疼痛和炎症。",
+  "contraindications": "磺胺类过敏、CABG围术期。",
+  "adverse": "消化道反应（较传统NSAIDs少）、心血管风险（剂量相关）。",
+  "dosage": "0.2g qd-bid。",
+  "storage": "密封保存。",
+  "interactions": "与华法林合用增加出血风险。与ACEI合用可能减弱降压效果。"
+}

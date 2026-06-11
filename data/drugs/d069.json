@@ -1,0 +1,15 @@
+{
+  "id": "d069",
+  "name": "非那雄胺片",
+  "py": "FNXAP",
+  "en": "Finasteride",
+  "category": "男科/泌尿科用药",
+  "subcategory": "前列腺用药",
+  "type": "处方药",
+  "indications": "前列腺增生、男性雄激素性脱发。",
+  "contraindications": "妇女和儿童。",
+  "adverse": "性欲减退、勃起功能障碍。",
+  "dosage": "BPH：5mg qd。脱发：1mg qd。",
+  "storage": "密封保存。",
+  "interactions": "无显著药物相互作用。但可降低血清PSA水平（约50%），解释PSA结果时需注意。"
+}

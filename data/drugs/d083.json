@@ -1,0 +1,15 @@
+{
+  "id": "d083",
+  "name": "糠酸莫米松鼻喷雾剂",
+  "py": "KSMMSBPWJ",
+  "en": "Mometasone Nasal Spray",
+  "category": "五官科用药",
+  "subcategory": "耳鼻喉用药",
+  "type": "处方药",
+  "indications": "过敏性鼻炎。",
+  "contraindications": "鼻部手术后未愈。",
+  "adverse": "鼻出血、咽喉刺激。",
+  "dosage": "每侧鼻孔2喷 qd。",
+  "storage": "密封保存。",
+  "interactions": "与CYP3A4强抑制剂合用可能增加全身暴露。"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "d013",
+  "name": "莫西沙星片",
+  "py": "MXSXP",
+  "en": "Moxifloxacin Tablets",
+  "category": "抗生素",
+  "subcategory": "抗生素",
+  "type": "处方药",
+  "indications": "用于敏感菌所致的社区获得性肺炎、慢性支气管炎急性发作、急性鼻窦炎。",
+  "contraindications": "18岁以下、癫痫患者、QT间期延长者禁用。",
+  "adverse": "常见恶心、腹泻、头晕；偶见QT间期延长、肌腱炎。",
+  "dosage": "一次0.4g，一日1次。疗程5-14天。",
+  "storage": "遮光，密封保存。",
+  "interactions": "与抗心律失常药合用可能加重QT延长。与含金属离子药物间隔2小时以上服用。"
+}

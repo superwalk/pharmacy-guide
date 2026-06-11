@@ -1,0 +1,15 @@
+{
+  "id": "d042",
+  "name": "螺内酯片",
+  "py": "LNZP",
+  "en": "Spironolactone",
+  "category": "心血管系统用药",
+  "subcategory": "利尿剂",
+  "type": "处方药",
+  "indications": "心力衰竭、高血压、原醛症。",
+  "contraindications": "高钾血症、严重肾功能不全。",
+  "adverse": "高钾血症、男性乳房发育、月经紊乱。",
+  "dosage": "心衰：起始20mg qd。",
+  "storage": "密封保存。",
+  "interactions": "与ACEI/ARB合用增加高钾风险。与地高辛合用可增加地高辛血药浓度。"
+}

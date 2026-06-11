@@ -1,0 +1,15 @@
+{
+  "id": "d006",
+  "name": "奥美拉唑肠溶片",
+  "py": "AMLZCRP",
+  "en": "Omeprazole Enteric-coated",
+  "category": "消化系统用药",
+  "subcategory": "抗酸药",
+  "type": "处方药",
+  "indications": "用于胃溃疡、十二指肠溃疡、反流性食管炎、卓-艾综合征。",
+  "contraindications": "对本药过敏者禁用。",
+  "adverse": "常见头痛、腹泻、恶心；长期使用可能增加骨折风险和维生素B12缺乏。",
+  "dosage": "一次20mg，一日1-2次。晨起吞服，不可咀嚼。",
+  "storage": "遮光，密封，阴凉干燥处保存。",
+  "interactions": "与氯吡格雷合用可能降低后者抗血小板效果。影响胃酸依赖药物（如酮康唑）的吸收。"
+}

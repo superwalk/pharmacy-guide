@@ -1,0 +1,16 @@
+{
+  "id": "d034",
+  "name": "万古霉素",
+  "py": "WGMS",
+  "en": "Vancomycin",
+  "category": "抗生素",
+  "subcategory": "抗生素",
+  "type": "处方药（特殊使用级）",
+  "indications": "MRSA等耐药G+菌重症感染。艰难梭菌相关性腹泻（口服）。",
+  "contraindications": "对本药过敏者。",
+  "adverse": "肾毒性、耳毒性、红人综合征。需监测血药谷浓度(10-20mg/L)。",
+  "dosage": "1g q12h 静脉滴注≥60min。",
+  "storage": "密封保存。",
+  "interactions": "与其他肾毒性药物合用增加肾损伤风险。",
+  "tag": "高危"
+}

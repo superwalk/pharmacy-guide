@@ -1,0 +1,16 @@
+{
+  "id": "d055",
+  "name": "别嘌醇片",
+  "py": "BPCP",
+  "en": "Allopurinol",
+  "category": "解热镇痛药",
+  "subcategory": "抗痛风药",
+  "type": "处方药",
+  "indications": "慢性高尿酸血症、痛风石、尿酸性肾病。",
+  "contraindications": "急性痛风发作时不可新用。",
+  "adverse": "皮疹（严重者超敏反应综合征），起始小剂量可减少。",
+  "dosage": "起始50-100mg qd，逐步增量至300mg qd。",
+  "storage": "密封保存。",
+  "interactions": "与硫唑嘌呤、6-MP合用显著增加后者毒性（禁忌联用）。与华法林合用增强抗凝。",
+  "tag": "毒"
+}

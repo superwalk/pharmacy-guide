@@ -1,0 +1,15 @@
+{
+  "id": "d027",
+  "name": "碳酸钙D3片",
+  "py": "TSGDP",
+  "en": "Calcium Carbonate/D3",
+  "category": "营养支持药",
+  "subcategory": "电解质",
+  "type": "OTC",
+  "indications": "用于预防和治疗钙缺乏症、骨质疏松的辅助治疗。",
+  "contraindications": "高钙血症、严重肾功能不全。",
+  "adverse": "偶见便秘、胃肠胀气。",
+  "dosage": "一次1片（钙600mg+D3 200IU），一日1-2次。",
+  "storage": "密封保存。",
+  "interactions": "与四环素类、喹诺酮类抗生素同服影响吸收，需间隔2小时以上。"
+}

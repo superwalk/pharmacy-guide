@@ -1,0 +1,15 @@
+{
+  "id": "d086",
+  "name": "沙美特罗替卡松吸入剂",
+  "py": "SMTLTKSRXJ",
+  "en": "Salmeterol/Fluticasone Inhaler",
+  "category": "呼吸系统用药",
+  "subcategory": "COPD用药",
+  "type": "处方药",
+  "indications": "哮喘和COPD的维持治疗。",
+  "contraindications": "对乳糖或本品过敏者。",
+  "adverse": "声音嘶哑、口腔念珠菌感染、心悸、头痛。",
+  "dosage": "50/250μg或50/500μg bid 吸入。",
+  "storage": "密封保存。",
+  "interactions": "与CYP3A4强抑制剂合用可能增加全身不良反应。"
+}

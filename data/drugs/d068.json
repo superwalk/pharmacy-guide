@@ -1,0 +1,15 @@
+{
+  "id": "d068",
+  "name": "坦索罗辛缓释胶囊",
+  "py": "TSLXHSJN",
+  "en": "Tamsulosin SR",
+  "category": "男科/泌尿科用药",
+  "subcategory": "前列腺用药",
+  "type": "处方药",
+  "indications": "前列腺增生所致的排尿障碍。",
+  "contraindications": "体位性低血压史者。",
+  "adverse": "头晕、射精异常。",
+  "dosage": "0.2mg qd，餐后服。",
+  "storage": "密封保存。",
+  "interactions": "与PDE5抑制剂（西地那非等）合用增加低血压风险。与其他α受体阻滞剂合用注意血压。"
+}

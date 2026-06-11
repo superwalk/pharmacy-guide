@@ -1,0 +1,15 @@
+{
+  "id": "d073",
+  "name": "吸入用布地奈德混悬液",
+  "py": "XRYBDNDHXY",
+  "en": "Budesonide Inhalation",
+  "category": "呼吸系统用药",
+  "subcategory": "平喘药",
+  "type": "处方药",
+  "indications": "支气管哮喘。",
+  "contraindications": "对本品过敏者。",
+  "adverse": "口腔念珠菌感染、声音嘶哑（吸药后漱口可预防）。",
+  "dosage": "0.5-1mg bid 雾化吸入。",
+  "storage": "遮光密封。",
+  "interactions": "与CYP3A4强抑制剂合用可能增加全身暴露。"
+}

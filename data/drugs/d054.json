@@ -1,0 +1,15 @@
+{
+  "id": "d054",
+  "name": "羟氯喹片",
+  "py": "QLKP",
+  "en": "Hydroxychloroquine",
+  "category": "抗肿瘤药",
+  "subcategory": "免疫治疗药",
+  "type": "处方药",
+  "indications": "类风湿关节炎、系统性红斑狼疮、光敏性疾病。",
+  "contraindications": "黄斑病变、6岁以下儿童。",
+  "adverse": "视网膜毒性（需每年眼科检查）、皮肤色素沉着、胃肠道反应。",
+  "dosage": "RA/SLE：0.2-0.4g qd。",
+  "storage": "遮光密封。",
+  "interactions": "与胺碘酮等增加QT延长风险。与地高辛合用增加地高辛血药浓度。"
+}

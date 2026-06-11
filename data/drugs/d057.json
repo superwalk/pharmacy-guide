@@ -1,0 +1,16 @@
+{
+  "id": "d057",
+  "name": "普瑞巴林胶囊",
+  "py": "PRBLJN",
+  "en": "Pregabalin",
+  "category": "神经系统用药",
+  "subcategory": "抗癫痫药",
+  "type": "处方药（精二）",
+  "indications": "带状疱疹后神经痛、纤维肌痛、癫痫辅助治疗。",
+  "contraindications": "对本品过敏者。",
+  "adverse": "头晕、嗜睡、口干、体重增加。",
+  "dosage": "起始75mg bid，可增至150mg bid。",
+  "storage": "密封保存。",
+  "interactions": "与中枢抑制剂合用增强镇静作用。与噻唑烷二酮类合用增加体重增加和水肿风险。",
+  "tag": "精二"
+}

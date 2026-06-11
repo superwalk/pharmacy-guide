@@ -1,0 +1,15 @@
+{
+  "id": "d058",
+  "name": "卡马西平片",
+  "py": "KMXPP",
+  "en": "Carbamazepine",
+  "category": "神经系统用药",
+  "subcategory": "抗癫痫药",
+  "type": "处方药",
+  "indications": "癫痫（部分性发作）、三叉神经痛。",
+  "contraindications": "骨髓抑制、房室传导阻滞。",
+  "adverse": "头晕、嗜睡、皮疹（警惕Stevens-Johnson综合征）、白细胞减少。HLA-B*1502阳性者禁用。",
+  "dosage": "起始100mg bid，逐步增量。",
+  "storage": "遮光密封。",
+  "interactions": "强CYP3A4诱导剂，加速多种药物代谢（口服避孕药、华法林、环孢素）。"
+}

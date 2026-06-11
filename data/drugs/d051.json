@@ -1,0 +1,16 @@
+{
+  "id": "d051",
+  "name": "胰岛素（甘精胰岛素）",
+  "py": "YDSGJYDS",
+  "en": "Insulin Glargine",
+  "category": "内分泌系统用药",
+  "subcategory": "降糖药",
+  "type": "处方药",
+  "indications": "1型/2型糖尿病的基础胰岛素治疗。",
+  "contraindications": "低血糖发作时。",
+  "adverse": "低血糖、注射部位脂肪增生。",
+  "dosage": "个体化，qd皮下注射（固定时间）。",
+  "storage": "未开封2-8℃，开封后<25℃，4周内用完。",
+  "interactions": "与糖皮质激素、甲状腺素合用可能减弱降糖效果。",
+  "tag": "高危"
+}

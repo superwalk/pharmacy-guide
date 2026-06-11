@@ -3,6 +3,23 @@ function allDrugs() { try{const c=JSON.parse(localStorage.getItem('custom_data')
 function allGuides() { try{const c=JSON.parse(localStorage.getItem('custom_data')||'{"drugs":[],"guidelines":[]}');return[...GUIDELINES,...(c.guidelines||[])];}catch(e){return GUIDELINES;} }
 function findDrug(id) { return allDrugs().find(d=>d.id===id); }
 
+// ═══ 药品详情按需加载 ───
+var _drugDetailCache = {};
+function loadDrugDetail(id, cb) {
+  if (_drugDetailCache[id]) { if(cb) cb(_drugDetailCache[id]); return; }
+  var base = location.pathname.replace(/\/[^\/]*$/, '/');
+  if (!base || base === '/') base = '/pharmacy-guide/';
+  fetch(base + 'data/drugs/' + id + '.json').then(function(r) {
+    if (!r.ok) return;
+    return r.json();
+  }).then(function(data) {
+    if (data) { _drugDetailCache[id] = data; if(cb) cb(data); }
+  }).catch(function() {
+    // 离线或网络错误，尝试从索引数据渲染
+    if(cb) cb(null);
+  });
+}
+
 // ═══ Toast ───
 function toast(msg, cb) {
   const t=document.getElementById('toast');
@@ -357,6 +374,7 @@ function renderDetail(drugId) {
   const notes=getNotes();
   const note=notes[drugId]||'';
   const dc=document.getElementById('detail-content');
+  // 先显示骨架屏（索引数据）
   dc.innerHTML=`
     <div class="detail-hero">
       <div class="detail-name">${d.name}</div>
@@ -367,22 +385,34 @@ function renderDetail(drugId) {
         <button class="btn btn-primary" id="detail-label">📄 说明书</button>
       </div>
     </div>
-    <div class="info-card"><div class="info-label">适应症</div><div class="info-value">${d.indications}</div></div>
-    <div class="info-card"><div class="info-label danger">禁忌症</div><div class="info-value">${d.contraindications}</div></div>
-    <div class="info-card"><div class="info-label">不良反应</div><div class="info-value">${d.adverse}</div></div>
-    <div class="info-card"><div class="info-label">用法用量</div><div class="info-value">${d.dosage}</div></div>
-    <div class="info-card"><div class="info-label">储存条件</div><div class="info-value">${d.storage}</div></div>
-    <div class="info-card"><div class="info-label">药物相互作用</div><div class="info-value">${d.interactions}</div></div>
-    <div class="note-card">
-      <div class="note-header"><span class="note-title">📝 个人备注</span><span class="note-edit" id="edit-note">编辑</span></div>
-      <div class="note-content" id="note-content-${drugId}">${note||'暂无备注，点击编辑添加…'}</div>
-    </div>
+    <div id="detail-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
   document.getElementById('detail-fav').onclick=()=>{ toggleFav(drugId); renderDetail(drugId); };
   document.getElementById('detail-cmp').onclick=()=>{ addToCompare(drugId); };
   document.getElementById('detail-label').onclick=()=>{ pushScreen('label'); renderLabel(drugId); };
   showEditBtn({type:'drug',id:drugId});
-  document.getElementById('edit-note').onclick=()=>{ showModal('编辑备注',`<textarea id="note-textarea" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical">${note}</textarea>`,[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const t=document.getElementById('note-textarea').value; saveNote(drugId,t); renderDetail(drugId); }}]); };
+  // 按需加载详情
+  loadDrugDetail(drugId, function(full) {
+    var detail = full || d;
+    var db = document.getElementById('detail-body');
+    if (!db) return;
+    db.innerHTML = `
+    <div class="info-card"><div class="info-label">适应症</div><div class="info-value">${detail.indications || d.indications || '暂无'}</div></div>
+    <div class="info-card"><div class="info-label danger">禁忌症</div><div class="info-value">${detail.contraindications || '暂无'}</div></div>
+    <div class="info-card"><div class="info-label">不良反应</div><div class="info-value">${detail.adverse || '暂无'}</div></div>
+    <div class="info-card"><div class="info-label">用法用量</div><div class="info-value">${detail.dosage || '暂无'}</div></div>
+    <div class="info-card"><div class="info-label">储存条件</div><div class="info-value">${detail.storage || '暂无'}</div></div>
+    <div class="info-card"><div class="info-label">药物相互作用</div><div class="info-value">${detail.interactions || '暂无'}</div></div>
+    <div class="note-card" style="margin-top:12px">
+      <div class="note-header"><span class="note-title">📝 个人备注</span><span class="note-edit" id="edit-note">编辑</span></div>
+      <div class="note-content" id="note-content-${drugId}">${note||'暂无备注，点击编辑添加…'}</div>
+    </div>`;
+    // 重新绑定备注点击
+    var eb = document.getElementById('edit-note');
+    if (eb) eb.onclick = function() {
+      showModal('编辑备注', `<textarea id="note-textarea" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical">${note}</textarea>`, [{label:'取消'},{label:'保存',primary:true,onClick:function(){ const t=document.getElementById('note-textarea').value; saveNote(drugId,t); renderDetail(drugId); }}]);
+    };
+  });
 }
 
 // ═══ 说明书 ───

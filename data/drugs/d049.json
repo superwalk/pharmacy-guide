@@ -1,0 +1,15 @@
+{
+  "id": "d049",
+  "name": "格列美脲片",
+  "py": "GLMNP",
+  "en": "Glimepiride",
+  "category": "内分泌系统用药",
+  "subcategory": "降糖药",
+  "type": "处方药",
+  "indications": "用于饮食和运动控制不满意的2型糖尿病。",
+  "contraindications": "1型糖尿病、酮症酸中毒。",
+  "adverse": "低血糖、体重增加。",
+  "dosage": "起始1mg qd，早餐前服用。最大6mg qd。",
+  "storage": "密封保存。",
+  "interactions": "与氟康唑合用增强降糖作用。与β受体阻滞剂合用可能掩盖低血糖症状。"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "d002",
+  "name": "头孢克肟胶囊",
+  "py": "TBKWJN",
+  "en": "Cefixime Capsules",
+  "category": "抗生素",
+  "subcategory": "抗生素",
+  "type": "处方药",
+  "indications": "适用于敏感菌所致的呼吸道感染、泌尿道感染、胆道感染、中耳炎等。",
+  "contraindications": "对头孢菌素类过敏者禁用。有青霉素过敏性休克史者慎用。",
+  "adverse": "偶见腹泻、恶心、皮疹、一过性肝功能异常。",
+  "dosage": "成人及体重30kg以上儿童：一次0.1g，一日2次。",
+  "storage": "遮光，密封，阴凉干燥处保存。",
+  "interactions": "与氨基糖苷类合用可能增加肾毒性。与抗凝药合用可能增加出血风险。"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "d021",
+  "name": "达格列净片",
+  "py": "DGLJP",
+  "en": "Dapagliflozin",
+  "category": "内分泌系统用药",
+  "subcategory": "降糖药",
+  "type": "处方药",
+  "indications": "用于2型糖尿病、射血分数降低的心衰、慢性肾病（eGFR≥25）。",
+  "contraindications": "eGFR<25时禁用。1型糖尿病禁用。",
+  "adverse": "常见泌尿生殖道感染；偶见酮症酸中毒（血糖不高时也可发生）、脱水。",
+  "dosage": "2型糖尿病/心衰/CKD：10mg qd。",
+  "storage": "密封保存。",
+  "interactions": "与利尿剂合用可能增加脱水风险。与胰岛素/磺脲类合用增加低血糖风险。"
+}

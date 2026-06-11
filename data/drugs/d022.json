@@ -1,0 +1,15 @@
+{
+  "id": "d022",
+  "name": "氯吡格雷片",
+  "py": "LBGLP",
+  "en": "Clopidogrel",
+  "category": "血液系统用药",
+  "subcategory": "抗凝药",
+  "type": "处方药",
+  "indications": "用于预防动脉粥样硬化血栓形成事件：ACS、PCI术后、缺血性卒中。",
+  "contraindications": "活动性出血、严重肝功能损害。",
+  "adverse": "常见出血（消化道、皮肤）；偶见血小板减少症。",
+  "dosage": "负荷量300mg，维持量75mg qd。",
+  "storage": "密封保存。",
+  "interactions": "与PPI（尤其是奥美拉唑）合用可能减弱抗血小板效果。与抗凝药合用增加出血风险。"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "d077",
+  "name": "美沙拉秦肠溶片",
+  "py": "MSLQCRP",
+  "en": "Mesalazine",
+  "category": "消化系统用药",
+  "subcategory": "止泻药",
+  "type": "处方药",
+  "indications": "溃疡性结肠炎、克罗恩病。",
+  "contraindications": "严重肾功能损害、水杨酸过敏。",
+  "adverse": "腹泻、恶心、腹痛；罕见肾毒性。",
+  "dosage": "急性期1g qid；维持期0.5g tid。",
+  "storage": "密封保存。",
+  "interactions": "与硫唑嘌呤合用可能增加骨髓抑制风险。"
+}

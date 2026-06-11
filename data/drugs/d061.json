@@ -1,0 +1,16 @@
+{
+  "id": "d061",
+  "name": "氯化钾缓释片",
+  "py": "LHJHSP",
+  "en": "KCl SR Tablets",
+  "category": "营养支持药",
+  "subcategory": "电解质",
+  "type": "处方药",
+  "indications": "各种原因引起的低钾血症的预防和治疗。",
+  "contraindications": "高钾血症、严重肾功能不全。",
+  "adverse": "口服后胃肠不适。",
+  "dosage": "0.5-1g bid-tid，餐后服。",
+  "storage": "密封保存。",
+  "interactions": "与ACEI/ARB、保钾利尿剂合用增加高钾血症风险。",
+  "tag": "高危"
+}

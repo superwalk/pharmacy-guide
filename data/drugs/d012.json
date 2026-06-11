@@ -1,0 +1,15 @@
+{
+  "id": "d012",
+  "name": "阿奇霉素片",
+  "py": "AQMSP",
+  "en": "Azithromycin Tablets",
+  "category": "抗生素",
+  "subcategory": "抗生素",
+  "type": "处方药",
+  "indications": "用于敏感菌所致的呼吸道感染、皮肤软组织感染、泌尿生殖道感染。",
+  "contraindications": "对大环内酯类过敏者禁用。",
+  "adverse": "常见腹泻、恶心；偶见QT间期延长、肝功能异常。",
+  "dosage": "成人一次0.5g，一日1次，连用3天；或首日0.5g，第2-5日0.25g qd。",
+  "storage": "密封，干燥处保存。",
+  "interactions": "与抗凝药合用可能增加出血风险。与茶碱合用可能增加茶碱血药浓度。"
+}

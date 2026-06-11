@@ -1,0 +1,15 @@
+{
+  "id": "d072",
+  "name": "氯苯那敏片",
+  "py": "LBNMP",
+  "en": "Chlorpheniramine",
+  "category": "呼吸系统用药",
+  "subcategory": "抗组胺药",
+  "type": "OTC",
+  "indications": "过敏性鼻炎、荨麻疹等过敏性疾病。",
+  "contraindications": "新生儿、早产儿。",
+  "adverse": "嗜睡、口干。服药期间避免驾驶。",
+  "dosage": "4mg tid。",
+  "storage": "密封保存。",
+  "interactions": "与其他中枢抑制剂合用增强镇静。与MAOIs合用可能增强抗胆碱能作用。"
+}

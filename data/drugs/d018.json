@@ -1,0 +1,15 @@
+{
+  "id": "d018",
+  "name": "沙库巴曲缬沙坦片",
+  "py": "SKBQXSTP",
+  "en": "Sacubitril/Valsartan",
+  "category": "心血管系统用药",
+  "subcategory": "抗心衰药",
+  "type": "处方药",
+  "indications": "用于射血分数降低的慢性心力衰竭（NYHA Ⅱ-Ⅳ级）。",
+  "contraindications": "同时使用ACEI者（需洗脱36h）、血管性水肿史、妊娠期。",
+  "adverse": "常见低血压、高钾血症、肾功能损害；偶见血管性水肿。",
+  "dosage": "起始剂量50mg bid，逐步增加至200mg bid。",
+  "storage": "密封，不超过25℃保存。",
+  "interactions": "禁与ACEI合用。与保钾利尿药合用增加高钾风险。与NSAIDs合用可能减弱疗效。"
+}

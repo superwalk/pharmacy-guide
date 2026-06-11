@@ -1,0 +1,16 @@
+{
+  "id": "d066",
+  "name": "胺碘酮片",
+  "py": "ADTP",
+  "en": "Amiodarone",
+  "category": "心血管系统用药",
+  "subcategory": "抗心律失常药",
+  "type": "处方药",
+  "indications": "房颤复律及窦律维持、室性心律失常。",
+  "contraindications": "严重心动过缓、甲状腺功能异常者。",
+  "adverse": "肺毒性（监测肺功能）、甲状腺功能异常、肝毒性、角膜微粒沉积、皮肤蓝灰色色素沉着。",
+  "dosage": "负荷量0.2g tid×7天，维持0.2g qd。",
+  "storage": "遮光密封。",
+  "interactions": "与华法林合用增强抗凝（需减少华法林1/3-1/2）。与地高辛合用增加地高辛浓度。",
+  "tag": "高危"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "d028",
+  "name": "铝碳酸镁咀嚼片",
+  "py": "LTSMJJP",
+  "en": "Hydrotalcite",
+  "category": "消化系统用药",
+  "subcategory": "胃黏膜保护剂",
+  "type": "OTC",
+  "indications": "用于胃酸过多引起的胃痛、胃灼热、反酸、饱胀等。",
+  "contraindications": "严重肾功能不全、低磷血症。",
+  "adverse": "偶见便秘、腹泻。",
+  "dosage": "一次1-2片，一日3-4次。餐后1-2小时嚼服。",
+  "storage": "密封保存。",
+  "interactions": "可影响四环素类、喹诺酮类、铁剂吸收，需间隔1-2小时服用。"
+}

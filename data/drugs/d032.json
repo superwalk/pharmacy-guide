@@ -1,0 +1,15 @@
+{
+  "id": "d032",
+  "name": "哌拉西林他唑巴坦",
+  "py": "PLXLTZBT",
+  "en": "Piperacillin/Tazobactam",
+  "category": "抗生素",
+  "subcategory": "抗生素",
+  "type": "处方药",
+  "indications": "中重度感染：腹腔感染、肺炎、败血症等。",
+  "contraindications": "青霉素过敏者禁用。",
+  "adverse": "常见腹泻；偶见肝酶升高、血小板减少。",
+  "dosage": "4.5g q8h 静脉滴注。",
+  "storage": "遮光密封。",
+  "interactions": "与氨基糖苷类有协同作用。与甲氨蝶呤合用增加后者毒性。"
+}

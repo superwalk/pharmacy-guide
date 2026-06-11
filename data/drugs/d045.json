@@ -1,0 +1,15 @@
+{
+  "id": "d045",
+  "name": "艾司奥美拉唑肠溶片",
+  "py": "ASAMLZCRP",
+  "en": "Esomeprazole",
+  "category": "消化系统用药",
+  "subcategory": "抗酸药",
+  "type": "处方药",
+  "indications": "消化性溃疡、反流性食管炎、根除Hp、NSAIDs相关溃疡预防。",
+  "contraindications": "对本药过敏者。",
+  "adverse": "常见头痛、腹泻；长期：骨质疏松、维生素B12缺乏、肠道感染风险。",
+  "dosage": "20-40mg qd，晨起空腹。",
+  "storage": "遮光密封。",
+  "interactions": "与氯吡格雷合用可能降低后者抗血小板效果。影响酮康唑等胃酸依赖药物吸收。"
+}

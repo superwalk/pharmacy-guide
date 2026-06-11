@@ -1,0 +1,15 @@
+{
+  "id": "d008",
+  "name": "氯雷他定片",
+  "py": "LLTDP",
+  "en": "Loratadine Tablets",
+  "category": "呼吸系统用药",
+  "subcategory": "抗组胺药",
+  "type": "OTC",
+  "indications": "用于缓解过敏性鼻炎症状，如喷嚏、流涕、鼻痒及眼部症状。也用于慢性荨麻疹。",
+  "contraindications": "对本药过敏者禁用。",
+  "adverse": "罕见乏力、头痛、口干。无明显镇静作用。",
+  "dosage": "成人及12岁以上儿童：一次10mg，一日1次。",
+  "storage": "密封保存。",
+  "interactions": "与酮康唑、红霉素合用可能升高氯雷他定血药浓度。"
+}

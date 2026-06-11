@@ -1,0 +1,15 @@
+{
+  "id": "d067",
+  "name": "阿仑膦酸钠片",
+  "py": "ALLSNP",
+  "en": "Alendronate Sodium",
+  "category": "内分泌系统用药",
+  "subcategory": "激素类",
+  "type": "处方药",
+  "indications": "骨质疏松症。",
+  "contraindications": "食管排空延迟、不能站立或端坐30min者。",
+  "adverse": "食管炎、食管糜烂。",
+  "dosage": "70mg qw，清晨空腹大量水送服，保持直立≥30min。",
+  "storage": "密封保存。",
+  "interactions": "与钙剂、抗酸药、含金属离子药物间隔≥30min服用。"
+}

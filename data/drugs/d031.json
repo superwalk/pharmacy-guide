@@ -1,0 +1,15 @@
+{
+  "id": "d031",
+  "name": "头孢呋辛酯片",
+  "py": "TBFXZP",
+  "en": "Cefuroxime Axetil",
+  "category": "抗生素",
+  "subcategory": "抗生素",
+  "type": "处方药",
+  "indications": "用于敏感菌所致的呼吸道、泌尿道、皮肤软组织感染等。手术预防用药。",
+  "contraindications": "头孢类过敏者禁用。",
+  "adverse": "常见腹泻、恶心；偶见皮疹。",
+  "dosage": "0.25-0.5g bid，餐后服用。",
+  "storage": "遮光密封。",
+  "interactions": "与氨基糖苷类合用增加肾毒性。"
+}

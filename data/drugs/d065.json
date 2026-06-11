@@ -1,0 +1,16 @@
+{
+  "id": "d065",
+  "name": "地高辛片",
+  "py": "DGXP",
+  "en": "Digoxin",
+  "category": "心血管系统用药",
+  "subcategory": "抗心律失常药",
+  "type": "处方药",
+  "indications": "心力衰竭（尤其合并快速房颤）、房颤/房扑的心室率控制。",
+  "contraindications": "室颤、预激综合征合并房颤。",
+  "adverse": "心律失常、恶心、视觉异常（黄视/绿视）。治疗窗窄，需监测血药浓度（0.5-2.0ng/mL）。",
+  "dosage": "0.125-0.25mg qd。",
+  "storage": "密封保存。",
+  "interactions": "低钾、低镁增加中毒风险。与胺碘酮、维拉帕米合用增加血药浓度。",
+  "tag": "高危"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "d071",
+  "name": "泼尼松片",
+  "py": "PNSP",
+  "en": "Prednisone",
+  "category": "内分泌系统用药",
+  "subcategory": "激素类",
+  "type": "处方药",
+  "indications": "过敏性疾病、自身免疫性疾病、炎症性疾病、淋巴系统肿瘤。",
+  "contraindications": "全身性真菌感染。",
+  "adverse": "长期：库欣综合征、骨质疏松、高血糖、感染风险增加。需逐步减量。",
+  "dosage": "5-60mg/d，按疾病调整。",
+  "storage": "遮光密封。",
+  "interactions": "与NSAIDs合用增加溃疡风险。与利福平合用加速代谢。与降糖药合用可能减弱降糖效果。"
+}

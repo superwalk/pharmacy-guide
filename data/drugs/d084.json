@@ -1,0 +1,15 @@
+{
+  "id": "d084",
+  "name": "开塞露",
+  "py": "KSL",
+  "en": "Glycerin Enema",
+  "category": "消化系统用药",
+  "subcategory": "止泻药",
+  "type": "OTC",
+  "indications": "偶发性便秘。",
+  "contraindications": "无。",
+  "adverse": "直肠刺激感。",
+  "dosage": "1支 纳肛，保留数分钟。",
+  "storage": "密封保存。",
+  "interactions": "无显著药物相互作用。"
+}
