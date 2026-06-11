@@ -896,11 +896,13 @@ function refreshUMList(){
     var row=document.createElement('div');
     row.className='list-card';
     row.style.cssText='display:flex;align-items:center;gap:8px';
-    row.innerHTML='<div class="icon-box">👤</div><div class="info" style="flex:1"><div class="name">'+escHTML(u.username)+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+escHTML(u.nickname||'')+'</div></div><button class="btn btn-sm btn-copy" data-copy="'+escHTML('用户名：'+u.username+'\n密码：'+u.password)+'" style="padding:2px 6px;font-size:12px;margin-right:2px" title="复制账号密码">📋</button><button class="btn btn-sm btn-outline" style="margin-right:4px">编辑</button><button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)">删除</button>';
+    row.innerHTML='<div class="icon-box">👤</div><div class="info" style="flex:1"><div class="name">'+escHTML(u.username)+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+escHTML(u.nickname||'')+'</div></div><button class="btn btn-sm btn-copy" data-copy="'+escHTML('用户名：'+u.username+'\n密码：'+u.password)+'" style="padding:2px 6px;font-size:12px;margin-right:2px" title="复制账号密码">📋</button><button class="btn btn-sm btn-um-export" style="padding:2px 6px;font-size:12px;margin-right:2px" title="导出到仓库">☁️</button><button class="btn btn-sm btn-outline" style="margin-right:4px">编辑</button><button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)">删除</button>';
     var copyBtn=row.querySelector('.btn-copy');
     if(copyBtn) copyBtn.onclick=function(){ navigator.clipboard.writeText(copyBtn.dataset.copy).then(function(){ toast('已复制 '+u.username); }).catch(function(){}); };
-    row.querySelectorAll('button')[1].onclick=function(){ showUserEditor(u); };
-    row.querySelectorAll('button')[2].onclick=function(){
+    var exportBtn=row.querySelector('.btn-um-export');
+    if(exportBtn) exportBtn.onclick=function(){ syncOneUserToGitHub(u); };
+    row.querySelectorAll('button')[2].onclick=function(){ showUserEditor(u); };
+    row.querySelectorAll('button')[3].onclick=function(){
       if(u.username===currentUser.username){ toast('不能删除自己'); return; }
       if(u.username==='walkman0097'){ toast('不能删除管理员账户'); return; }
       showModal('确认删除','<p>确定删除用户 <b>'+escHTML(u.username)+'</b>？</p>',[{label:'取消'},{label:'删除',primary:true,style:'background:var(--danger)',onClick:function(){
@@ -951,7 +953,9 @@ function showUserEditor(user){
         }).catch(function(){});
         showModal('✅ 新增成功',
           '<div style="text-align:center;line-height:2"><b>'+uname+'</b><br>密码：<b>'+upass+'</b></div><div style="font-size:12px;color:var(--text-light);margin-top:6px">已自动复制到剪贴板</div>',
-          [{label:'确定',primary:true}]);
+          [{label:'确定',primary:true},{label:'☁️ 同步到仓库',onClick:function(){
+            syncOneUserToGitHub({username:uname,password:upass,nickname:unick||uname,role:urole||'user'});
+          }}]);
       } else {
         updateUser(u.username,{password:upass,nickname:unick||u.nickname,role:urole||'user'});
         // 同步更新 user_{username} 缓存，防止下次加载时被源码密码覆盖
