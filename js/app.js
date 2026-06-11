@@ -674,16 +674,27 @@ function editCurrentItem(){
 function viewGuideFull(gid){
   var g=allGuides().find(function(x){return x.id===gid;});
   if(!g){ toast('未找到指南'); return; }
-  // Check if full text file exists
   var url='guides/'+gid+'.md';
   fetch(url).then(function(r){
     if(r.ok) return r.text();
     throw new Error('no full text');
   }).then(function(text){
+    // 清理PDF提取残留：孤立的页码数字、空白行
+    text=text.replace(/<\/?[^>]+>/g,'').replace(/\n{4,}/g,'\n\n').replace(/\n\d+\n/g,'\n');
+    // 标题渲染
+    text='<div style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">'+
+         text.replace(/^### (.+)/gm,'<h4 style="margin:12px 0 4px;color:var(--primary-dark);font-size:15px">$1</h4>')
+             .replace(/^## (.+)/gm,'<h3 style="margin:14px 0 6px;color:var(--primary-dark);font-size:16px">$1</h3>')
+             .replace(/^# (.+)/gm,'<h2 style="margin:16px 0 8px;color:var(--primary);font-size:18px">$1</h2>')
+             .replace(/^- (.+)/gm,'<li style="margin-left:16px">$1</li>')+
+         '</div>';
     pushScreen('label');
-    document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:20px">'+g.title+' <span style="font-size:12px;color:var(--text-light)">📄 全文</span></div><div class="label-doc" style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/#+\s/g,'<b>')+'</div>';
+    document.getElementById('label-content').innerHTML=
+      '<div class="section-title" style="font-size:20px">'+g.title+'</div>'+
+      '<div style="font-size:12px;color:var(--text-light);margin-bottom:8px">📄 原始指南全文 · 来源：知识库</div>'+
+      '<div class="label-doc">'+text+'</div>';
   }).catch(function(){
-    toast('暂无全文数据');
+    toast('该指南暂无原始全文数据');
   });
 }
 // 从文本中提取提及的药品
