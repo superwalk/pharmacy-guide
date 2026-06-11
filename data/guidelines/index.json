@@ -726,5 +726,180 @@
     "system": "其他",
     "year": "2026",
     "py": "YDWSTPJ"
+  },
+  {
+    "id": "g111",
+    "title": "2026 ACC/AHA/AACVPR血脂异常管理指南",
+    "system": "心血管",
+    "year": "2026",
+    "py": "ACC_AHA_XZYC"
+  },
+  {
+    "id": "g112",
+    "title": "2026 ESC心力衰竭指南",
+    "system": "心血管",
+    "year": "2026",
+    "py": "ESC_XLSJ"
+  },
+  {
+    "id": "g113",
+    "title": "2026 ESC心血管疾病合并慢性肾脏病指南",
+    "system": "心血管",
+    "year": "2026",
+    "py": "ESC_XZGSBMXS"
+  },
+  {
+    "id": "g114",
+    "title": "2026 ESC心脏康复指南",
+    "system": "心血管",
+    "year": "2026",
+    "py": "ESC_XZKF"
+  },
+  {
+    "id": "g115",
+    "title": "2026 ESC心肌梗死指南",
+    "system": "心血管",
+    "year": "2026",
+    "py": "ESC_XJGS"
+  },
+  {
+    "id": "g116",
+    "title": "2026 ESC/EAS脂蛋白(a)指南",
+    "system": "心血管",
+    "year": "2026",
+    "py": "ESC_EAS_LDBA"
+  },
+  {
+    "id": "g117",
+    "title": "2026 AHA改善心血管健康饮食指南",
+    "system": "心血管",
+    "year": "2026",
+    "py": "AHA_YSS"
+  },
+  {
+    "id": "g118",
+    "title": "NCCN中枢神经系统肿瘤指南（2026.V1）",
+    "system": "肿瘤",
+    "year": "2026",
+    "py": "NCCN_ZSXS"
+  },
+  {
+    "id": "g119",
+    "title": "2026 NCS危重成人癫痫持续状态神经预后指南",
+    "system": "神经",
+    "year": "2026",
+    "py": "NCS_DXCX"
+  },
+  {
+    "id": "g120",
+    "title": "2025 AASM成人阻塞性睡眠呼吸暂停住院评估管理指南",
+    "system": "神经",
+    "year": "2025",
+    "py": "AASM_SMHX"
+  },
+  {
+    "id": "g121",
+    "title": "2025 ASPN外周神经刺激慢性疼痛神经系统疾病应用共识",
+    "system": "神经",
+    "year": "2025",
+    "py": "ASPN_WZSJ"
+  },
+  {
+    "id": "g122",
+    "title": "2025 ABN自身免疫性重症肌无力管理指南（更新版）",
+    "system": "神经",
+    "year": "2025",
+    "py": "ABN_MGGL"
+  },
+  {
+    "id": "g123",
+    "title": "AA基于血液的生物标志物阿尔茨海默病诊断应用指南",
+    "system": "神经",
+    "year": "2026",
+    "py": "AA_ADZD"
+  },
+  {
+    "id": "g124",
+    "title": "2025 RANO/EANO PET成像胶质瘤临床应用建议（更新版）",
+    "system": "神经",
+    "year": "2025",
+    "py": "RANO_EANO_PET"
+  },
+  {
+    "id": "g125",
+    "title": "2026国际共识：Rasmussen综合征诊断和治疗",
+    "system": "神经",
+    "year": "2026",
+    "py": "RASMUSSEN_ZL"
+  },
+  {
+    "id": "g126",
+    "title": "2026 AACE成人2型糖尿病管理流程共识",
+    "system": "内分泌",
+    "year": "2026",
+    "py": "AACE_T2DM"
+  },
+  {
+    "id": "g127",
+    "title": "2025 JSH血压升高和高血压管理指南",
+    "system": "心血管",
+    "year": "2025",
+    "py": "JSH_GXY"
+  },
+  {
+    "id": "g128",
+    "title": "2025 SOGC原发性痛经诊断与管理指南",
+    "system": "妇产科",
+    "year": "2025",
+    "py": "SOGC_TJ"
+  },
+  {
+    "id": "g129",
+    "title": "2026 Kleefstra综合征国际临床循证指南",
+    "system": "其他",
+    "year": "2026",
+    "py": "KLEEFSTRA"
+  },
+  {
+    "id": "g130",
+    "title": "2026 21-羟化酶缺乏症临床管理指南",
+    "system": "内分泌",
+    "year": "2026",
+    "py": "CAH_GL"
+  },
+  {
+    "id": "g131",
+    "title": "2026意大利法布里病神经学管理及结局指标共识",
+    "system": "神经",
+    "year": "2026",
+    "py": "FABRY_BING"
+  },
+  {
+    "id": "g132",
+    "title": "WHO GLP-1药物治疗肥胖症全球指南",
+    "system": "内分泌",
+    "year": "2026",
+    "py": "WHO_GLP1_FP"
+  },
+  {
+    "id": "g133",
+    "title": "医疗机构人工智能应用与治理专家共识（2026版）",
+    "system": "其他",
+    "year": "2026",
+    "py": "AI_YLJG"
+  },
+  {
+    "id": "g134",
+    "title": "FUTURE-AI医疗保健可信赖可部署AI国际共识指南",
+    "system": "其他",
+    "year": "2026",
+    "py": "FUTURE_AI"
+  },
+  {
+    "id": "g135",
+    "title": "中国器官移植人工智能辅助临床决策专家共识（2026版）",
+    "system": "其他",
+    "year": "2026",
+    "py": "AI_QGYZ"
   }
 ]

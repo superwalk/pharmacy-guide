@@ -1,0 +1,8 @@
+{
+  "id": "g115",
+  "title": "2026 ESC心肌梗死指南",
+  "system": "心血管",
+  "year": "2026",
+  "sourceUrl": "https://www.escardio.org/",
+  "content": "【概述】ESC发布的急性心肌梗死管理指南更新\n【STEMI】\n· 再灌注策略：\n  - 直接PCI（首选，D2B时间<90min）\n  - 溶栓（无法PCI时，D2N时间<30min）\n· 抗栓治疗：\n  - 阿司匹林+P2Y12抑制剂（替格瑞洛/普拉格雷）\n  - 肝素/比伐卢定\n· 支架选择：\n  - 药物洗脱支架（DES）为首选\n  - 生物可吸收支架（有限适应证）\n【NSTEMI】\n· 风险分层：GRACE评分\n· 侵入性策略：\n  - 极高危：2h内\n  - 高危：24h内\n  - 中危：72h内\n· 抗血小板：双联抗血小板12个月\n【二级预防】\n· 他汀（高强度）\n· ACEI/ARB\n· β受体阻滞剂\n· SGLT2i（合并T2DM/HF）"
+}
