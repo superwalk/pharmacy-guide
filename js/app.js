@@ -209,7 +209,8 @@ function renderKnowledge() {
     `).join('');
     if(kw){
       const dmatches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase()===kw);
-      if(dmatches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配药品 (${dmatches.length})</div>`+dmatches.map(d=>`<div class="list-card" onclick="pushScreen("detail");renderDetail("${d.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${d.name}</div><div class="desc">${d.category} · ${d.indications.slice(0,30)}…</div></div></div>`).join('');
+      if(dmatches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配药品 (${dmatches.length})</div>`+dmatches.map(d=>`<div class="list-card" data-drug="${d.id}" style="cursor:pointer"><div class="icon-box">💊</div><div class="info"><div class="name">${d.name}</div><div class="desc">${d.category} · ${d.indications.slice(0,30)}…</div></div></div>`).join('');
+      kb.querySelectorAll('.list-card[data-drug]').forEach(function(c){c.onclick=function(){pushScreen('detail');renderDetail(c.dataset.drug);};});
     }
   } else {
     let cats= DISEASE_CATEGORIES;
@@ -238,7 +239,8 @@ function showDrugList(type,id){
   const label=type==='cat'?DRUG_CATEGORIES.find(c=>c.id===id)?.name||id:id;
   document.getElementById('search-results-input').value=label;
   const sr=document.getElementById('search-results');
-  sr.innerHTML=`<div class="result-group"><div class="result-group-title drugs">💊 ${label} (${drugs.length})</div>`+drugs.map(d=>`<div class="result-item" onclick="pushScreen("detail");renderDetail("${d.id}')">${d.name}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')+`</div>`;
+  sr.innerHTML=`<div class="result-group"><div class="result-group-title drugs">💊 ${label} (${drugs.length})</div>`+drugs.map(d=>`<div class="result-item" data-drug="${d.id}">${d.name}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')+`</div>`;
+  sr.querySelectorAll('.result-item[data-drug]').forEach(function(r){r.onclick=function(){pushScreen('detail');renderDetail(r.dataset.drug);};});
 }
 
 // ═══ 指南法规 ───
@@ -684,31 +686,35 @@ function viewGuideFull(gid){
     if(r.ok) return r.text();
     throw new Error('no full text');
   }).then(function(text){
-    // 按段落分割
-    var paras=text.split(/\n{2,}/).filter(function(p){return p.trim();});
     var html='<div class="section-title" style="font-size:20px">'+g.title+'</div>'
            +'<div style="font-size:12px;color:var(--text-light);margin:4px 0 16px">📄 原始指南全文 · 来源：知识库</div>';
     
-    paras.forEach(function(p){
-      p=p.trim();
-      if(!p) return;
-      // 大标题：一、二、三、...  or 一级标题
-      if(/^[一二三四五六七八九十]、/.test(p)){
-        html+='<h3 style="margin:18px 0 8px;color:var(--primary);font-size:17px;font-weight:700;border-left:3px solid var(--primary);padding-left:8px">'+p+'</h3>';
+    var lines=text.split('\n');
+    for(var i=0;i<lines.length;i++){
+      var l=lines[i].trim();
+      if(!l) continue;
+      // Strip leading # markers from PDF
+      var clean=l.replace(/^#+\s*/,'');
+      if(!clean) continue;
+      
+      // 大标题：一、二、三、...
+      if(/^[一二三四五六七八九十]+[、，]/.test(clean)){
+        html+='<h3 style="margin:18px 0 8px;color:var(--primary);font-size:17px;font-weight:700;border-left:3px solid var(--primary);padding-left:8px">'+clean+'</h3>';
       }
-      // 二级标题：（一）（二）...
-      else if(/^[（(][一二三四五六七八九十]+[）)]/.test(p)){
-        html+='<h4 style="margin:14px 0 6px;color:var(--primary-dark);font-size:15px;font-weight:600">'+p+'</h4>';
+      // 二级标题：（一）（二）... or 1. 2.
+      else if(/^[（(][一二三四五六七八九十\d]+[）)]/.test(clean)){
+        html+='<h4 style="margin:14px 0 6px;color:var(--primary-dark);font-size:15px;font-weight:600">'+clean+'</h4>';
       }
-      // 数字小标题：1. 2. 3. 
-      else if(/^\d+[\.\、]/.test(p) && p.length<60){
-        html+='<div style="margin:10px 0 4px 16px;font-weight:600;color:var(--text-body);font-size:14px">'+p+'</div>';
-      }
-      // 普通段落
+      // 普通段落 - 聚合连续的非标题行
       else {
-        html+='<p style="margin:8px 0;font-size:14px;line-height:1.9;color:var(--text-body)">'+p+'</p>';
+        var para=clean;
+        while(i+1<lines.length && lines[i+1].trim() && !/^#*\s*[一二三四五六七八九十]+[、，]/.test(lines[i+1].trim()) && !/^#*\s*[（(][一二三四五六七八九十\d]+[）)]/.test(lines[i+1].trim())){
+          i++;
+          para+=' '+lines[i].trim().replace(/^#+\s*/,'');
+        }
+        html+='<p style="margin:8px 0;font-size:14px;line-height:1.9;color:var(--text-body)">'+para+'</p>';
       }
-    });
+    }
     pushScreen('label');
     document.getElementById('label-content').innerHTML=html;
   }).catch(function(){
