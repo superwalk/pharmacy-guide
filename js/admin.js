@@ -26,7 +26,7 @@ function showEditLogs() {
     html += '<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn btn-sm btn-outline" onclick="clearEditLogs()">清空记录</button></div>';
     logs.forEach(function(l) {
       var color = l.action === '新增' ? 'var(--primary)' : (l.action === '删除' ? 'var(--danger)' : 'var(--accent)');
-      html += '<div class="list-card"><div class="icon-box" style="font-size:12px">' + l.action + '</div><div class="info"><div class="name">' + l.name + '</div><div class="desc" style="font-size:11px">' + l.user + '昵称 · ' + l.type + ' · ' + l.time + '</div></div></div>';
+      html += '<div class="list-card"><div class="icon-box" style="font-size:12px">' + l.action + '</div><div class="info"><div class="name">' + l.name + '</div><div class="desc" style="font-size:11px">' + l.user + ' · ' + l.type + ' · ' + l.time + '</div></div></div>';
     });
   }
   document.getElementById('label-content').innerHTML = html;
@@ -303,7 +303,7 @@ function renderUserList(){
       if(u.username==='walkman0097'){ toast('不能删除管理员账户'); return; }
       showModal('确认删除','<p>确定删除用户 <b>'+u.username+'</b>？</p>',[{label:'取消'},{label:'删除',primary:true,style:'background:var(--danger)',onClick:function(){
         removeUser(u.username); renderUserList();
-        addEditLog('用户',u.username,'删除');
+        addEditLog('账户',u.username,'删除');
         toast('已删除');
       }}]);
     };
@@ -343,7 +343,7 @@ function showUserEditor(user){
       if(isNew){
         var r=addUser({username:uname,password:upass,nickname:unick||uname,role:urole||'user'});
         if(!r.ok){ toast(r.msg); return; }
-        addEditLog('用户',uname,'新增');
+        addEditLog('账户',uname,'新增');
         var info='用户名：'+uname+'\n密码：'+upass;
         navigator.clipboard.writeText(info).then(function(){
           toast('已复制账号信息');
@@ -355,7 +355,7 @@ function showUserEditor(user){
         var upData={password:upass,nickname:unick||u.nickname};
         if(!isAdmin) upData.role=urole||'user';
         updateUser(u.username, upData);
-        addEditLog('用户',u.username,'编辑');
+        addEditLog('账户',u.username,'编辑');
       }
       renderUserList();
       if(!isNew) toast('保存成功');
