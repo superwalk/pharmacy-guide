@@ -148,9 +148,20 @@ function updateUser(username, updates) {
 }
 
 function login(username, password) {
+  // 检查锁定状态
+  var lock = checkLock(username);
+  if (lock.locked) return { ok:false, msg:'账户已锁定，'+(lock.remain > 60 ? Math.ceil(lock.remain/60)+'分钟' : lock.remain+'秒')+'后重试' };
+
   const u = findUser(username);
   if (!u) return { ok:false, msg:'用户不存在' };
-  if (u.password !== password) return { ok:false, msg:'密码错误' };
+  if (u.password !== password) {
+    recordFail(username);
+    var lk = checkLock(username);
+    if (lk.locked) return { ok:false, msg:'密码错误，账户已锁定'+(lk.remain > 60 ? Math.ceil(lk.remain/60)+'分钟' : lk.remain+'秒')+'后重试' };
+    return { ok:false, msg:'密码错误，剩余'+(5-lk.count)+'次尝试' };
+  }
+  // 登录成功，清除失败记录
+  clearFails(username);
   // 合并本地存储的昵称
   const saved = JSON.parse(localStorage.getItem('user_' + u.username) || '{}');
   if (saved.nickname) u.nickname = saved.nickname;
@@ -158,6 +169,33 @@ function login(username, password) {
   currentUser = u;
   localStorage.setItem('currentUser', u.username);
   return { ok:true, user:u };
+}
+
+// 登录限次
+function checkLock(username) {
+  try {
+    var data = JSON.parse(localStorage.getItem('login_fails_' + username) || '{"count":0,"time":0}');
+    if (data.count >= 5) {
+      var elapsed = Math.floor((Date.now() - data.time) / 1000);
+      var remain = 900 - elapsed; // 15分钟
+      if (remain > 0) return { locked: true, count: data.count, remain: remain };
+      data = { count: 0, time: 0 };
+    }
+    return { locked: false, count: data.count, remain: 0 };
+  } catch(e) { return { locked: false, count: 0, remain: 0 }; }
+}
+
+function recordFail(username) {
+  var data = JSON.parse(localStorage.getItem('login_fails_' + username) || '{"count":0,"time":0}');
+  if (data.count >= 5 && Date.now() - data.time < 900000) return; // already locked
+  if (Date.now() - data.time > 900000) { data.count = 0; }
+  data.count++;
+  data.time = Date.now();
+  localStorage.setItem('login_fails_' + username, JSON.stringify(data));
+}
+
+function clearFails(username) {
+  localStorage.removeItem('login_fails_' + username);
 }
 
 function logout() {
