@@ -96,6 +96,83 @@ function renderAdminList(type, kw) {
   const list = document.getElementById('admin-list');
   kw = (kw||'').toLowerCase().trim();
   var html = '';
+
+  // ── 全局搜索模式：有关键词时跨所有数据源搜索 ──
+  if (kw) {
+    // 药品
+    var drugs = allDrugs();
+    var drugRes = drugs.filter(function(d){
+      return (d.name||'').toLowerCase().indexOf(kw)>=0||(d.category||'').toLowerCase().indexOf(kw)>=0||(d.subcategory||'').toLowerCase().indexOf(kw)>=0||(d.indications||'').toLowerCase().indexOf(kw)>=0||(d.py||'').toLowerCase().indexOf(kw)>=0;
+    });
+    if (drugRes.length > 0) {
+      html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title drugs" style="font-size:14px;font-weight:600;padding:8px 0">💊 药品 ('+drugRes.length+')</div>';
+      drugRes.forEach(function(d){
+        var origIdx = drugs.indexOf(d);
+        html += '<div class="cat-card" style="margin-bottom:6px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(d.name)+'</span><span class="badge badge-green" style="margin-left:6px">'+esc(d.category)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="drug">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="drug">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">适应症：'+esc((d.indications||'').slice(0,50))+'…</div></div>';
+      });
+      html += '</div>';
+    }
+
+    // 指南+法规
+    var allGuidesLaws = [...allGuides(), ...LAWS];
+    var glRes = allGuidesLaws.filter(function(g){
+      return (g.title||'').toLowerCase().indexOf(kw)>=0||(g.system||'').toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||(g.year||'')===kw;
+    });
+    if (glRes.length > 0) {
+      html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title guides" style="font-size:14px;font-weight:600;padding:8px 0">📋 指南/法规 ('+glRes.length+')</div>';
+      glRes.forEach(function(g){
+        var origIdx = allGuidesLaws.indexOf(g);
+        html += '<div class="cat-card" style="margin-bottom:6px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(g.title)+'</span><span class="badge badge-blue" style="margin-left:6px">'+esc(g.system||'法规')+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="guide">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="guide">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc(g.year||'')+' · '+esc((g.content||'').slice(0,50))+'…</div></div>';
+      });
+      html += '</div>';
+    }
+
+    // 科普教育
+    var eduRes = HEALTH_EDU.filter(function(h){
+      return (h.title||'').toLowerCase().indexOf(kw)>=0||(h.cat||'').toLowerCase().indexOf(kw)>=0||(h.content||'').toLowerCase().indexOf(kw)>=0;
+    });
+    if (eduRes.length > 0) {
+      html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title" style="font-size:14px;font-weight:600;padding:8px 0;color:#D97706">📖 科普教育 ('+eduRes.length+')</div>';
+      eduRes.forEach(function(h){
+        var origIdx = HEALTH_EDU.indexOf(h);
+        html += '<div class="cat-card" style="margin-bottom:6px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(h.title)+'</span><span class="badge badge-blue" style="margin-left:6px">'+esc(h.cat)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="edu">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((h.content||'').slice(0,50))+'…</div></div>';
+      });
+      html += '</div>';
+    }
+
+    // 输液配伍
+    var infRes = INFUSION_DATA.filter(function(inf){
+      return (inf.drug||'').toLowerCase().indexOf(kw)>=0||(inf.cat||'').toLowerCase().indexOf(kw)>=0||(inf.vehicle||'').toLowerCase().indexOf(kw)>=0||(inf.note||'').toLowerCase().indexOf(kw)>=0;
+    });
+    if (infRes.length > 0) {
+      html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title" style="font-size:14px;font-weight:600;padding:8px 0;color:#7C3AED">💉 输液配伍 ('+infRes.length+')</div>';
+      infRes.forEach(function(inf){
+        var origIdx = INFUSION_DATA.indexOf(inf);
+        html += '<div class="cat-card" style="margin-bottom:6px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(inf.drug)+'</span><span class="badge badge-blue" style="margin-left:6px">'+esc(inf.cat)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="inf">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">载体：'+esc(inf.vehicle||'')+' · 浓度：'+esc(inf.conc||'')+'</div></div>';
+      });
+      html += '</div>';
+    }
+
+    // 疾病
+    var disRes = DISEASES.filter(function(ds){
+      return (ds.name||'').toLowerCase().indexOf(kw)>=0||(ds.cat||'').toLowerCase().indexOf(kw)>=0||(ds.desc||'').toLowerCase().indexOf(kw)>=0;
+    });
+    if (disRes.length > 0) {
+      html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title diseases" style="font-size:14px;font-weight:600;padding:8px 0">🦠 疾病 ('+disRes.length+')</div>';
+      disRes.forEach(function(ds){
+        var origIdx = DISEASES.indexOf(ds);
+        html += '<div class="cat-card" style="margin-bottom:6px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(ds.name)+'</span><span class="badge badge-blue" style="margin-left:6px">'+esc(ds.cat)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="disease">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((ds.desc||'').slice(0,50))+'…</div></div>';
+      });
+      html += '</div>';
+    }
+
+    if (!html) html = '<div style="text-align:center;padding:40px;color:var(--text-light)">未找到匹配的内容</div>';
+    list.innerHTML = html;
+    bindAdminEvents(null);
+    return;
+  }
+
+  // ── 无关键词：按当前标签页渲染（原有逻辑） ──
   if (type === 'drugs') {
     const drugs = allDrugs();
     var filtered = drugs.filter(function(d){
