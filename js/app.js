@@ -945,5 +945,10 @@ function extractMentionedDrugs(text){
   if(rem){ var r=login(rem.u,rem.p); if(r.ok){ setTimeout(initApp,200); return; } else { clearRemember(); } }
   // 再尝试上次登录的session
   var savedUser=localStorage.getItem('currentUser');
-  if(savedUser){ var u=findUser(savedUser); if(u){ currentUser=u; setTimeout(initApp,200); } }
+  if(savedUser){ var u=findUser(savedUser); if(u){
+    var saved=JSON.parse(localStorage.getItem('user_'+u.username)||'{}');
+    if(saved.nickname) u.nickname=saved.nickname;
+    if(saved.password) u.password=saved.password;
+    currentUser=u; setTimeout(initApp,200);
+  }}
 })();
