@@ -699,9 +699,6 @@ function openHealthEdu(hid) {
     hb.innerHTML = '<div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">'+hlText(detail.content||'')+'</p></div>';
   });
 }
-  `;
-  showEditBtn({type:'edu',id:hid});
-}
 
 // ═══ 输液配伍 ─══
 function renderInfusion() {
