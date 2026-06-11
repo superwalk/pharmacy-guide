@@ -510,6 +510,9 @@ function renderProfile() {
   const roleMap={admin:'管理员',editor:'管理员',user:'普通用户'};
   document.getElementById('profile-role').textContent=roleMap[currentUser.role]||'普通用户';
   document.getElementById('menu-edit-content').style.display=isEditor()?'flex':'none';
+  // 编辑记录仅编辑员以上可见
+  var elog=document.getElementById('menu-edit-log');
+  if(elog) elog.style.display=isEditor()?'flex':'none';
   // 用户管理仅admin可见
   var um=document.getElementById('menu-user-mgmt');
   if(um) um.style.display=(currentUser.username==='walkman0097')?'flex':'none';
