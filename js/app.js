@@ -133,6 +133,7 @@ function initApp() {
   initSearch();
   initCompare();
   initProfileMenus();
+  checkVersion(); // 自动检查版本更新
   // 置顶按钮——监听各屏幕容器的滚动
   function onScreenScroll(){
     var btn=document.getElementById('back-to-top');
@@ -506,7 +507,7 @@ function initSearch() {
 // ═══ 个人中心 ───
 function renderProfile() {
   document.getElementById('profile-nickname').textContent=currentUser.nickname;
-  const roleMap={admin:'管理员',editor:'内容编辑',user:'普通用户'};
+  const roleMap={admin:'管理员',editor:'管理员',user:'普通用户'};
   document.getElementById('profile-role').textContent=roleMap[currentUser.role]||'普通用户';
   document.getElementById('menu-edit-content').style.display=isEditor()?'flex':'none';
   // 用户管理仅admin可见
@@ -515,9 +516,12 @@ function renderProfile() {
 }
 // ═══ 版本更新 ───
 var APP_VERSION='1.0.0';
-var CHANGELOG_KEY='changelog_custom';
+var CHANGELOG_KEY='changelog_custom_v2';
 var DEFAULT_CHANGELOG=[
+  '2026-06-11  新增版本自动检查机制，每当发布新版本自动提示刷新',
+  '2026-06-11  编辑器角色显示改为"管理员"，保持板块名称为科普教育',
   '2026-06-11  保护管理员角色不可降级，所有页面增加返回顶部按钮',
+  '2026-06-11  新增更新日志查看与编辑功能，优化免责声明措辞并标红',
   '2026-06-10  新增计算工具、输液配伍模块，药品库扩充至84种',
   '2026-06-09  新增拼音搜索、收藏功能、记住密码',
   '2026-06-08  初始发布：药品/疾病分类、指南法规、用药教育'
@@ -556,6 +560,21 @@ function showChangelog(){
       }}]
     );
   };
+}
+// ═══ 版本自动检查 ───
+function checkVersion(){
+  var url='https://superwalk.github.io/pharmacy-guide/version.json';
+  fetch(url+'?t='+Date.now()).then(function(r){
+    if(!r.ok) return;
+    return r.json();
+  }).then(function(data){
+    if(!data||!data.version) return;
+    if(data.version!==APP_VERSION){
+      toast('📦 新版本 v'+data.version+' 已发布，请下拉刷新页面以更新',function(){
+        window.location.reload();
+      });
+    }
+  }).catch(function(){ /* 离线忽略 */ });
 }
 function initProfileMenus() {
   document.getElementById('edit-nickname-btn').onclick=()=>{ showModal('修改昵称','<input id="new-nickname" placeholder="输入新昵称" value="'+currentUser.nickname+'">',[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const n=document.getElementById('new-nickname').value.trim(); if(n) updateNickname(n); }}]); };
@@ -761,7 +780,7 @@ function renderUserListInLabel(){
 
 function refreshUMList(){
   var users=getUsers();
-  var roleLabel={admin:'管理员',editor:'编辑',user:'普通用户'};
+  var roleLabel={admin:'管理员',editor:'管理员',user:'普通用户'};
   var container=document.getElementById('um-list');
   if(!container) return;
   container.innerHTML='';
@@ -806,7 +825,7 @@ function showUserEditor(user){
     '<input id="ed-uname" placeholder="用户名" value="'+escHTML(u.username||'')+'" '+(isNew?'':'disabled')+'>'+
     '<div style="display:flex;gap:6px"><input id="ed-upass" placeholder="密码" value="'+escHTML(u.password||'')+'" style="flex:1"><button class="btn btn-sm btn-outline" id="ed-genpw" style="white-space:nowrap">🎲 随机</button></div>'+
     '<input id="ed-unick" placeholder="昵称" value="'+escHTML(u.nickname||'')+'">'+
-    '<select id="ed-urole" '+(u.username==='walkman0097'?'disabled':'')+'><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>编辑</option></select>'+
+    '<select id="ed-urole" '+(u.username==='walkman0097'?'disabled':'')+'><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>管理员</option></select>'+
     '</div>',
     [{label:'取消'},{label:isNew?'新增并复制':'保存',primary:true,onClick:function(){
       var uname=document.getElementById('ed-uname').value.trim();

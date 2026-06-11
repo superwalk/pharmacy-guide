@@ -291,7 +291,7 @@ function renderUserList(){
   var users=getUsers();
   list.innerHTML='';
   if(users.length===0){ list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">暂无用户</div>'; return; }
-  var roleLabel={admin:'管理员',editor:'编辑',user:'普通用户'};
+  var roleLabel={admin:'管理员',editor:'管理员',user:'普通用户'};
   users.forEach(function(u){
     var row=document.createElement('div');
     row.className='list-card';
@@ -333,7 +333,7 @@ function showUserEditor(user){
   if(isAdmin){
     body+='<div style="padding:8px 0;font-size:13px;color:var(--primary);font-weight:600">🔒 管理员 · 拥有全部权限</div>';
   } else {
-    body+='<select id="ed-urole"><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>编辑</option></select>';
+    body+='<select id="ed-urole"><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>管理员</option></select>';
   }
   body+='</div>';
   showModal(isNew?'新增用户':'编辑用户', body,
