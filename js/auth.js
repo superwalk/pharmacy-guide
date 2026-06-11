@@ -240,7 +240,11 @@ function changePassword(oldPw, newPw) {
   if (u.password !== oldPw) return { ok:false, msg:'原密码错误' };
   u.password = newPw;
   currentUser.password = newPw;
-  saveUsers(users); // 保存修改后的数组，不能重新getUsers
+  saveUsers(users); // 保存修改后的数组
+  // 同步更新本地缓存密码，否则下次登录会用旧密码覆盖
+  var saved = JSON.parse(localStorage.getItem('user_' + currentUser.username) || '{}');
+  saved.password = newPw;
+  localStorage.setItem('user_' + currentUser.username, JSON.stringify(saved));
   clearRemember(); // 密码变更后15天免登录失效
   return { ok:true };
 }
