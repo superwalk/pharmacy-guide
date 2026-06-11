@@ -133,10 +133,15 @@ function initApp() {
   initSearch();
   initCompare();
   initProfileMenus();
-  // 置顶按钮
-  window.addEventListener('scroll',function(){
+  // 置顶按钮——监听各屏幕容器的滚动
+  function onScreenScroll(){
     var btn=document.getElementById('back-to-top');
-    if(btn) btn.classList.toggle('show',window.scrollY>300);
+    if(!btn) return;
+    var active=document.querySelector('.screen.active');
+    btn.classList.toggle('show',active?active.scrollTop>300:false);
+  }
+  document.querySelectorAll('.screen').forEach(function(s){
+    s.addEventListener('scroll',onScreenScroll);
   });
 }
 
