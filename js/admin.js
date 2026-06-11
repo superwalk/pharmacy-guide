@@ -528,6 +528,17 @@ function doSyncToGitHub(token) {
 
 function buildExportData() {
   try {
+    var users = [];
+    try {
+      var raw = localStorage.getItem('custom_users');
+      if (raw) {
+        var all = JSON.parse(raw);
+        // 只提取不在内置USERS中的用户（手机新增的）
+        var builtin = typeof USERS !== 'undefined' ? USERS.map(function(u){return u.username;}) : [];
+        users = all.filter(function(u){ return builtin.indexOf(u.username) === -1; });
+      }
+    } catch(e) {}
+    
     var data = {
       exportTime: new Date().toISOString(),
       appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.0',
@@ -536,6 +547,7 @@ function buildExportData() {
       favorites: JSON.parse(localStorage.getItem('favorites') || '[]'),
       changelog: JSON.parse(localStorage.getItem('changelog_custom_v3') || '[]')
     };
+    if (users.length > 0) data.new_users = users; // 仅手机新增用户
     return data;
   } catch(e) {
     toast('❌ 打包数据失败：'+e.message);
