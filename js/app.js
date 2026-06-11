@@ -260,7 +260,7 @@ function renderGuidelines() {
         <span class="cat-name">${s.icon} ${s.system}</span>
         <span style="font-size:12px;color:var(--text-light)">${s.items.length} 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▼</span></span>
       </div>
-      <div class="guide-items" id="guide-group-${i}">${s.items.map(g=>`<div class="guide-item" data-gid="${g.id}" style="display:flex;gap:6px;align-items:center;padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border)"><span style="width:6px;height:6px;background:${s.system==='法律法规'?'var(--accent)':'var(--primary)'};border-radius:3px;flex-shrink:0"></span><span style="font-size:13px;color:var(--text-body);flex:1">${g.title}</span><span style="font-size:11px;color:var(--text-light);flex-shrink:0">${g.year||''}</span></div>`).join('')}</div>
+      <div class="guide-items" id="guide-group-${i}" style="display:flex;flex-wrap:wrap;gap:6px">${s.items.map(g=>`<span class="guide-item" data-gid="${g.id}" style="display:inline-block;padding:4px 10px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;white-space:nowrap">${g.title} <span style="color:var(--text-light)">${g.year||''}</span></span>`).join('')}</div>
     </div>
   `).join('');
   if(systems.length===0&&kw) gl.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">未找到匹配的指南或法规</div>';
