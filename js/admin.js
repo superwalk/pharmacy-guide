@@ -108,6 +108,12 @@ function renderAdminList(type, kw) {
         return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(d.name), kw)+'</span><span class="badge badge-green" style="margin-left:6px">'+highlightKw(esc(d.category), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="drug">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="drug">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">适应症：'+highlightKw(esc((d.indications||'').slice(0,50)), kw)+'…</div></div>';
       }).join('');
     } else if (type === 'guidelines') {
+      // 指南分类管理
+      var sysList = (typeof getGuideSystems==='function'?getGuideSystems():GUIDE_SYSTEMS).filter(function(s){return s.system!=='法律法规'&&s.system!=='其他';});
+      html = '<div class="section-title" style="font-size:13px;margin-bottom:6px">📂 指南分类 <button class="btn btn-sm btn-outline" style="margin-left:6px;font-size:11px" onclick="addGuideCategory()">+ 新增分类</button></div>'
+        + '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">'
+        + sysList.map(function(s){ var cnt=s.items.length; var isDel=cnt===0&&s.system!=='法律法规'; return '<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:12px;background:var(--bg);border-radius:12px;border:1px solid var(--border)">'+esc(s.system)+' <span style="color:var(--text-light);font-size:10px">'+cnt+'</span>'+(isDel?'<span style="cursor:pointer;color:var(--danger);margin-left:2px" onclick="deleteGuideCategory(\''+s.system+'\',this)">✕</span>':'')+'</span>'; }).join('')
+        + '</div><div style="height:1px;background:var(--border);margin-bottom:10px"></div>';
       var all = [...allGuides(), ...LAWS];
       var filtered = all.filter(function(g){
         if (!kw) return true;
@@ -202,7 +208,7 @@ function showGuidelineEditor(guide, index) {
   showModal(isNew?'新增指南':'编辑指南',
     `<div style="display:flex;flex-direction:column;gap:10px">
       <input id="ed-gtitle" value="${esc(g.title)}" placeholder="标题 *">
-      <select id="ed-gsystem"><option value="">— 选择系统 —</option>${GUIDE_SYSTEMS.filter(function(s){return s.system!=='法律法规'&&s.system!=='其他';}).map(function(s){return '<option value="'+s.system+'"'+(g.system===s.system?' selected':'')+'>'+s.system+'</option>';}).join('')}</select>
+      <select id="ed-gsystem"><option value="">— 选择系统 —</option>${(typeof getGuideSystems==='function'?getGuideSystems():GUIDE_SYSTEMS).filter(function(s){return s.system!=='法律法规'&&s.system!=='其他';}).map(function(s){return '<option value="'+s.system+'"'+(g.system===s.system?' selected':'')+'>'+s.system+'</option>';}).join('')}</select>
       <input id="ed-gyear" value="${esc(g.year||'')}" placeholder="年份">
       <textarea id="ed-gcontent" style="min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical" placeholder="内容">${esc(g.content||'')}</textarea>
     </div>`,
@@ -653,4 +659,41 @@ function buildExportData() {
     toast('❌ 打包数据失败：'+e.message);
     return null;
   }
+}
+
+// ═══ 指南分类管理 ═══
+function addGuideCategory(){
+  showModal('新增指南分类', '<input id="ed-new-cat" placeholder="输入分类名称（如：呼吸）" style="width:100%">', [
+    {label:'取消'},
+    {label:'新增',primary:true,onClick:function(){
+      var name=peg('ed-new-cat').trim();
+      if(!name){toast('请输入分类名称');return;}
+      var cats=JSON.parse(localStorage.getItem('custom_guide_cats')||'[]');
+      if(cats.indexOf(name)>=0||(typeof getGuideSystems==='function'?getGuideSystems():GUIDE_SYSTEMS).some(function(s){return s.system===name;})){toast('分类已存在');return;}
+      cats.push(name);
+      localStorage.setItem('custom_guide_cats',JSON.stringify(cats));
+      renderAdminList('guidelines', document.getElementById('admin-search')?.value||'');
+      toast('已新增分类：'+name);
+    }}
+  ]);
+  setTimeout(function(){ var inp=document.getElementById('ed-new-cat'); if(inp) inp.focus(); }, 100);
+}
+function deleteGuideCategory(name, el){
+  showModal('删除分类', '<p style="text-align:center">确定删除分类 <b>'+esc(name)+'</b>？<br><span style="font-size:12px;color:var(--text-light)">仅删除分类标签，不影响该分类下的指南条目</span></p>', [
+    {label:'取消'},
+    {label:'删除',primary:true,onClick:function(){
+      var cats=JSON.parse(localStorage.getItem('custom_guide_cats')||'[]');
+      var idx=cats.indexOf(name);
+      if(idx>=0){
+        cats.splice(idx,1);
+        localStorage.setItem('custom_guide_cats',JSON.stringify(cats));
+      } else {
+        var del=JSON.parse(localStorage.getItem('deleted_guide_cats')||'[]');
+        if(del.indexOf(name)<0) del.push(name);
+        localStorage.setItem('deleted_guide_cats',JSON.stringify(del));
+      }
+      renderAdminList('guidelines', document.getElementById('admin-search')?.value||'');
+      toast('已删除分类：'+name);
+    }}
+  ]);
 }

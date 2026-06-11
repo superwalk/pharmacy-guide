@@ -53,7 +53,35 @@ function getFavs() { return JSON.parse(localStorage.getItem(favKey())||'[]'); }
 function isFav(id) { return getFavs().includes(id); }
 function toggleFav(id) { let f=getFavs(); if(f.includes(id)) f=f.filter(x=>x!==id); else f.push(id); localStorage.setItem(favKey(),JSON.stringify(f)); }
 function getNotes() { return JSON.parse(localStorage.getItem(noteKey())||'{}'); }
-function saveNote(drugId, text) { const n=getNotes(); n[drugId]=text; localStorage.setItem(noteKey(),JSON.stringify(n)); }
+function saveNote(id, text) { const n=getNotes(); n[id]=text; localStorage.setItem(noteKey(),JSON.stringify(n)); }
+
+// 根据ID在所有数据源中查找内容
+function findContentById(id) {
+  if (!id) return null;
+  var d = findDrug(id); if (d) return { name: d.name, type: 'drug', icon: '💊' };
+  var g = allGuides().find(function(x){return x.id===id;}); if (g) return { name: g.title, type: 'guide', icon: '📋' };
+  g = LAWS.find(function(x){return x.id===id;}); if (g) return { name: g.title, type: 'guide', icon: '📋' };
+  var ds = DISEASES.find(function(x){return x.id===id;}); if (ds) return { name: ds.name, type: 'disease', icon: '🦠' };
+  var h = HEALTH_EDU.find(function(x){return x.id===id;}); if (h) return { name: h.title, type: 'edu', icon: '📖' };
+  var i = INFUSION_DATA.find(function(x){return x.id===id;}); if (i) return { name: i.drug, type: 'infusion', icon: '💉' };
+  var m = MED_EDU.find(function(x){return x.id===id;}); if (m) return { name: m.drug, type: 'med', icon: '🗣️' };
+  return null;
+}
+
+// 渲染备注卡片
+function renderNote(id) {
+  const notes=getNotes();
+  const note=notes[id]||'';
+  return '<div class="note-card" style="margin-top:12px"><div class="note-header"><span class="note-title">📝 个人备注</span><span class="note-edit" id="edit-note">编辑</span></div><div class="note-content" id="note-content-'+id+'">'+(note||'暂无备注')+'</div></div>';
+}
+function bindNote(id, refreshFn) {
+  var eb = document.getElementById('edit-note');
+  if (eb) eb.onclick = function() {
+    const notes=getNotes();
+    const note=notes[id]||'';
+    showModal('编辑备注', '<textarea id="note-textarea" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical">'+note+'</textarea>', [{label:'取消'},{label:'保存',primary:true,onClick:function(){ const t=document.getElementById('note-textarea').value; saveNote(id,t); if(refreshFn) refreshFn(); }}]);
+  };
+}
 function getRecent() { return JSON.parse(localStorage.getItem(recentKey())||'[]'); }
 function addRecent(id, type) { 
   type=type||'drug';
@@ -298,7 +326,7 @@ function showDrugList(type,id){
 function renderGuidelines() {
   const kw=(document.getElementById('guide-search')?.value||'').toLowerCase();
   const gl=document.getElementById('guide-list');
-  let systems=GUIDE_SYSTEMS;
+  let systems=getGuideSystems();
   if(kw){
     systems=systems.map(function(s){
       return {system:s.system,icon:s.icon,items:s.items.filter(function(g){return g.title.toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||g.system.toLowerCase().indexOf(kw)>=0||(g.py||'').toLowerCase().indexOf(kw)>=0||genPy(g.title).toLowerCase().indexOf(kw)>=0||genPy(g.system).toLowerCase().indexOf(kw)>=0;})};
@@ -356,7 +384,9 @@ function openGuide(gid) {
     } else {
       html += '<div style="margin-top:12px"><button class="btn btn-outline btn-sm" style="font-size:13px;padding:6px 16px" onclick="viewGuideFull(\''+gid+'\')">📄 查看全文</button></div>';
     }
+    html += renderNote(gid);
     gb.innerHTML = html;
+    bindNote(gid, function(){ openGuide(gid); });
   });
 }
 
@@ -377,6 +407,19 @@ function highlightKw(text, kw) {
   if (!kw || !text) return text || '';
   var re = new RegExp('(' + kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
   return text.replace(re, '<mark style="background:#FEF08A;padding:1px 2px;border-radius:2px">$1</mark>');
+}
+
+// 获取指南分类列表（内置+自定义）
+function getGuideSystems() {
+  var custom = JSON.parse(localStorage.getItem('custom_guide_cats') || '[]');
+  var deleted = JSON.parse(localStorage.getItem('deleted_guide_cats') || '[]');
+  var base = GUIDE_SYSTEMS.filter(function(s){ return deleted.indexOf(s.system) < 0; });
+  custom.forEach(function(name){
+    if (!base.some(function(s){return s.system===name;}) && name) {
+      base.push({ system:name, icon:'📁', items:[] });
+    }
+  });
+  return base;
 }
 
 function renderDetail(drugId) {
@@ -699,8 +742,8 @@ function viewMyNotes() {
   const me=document.getElementById('mynotes-empty');
   if(entries.length===0){ ml.innerHTML=''; me.style.display='block'; return; }
   me.style.display='none';
-  ml.innerHTML=entries.map(([id,text])=>{ const d=findDrug(id); return d?`<div class="list-card" data-drug="${id}"><div class="icon-box">💊</div><div class="info"><div class="name">${d.name}</div><div class="desc">${text.slice(0,40)}…</div></div></div>`:''; }).join('');
-  ml.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{ addRecent(c.dataset.drug,'drug'); pushScreen('detail'); renderDetail(c.dataset.drug); }; });
+  ml.innerHTML=entries.map(([id,text])=>{ const c=findContentById(id); return c?`<div class="list-card" data-note-id="${id}" data-note-type="${c.type}"><div class="icon-box">${c.icon}</div><div class="info"><div class="name">${c.name}</div><div class="desc">${text.slice(0,40)}…</div></div></div>`:''; }).join('');
+  ml.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{ var id=c.dataset.noteId; var tp=c.dataset.noteType; if(tp==='drug'){ addRecent(id,'drug'); pushScreen('detail'); renderDetail(id); } else if(tp==='guide'){ openGuide(id); } else if(tp==='disease'){ var ds=DISEASES.find(function(x){return x.id===id;}); if(ds) openDisease(ds.name); } else if(tp==='edu'){ openHealthEdu(id); } else if(tp==='infusion'){ openInfusion(id); } else if(tp==='med'){ openMedEdu(id); } }; });
 }
 
 // ═══ 科普教育 ─══
@@ -735,7 +778,8 @@ function openHealthEdu(hid) {
     var detail = full || h;
     var hb = document.getElementById('healthedu-body');
     if(!hb) return;
-    hb.innerHTML = '<div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">'+hlText(detail.content||'')+'</p></div>';
+    hb.innerHTML = '<div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">'+hlText(detail.content||'')+'</p></div>' + renderNote(hid);
+    bindNote(hid, function(){ openHealthEdu(hid); });
   });
 }
 
@@ -777,7 +821,8 @@ function openInfusion(iid) {
     <div class="info-card"><div class="info-label">输注速度</div><div class="info-value">${detail.speed||'—'}</div></div>
     ${detail.interact?'<div class="info-card"><div class="info-label danger">配伍禁忌</div><div class="info-value">'+hlText(detail.interact)+'</div></div>':''}
     ${detail.detail?'<div class="info-card"><div class="info-label danger">细节</div><div class="info-value">'+hlText(detail.detail)+'</div></div>':''}
-    <div class="info-card"><div class="info-label">注意事项</div><div class="info-value" style="white-space:pre-wrap">${hlText(detail.note||'')}</div></div>`;
+    <div class="info-card"><div class="info-label">注意事项</div><div class="info-value" style="white-space:pre-wrap">${hlText(detail.note||'')}</div></div>` + renderNote(iid);
+    bindNote(iid, function(){ openInfusion(iid); });
   });
 }
 
@@ -819,6 +864,8 @@ function openDisease(name) {
         <div class="info-card"><div class="info-label">症状</div><div class="info-value">${hlText(detail.symptoms||'')}</div></div>
         <div class="info-card"><div class="info-label">诊断</div><div class="info-value">${hlText(detail.diagnosis||'')}</div></div>
         <div class="info-card"><div class="info-label">治疗原则</div><div class="info-value">${hlText(detail.treatment||'')}</div></div>`;
+      db.innerHTML += renderNote(d.id);
+      bindNote(d.id, function(){ openDisease(name); });
     });
   }
 }
@@ -847,7 +894,8 @@ function openMedEdu(mid){
     var detail = full || m;
     var mb = document.getElementById('mededu-body');
     if(!mb) return;
-    mb.innerHTML = '<div class="info-card"><div class="info-label">交代要点</div><div class="info-value" style="font-size:16px;font-weight:600;color:var(--accent)">'+detail.key+'</div></div><div class="info-card"><div class="info-label">详细说明</div><div class="info-value" style="white-space:pre-wrap">'+detail.detail+'</div></div>';
+    mb.innerHTML = '<div class="info-card"><div class="info-label">交代要点</div><div class="info-value" style="font-size:16px;font-weight:600;color:var(--accent)">'+detail.key+'</div></div><div class="info-card"><div class="info-label">详细说明</div><div class="info-value" style="white-space:pre-wrap">'+detail.detail+'</div></div>' + renderNote(mid);
+    bindNote(mid, function(){ openMedEdu(mid); });
   });
 }
 
