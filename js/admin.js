@@ -451,3 +451,94 @@ function importAllData() {
   };
   input.click();
 }
+
+// ═══ GitHub同步 ═══
+const GITHUB_REPO = 'superwalk/pharmacy-guide';
+const GITHUB_BRANCH = 'main';
+const GITHUB_TOKEN_KEY = 'github_pat_v2';
+
+function syncToGitHub() {
+  var token = localStorage.getItem(GITHUB_TOKEN_KEY);
+  if (!token) {
+    showModal('GitHub 令牌', 
+      '<p style="font-size:12px;color:var(--text-light);margin-bottom:8px">需要 GitHub Personal Access Token 才能将数据同步到仓库。</p>'
+      +'<p style="font-size:12px;color:var(--text-light);margin-bottom:12px">🔑 前往 <a href="https://github.com/settings/tokens" target="_blank" style="color:var(--primary)">github.com/settings/tokens</a> 创建一个，权限勾选 <b>repo</b>。</p>'
+      +'<input id="github-token-input" type="password" placeholder="输入 GitHub Token" style="width:100%">'
+      +'<label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--text-light)"><input type="checkbox" id="save-token-cb" checked> 记住此令牌</label>',
+      [{label:'取消'},{label:'确认同步',primary:true,onClick:function(){
+        var tk = document.getElementById('github-token-input').value.trim();
+        if (!tk) { toast('请输入令牌'); return; }
+        if (document.getElementById('save-token-cb').checked) {
+          localStorage.setItem(GITHUB_TOKEN_KEY, tk);
+        }
+        doSyncToGitHub(tk);
+      }}]
+    );
+    return;
+  }
+  doSyncToGitHub(token);
+}
+
+function doSyncToGitHub(token) {
+  var data = buildExportData();
+  if (!data) return;
+  
+  var now = new Date();
+  var ts = now.getFullYear()+'-'+
+    String(now.getMonth()+1).padStart(2,'0')+'-'+
+    String(now.getDate()).padStart(2,'0')+'_'+
+    String(now.getHours()).padStart(2,'0')+'-'+
+    String(now.getMinutes()).padStart(2,'0');
+  var filename = 'data/exports/phone-backup_'+ts+'.json';
+  var content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+  
+  toast('⏳ 正在上传到 GitHub…');
+  
+  // 先检查文件是否存在
+  fetch('https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+filename+'?ref='+GITHUB_BRANCH, {
+    headers: { 'Authorization': 'Bearer '+token, 'Accept': 'application/vnd.github.v3+json' }
+  }).then(function(r){
+    return r.json().then(function(body){
+      return {status: r.status, sha: body.sha};
+    });
+  }).then(function(result){
+    // 构建请求体
+    var body = {
+      message: '📱 手机端数据同步 - '+ts,
+      content: content,
+      branch: GITHUB_BRANCH
+    };
+    if (result.sha) body.sha = result.sha; // 覆盖已有文件
+    
+    return fetch('https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+filename, {
+      method: 'PUT',
+      headers: { 'Authorization': 'Bearer '+token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+      body: JSON.stringify(body)
+    });
+  }).then(function(r){
+    if (r.status === 201 || r.status === 200) {
+      toast('✅ 已同步到仓库，电脑端可以开始合并');
+    } else {
+      return r.json().then(function(e){ throw new Error(e.message || '同步失败'); });
+    }
+  }).catch(function(e){
+    toast('❌ 同步失败：'+e.message);
+  });
+}
+
+function buildExportData() {
+  try {
+    var data = {
+      exportTime: new Date().toISOString(),
+      appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.0',
+      custom_data: JSON.parse(localStorage.getItem('custom_data') || '{"drugs":[],"guidelines":[],"education":[],"infusion":[],"diseases":[]}'),
+      edit_logs: JSON.parse(localStorage.getItem('edit_logs') || '[]'),
+      favorites: JSON.parse(localStorage.getItem('favorites') || '[]'),
+      changelog: JSON.parse(localStorage.getItem('changelog_custom_v3') || '[]')
+    };
+    return data;
+  } catch(e) {
+    toast('❌ 打包数据失败：'+e.message);
+    return null;
+  }
+}

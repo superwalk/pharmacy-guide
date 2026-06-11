@@ -625,6 +625,7 @@ function showExportPanel(){
     +'<p style="margin-top:8px;color:var(--text-light)">💡 导出文件不含密码等敏感信息，可在电脑上查看和编辑。</p>'
     +'</div>'
     +'<button class="btn btn-primary btn-full" onclick="exportAllData()" style="margin-top:16px">📥 导出数据到文件</button>'
+    +'<button class="btn btn-outline btn-full" onclick="syncToGitHub()" style="margin-top:8px">☁️ 同步到 GitHub 仓库</button>'
     +'<button class="btn btn-outline btn-full" onclick="importAllData()" style="margin-top:8px">📤 从文件导入数据</button>';
   document.getElementById('label-content').innerHTML=html;
 }
