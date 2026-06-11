@@ -357,6 +357,20 @@ const GUIDELINES = [
   { id:'g133', title:'医疗机构人工智能应用与治理专家共识（2026版）', system:'其他', year:'2026' , py:'B'},
   { id:'g134', title:'FUTURE-AI医疗保健可信赖可部署AI国际共识指南', system:'其他', year:'2026' , py:'FUTUREAIBBAI'},
   { id:'g135', title:'中国器官移植人工智能辅助临床决策专家共识（2026版）', system:'其他', year:'2026' , py:'CCB'},
+  // ═══ 2026年新增条目 ═══
+  { id:'g136', title:'重组人粒细胞集落刺激因子临床应用管理中国专家共识（2026版）', system:'抗肿瘤', year:'2026' },
+  { id:'g137', title:'肝损伤药物目录及合理用药专家共识', system:'药学', year:'2026' },
+  { id:'g138', title:'中国多民族人群精准用药研究价值与策略专家共识', system:'药学', year:'2026' },
+  { id:'g139', title:'低分子肝素临床应用中国专家共识', system:'血液系统', year:'2026' },
+  { id:'g140', title:'2026版CSCO结直肠癌诊疗指南', system:'肿瘤', year:'2026' },
+  { id:'g141', title:'2026版CSCO胃癌诊疗指南', system:'肿瘤', year:'2026' },
+  { id:'g142', title:'2026版CSCO非小细胞肺癌诊疗指南', system:'肿瘤', year:'2026' },
+  { id:'g143', title:'2026版CSCO黑色素瘤诊疗指南', system:'肿瘤', year:'2026' },
+  { id:'g144', title:'2026版CSCO肿瘤化疗所致血小板减少症诊疗指南', system:'肿瘤', year:'2026' },
+  { id:'g145', title:'肿瘤患者药学监护分级标准中国专家共识', system:'抗肿瘤', year:'2026' },
+  { id:'g146', title:'2026 AHA/ACC心血管-肾脏-代谢综合征科学声明', system:'心血管', year:'2026' },
+  { id:'g147', title:'中国支气管哮喘基层诊疗与管理指南（2026年）', system:'呼吸', year:'2026' },
+  { id:'g148', title:'呼吸系统疾病床旁超声诊断与评估专家共识（2026版）', system:'呼吸', year:'2026' },
 ];
 
 // ═══ 法规数据 ═══
