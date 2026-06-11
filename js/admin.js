@@ -99,12 +99,12 @@ function renderAdminList(type, kw) {
 
   // ── 全局搜索模式：有关键词时跨所有数据源搜索 ──
   if (kw) {
-    // 药品
-    var drugs = allDrugs();
-    var drugRes = drugs.filter(function(d){
-      return (d.name||'').toLowerCase().indexOf(kw)>=0||(d.category||'').toLowerCase().indexOf(kw)>=0||(d.subcategory||'').toLowerCase().indexOf(kw)>=0||(d.indications||'').toLowerCase().indexOf(kw)>=0||(d.py||'').toLowerCase().indexOf(kw)>=0;
-    });
-    if (drugRes.length > 0) {
+    try {
+      var drugs = allDrugs();
+      var drugRes = drugs.filter(function(d){
+        return (d.name||'').toLowerCase().indexOf(kw)>=0||(d.category||'').toLowerCase().indexOf(kw)>=0||(d.subcategory||'').toLowerCase().indexOf(kw)>=0||(d.indications||'').toLowerCase().indexOf(kw)>=0||(d.py||'').toLowerCase().indexOf(kw)>=0||genPy(d.name||'').indexOf(kw)>=0||genPy(d.category||'').indexOf(kw)>=0;
+      });
+      if (drugRes.length > 0) {
       html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title drugs" style="font-size:14px;font-weight:600;padding:8px 0">💊 药品 ('+drugRes.length+')</div>';
       drugRes.forEach(function(d){
         var origIdx = drugs.indexOf(d);
@@ -116,7 +116,7 @@ function renderAdminList(type, kw) {
     // 指南+法规
     var allGuidesLaws = [...allGuides(), ...LAWS];
     var glRes = allGuidesLaws.filter(function(g){
-      return (g.title||'').toLowerCase().indexOf(kw)>=0||(g.system||'').toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||(g.year||'')===kw;
+      return (g.title||'').toLowerCase().indexOf(kw)>=0||(g.system||'').toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||(g.year||'')===kw||(g.py||'').toLowerCase().indexOf(kw)>=0||genPy(g.title||'').indexOf(kw)>=0;
     });
     if (glRes.length > 0) {
       html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title guides" style="font-size:14px;font-weight:600;padding:8px 0">📋 指南/法规 ('+glRes.length+')</div>';
@@ -129,7 +129,7 @@ function renderAdminList(type, kw) {
 
     // 科普教育
     var eduRes = HEALTH_EDU.filter(function(h){
-      return (h.title||'').toLowerCase().indexOf(kw)>=0||(h.cat||'').toLowerCase().indexOf(kw)>=0||(h.content||'').toLowerCase().indexOf(kw)>=0;
+      return (h.title||'').toLowerCase().indexOf(kw)>=0||(h.cat||'').toLowerCase().indexOf(kw)>=0||(h.content||'').toLowerCase().indexOf(kw)>=0||(h.py||'').toLowerCase().indexOf(kw)>=0||genPy(h.title||'').indexOf(kw)>=0||genPy(h.cat||'').indexOf(kw)>=0;
     });
     if (eduRes.length > 0) {
       html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title" style="font-size:14px;font-weight:600;padding:8px 0;color:#D97706">📖 科普教育 ('+eduRes.length+')</div>';
@@ -142,7 +142,7 @@ function renderAdminList(type, kw) {
 
     // 输液配伍
     var infRes = INFUSION_DATA.filter(function(inf){
-      return (inf.drug||'').toLowerCase().indexOf(kw)>=0||(inf.cat||'').toLowerCase().indexOf(kw)>=0||(inf.vehicle||'').toLowerCase().indexOf(kw)>=0||(inf.note||'').toLowerCase().indexOf(kw)>=0;
+      return (inf.drug||'').toLowerCase().indexOf(kw)>=0||(inf.cat||'').toLowerCase().indexOf(kw)>=0||(inf.vehicle||'').toLowerCase().indexOf(kw)>=0||(inf.note||'').toLowerCase().indexOf(kw)>=0||(inf.py||'').toLowerCase().indexOf(kw)>=0||genPy(inf.drug||'').indexOf(kw)>=0;
     });
     if (infRes.length > 0) {
       html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title" style="font-size:14px;font-weight:600;padding:8px 0;color:#7C3AED">💉 输液配伍 ('+infRes.length+')</div>';
@@ -169,6 +169,7 @@ function renderAdminList(type, kw) {
     if (!html) html = '<div style="text-align:center;padding:40px;color:var(--text-light)">未找到匹配的内容</div>';
     list.innerHTML = html;
     bindAdminEvents(null);
+    }catch(e){ list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-light)">搜索出错，请重试</div>'; }
     return;
   }
 
