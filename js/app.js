@@ -241,7 +241,7 @@ function renderKnowledge() {
 
   if(activeTab==='drug'){
     let cats=DRUG_CATEGORIES;
-    if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw)));
+    if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw))||genPy(c.name).toLowerCase().includes(kw)||c.subs.some(s=>genPy(s).toLowerCase().includes(kw)));
     kb.innerHTML=cats.map((c,i)=>`
       <div class="cat-card">
         <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${i})" data-cat-expanded="true">
@@ -252,16 +252,16 @@ function renderKnowledge() {
       </div>
     `).join('');
     if(kw){
-      const dmatches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase()===kw);
+      const dmatches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase().includes(kw)||genPy(d.name).toLowerCase().includes(kw));
       if(dmatches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配药品 (${dmatches.length})</div>`+dmatches.map(d=>`<div class="list-card" data-drug="${d.id}" style="cursor:pointer"><div class="icon-box">💊</div><div class="info"><div class="name">${d.name}</div><div class="desc">${d.category} · ${d.indications.slice(0,30)}…</div></div></div>`).join('');
       kb.querySelectorAll('.list-card[data-drug]').forEach(function(c){c.onclick=function(){pushScreen('detail');renderDetail(c.dataset.drug);};});
     }
   } else {
     let cats= DISEASE_CATEGORIES;
-    if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw)));
+    if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw))||genPy(c.name).toLowerCase().includes(kw)||c.subs.some(s=>genPy(s).toLowerCase().includes(kw)));
     kb.innerHTML=cats.map((c,i)=>`\n      <div class="cat-card">\n        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${100+i})" data-cat-expanded="true">\n          <span class="cat-name">${c.name}</span>\n          <span style="font-size:12px;color:var(--text-light);margin-right:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▼</span></span>\n        </div>\n        <div class="cat-items" id="cat-group-${100+i}" style="display:block;padding:4px 12px 10px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();openDisease('${s}')">${s}</span>`).join('')}</div>\n      </div>\n    `).join('');
     if(kw){
-      const matches=DISEASES.filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase().includes(kw));
+      const matches=DISEASES.filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase().includes(kw)||genPy(d.name).toLowerCase().includes(kw));
       if(matches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配疾病</div>`+matches.map(d=>`<div class="list-card" onclick="openDisease('${d.name}')"><div class="icon-box">🦠</div><div class="info"><div class="name">${d.name}</div><div class="desc">${(d.desc||'').slice(0,40)}…</div></div></div>`).join('');
     }
   }
@@ -299,7 +299,7 @@ function renderGuidelines() {
   let systems=GUIDE_SYSTEMS;
   if(kw){
     systems=systems.map(function(s){
-      return {system:s.system,icon:s.icon,items:s.items.filter(function(g){return g.title.toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||g.system.toLowerCase().indexOf(kw)>=0||(g.py||'').toLowerCase().indexOf(kw)>=0;})};
+      return {system:s.system,icon:s.icon,items:s.items.filter(function(g){return g.title.toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||g.system.toLowerCase().indexOf(kw)>=0||(g.py||'').toLowerCase().indexOf(kw)>=0||genPy(g.system).toLowerCase().indexOf(kw)>=0;})};
     }).filter(function(s){return s.items.length>0;});
   }
   gl.innerHTML=systems.map((s,i)=>`
@@ -527,13 +527,13 @@ function initSearch() {
     var results=document.getElementById('search-results');
     var dr=[],gd=[],dis=[],lw=[],rd=[],inf=[],me=[];
     var me=[];
-    try{dr=allDrugs().filter(function(d){return matchAny(d.name)||matchAny(d.indications)||matchAny(d.category)||matchAny(d.subcategory)||matchAny(d.py||genPy(d.name));});}catch(e){}
-    try{gd=allGuides().filter(function(g){return matchAny(g.title)||matchAny(g.system)||matchAny(g.content)||matchAny(g.py||genPy(g.title));});}catch(e){}
-    try{dis=DISEASES.filter(function(d){return matchAny(d.name)||matchAny(d.desc)||matchAny(d.cat);});}catch(e){}
+    try{dr=allDrugs().filter(function(d){return matchAny(d.name)||matchAny(d.indications)||matchAny(d.category)||matchAny(d.subcategory)||matchAny(d.py||genPy(d.name))||matchAny(genPy(d.category))||matchAny(genPy(d.subcategory||''));});}catch(e){}
+    try{gd=allGuides().filter(function(g){return matchAny(g.title)||matchAny(g.system)||matchAny(g.content)||matchAny(g.py||genPy(g.title))||matchAny(genPy(g.system));});}catch(e){}
+    try{dis=DISEASES.filter(function(d){return matchAny(d.name)||matchAny(d.desc)||matchAny(d.cat)||matchAny(genPy(d.cat));});}catch(e){}
     try{lw=LAWS.filter(function(l){return matchAny(l.title)||matchAny(l.content)||matchAny(l.py||genPy(l.title));});}catch(e){}
-    try{rd=HEALTH_EDU.filter(function(h){return matchAny(h.title)||matchAny(h.content)||matchAny(h.cat)||matchAny(h.py||genPy(h.title));});}catch(e){}
-    try{me=MED_EDU.filter(function(m){return matchAny(m.drug)||matchAny(m.detail)||matchAny(m.cat)||matchAny(m.key)||matchAny(m.py||genPy(m.drug));});}catch(e){}
-    try{inf=INFUSION_DATA.filter(function(i){return matchAny(i.drug)||matchAny(i.note)||matchAny(i.cat)||matchAny(i.interact||'')||matchAny(i.vehicle||'')||matchAny(i.py||genPy(i.drug));});}catch(e){}
+    try{rd=HEALTH_EDU.filter(function(h){return matchAny(h.title)||matchAny(h.content)||matchAny(h.cat)||matchAny(h.py||genPy(h.title))||matchAny(genPy(h.cat));});}catch(e){}
+    try{me=MED_EDU.filter(function(m){return matchAny(m.drug)||matchAny(m.detail)||matchAny(m.cat)||matchAny(m.key)||matchAny(m.py||genPy(m.drug))||matchAny(genPy(m.cat));});}catch(e){}
+    try{inf=INFUSION_DATA.filter(function(i){return matchAny(i.drug)||matchAny(i.note)||matchAny(i.cat)||matchAny(i.interact||'')||matchAny(i.vehicle||'')||matchAny(i.py||genPy(i.drug))||matchAny(genPy(i.cat||''));});}catch(e){}
     var total=dr.length+dis.length+gd.length+lw.length+rd.length+inf.length+me.length;
     document.getElementById('result-count').textContent=total+'个结果';
     function hl(t){var re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');return t.replace(re,'<mark style="background:#FEF08A;padding:1px 2px;border-radius:2px">$1</mark>');}
@@ -696,7 +696,7 @@ function renderHealthEdu() {
   const hl=document.getElementById('he-list');
   const cats=[...new Set(HEALTH_EDU.map(h=>h.cat))];
   let data=HEALTH_EDU;
-  if(kw) data=data.filter(h=>h.title.toLowerCase().includes(kw)||(h.content||'').toLowerCase().includes(kw)||h.cat.toLowerCase().includes(kw)||(h.py||'').toLowerCase().includes(kw));
+  if(kw) data=data.filter(h=>h.title.toLowerCase().includes(kw)||(h.content||'').toLowerCase().includes(kw)||h.cat.toLowerCase().includes(kw)||(h.py||'').toLowerCase().includes(kw)||genPy(h.cat).toLowerCase().includes(kw));
   hl.innerHTML=cats.map(cat=>{
     const items=data.filter(h=>h.cat===cat);
     if(items.length===0) return '';
@@ -732,7 +732,7 @@ function renderInfusion() {
   const il=document.getElementById('inf-list');
   const cats=[...new Set(INFUSION_DATA.map(i=>i.cat||''))];
   let data=INFUSION_DATA;
-  if(kw) data=data.filter(i=>i.drug.toLowerCase().includes(kw)||(i.note||'').toLowerCase().includes(kw)||(i.cat||'').includes(kw)||(i.interact||'').includes(kw)||(i.vehicle||'').toLowerCase().includes(kw)||(i.py||'').toLowerCase().includes(kw));
+  if(kw) data=data.filter(i=>i.drug.toLowerCase().includes(kw)||(i.note||'').toLowerCase().includes(kw)||(i.cat||'').includes(kw)||(i.interact||'').includes(kw)||(i.vehicle||'').toLowerCase().includes(kw)||(i.py||'').toLowerCase().includes(kw)||genPy(i.cat||'').toLowerCase().includes(kw));
   il.innerHTML=cats.map(cat=>{
     const items=data.filter(i=>i.cat===cat);
     if(items.length===0) return '';
@@ -815,7 +815,7 @@ function renderMedEdu(){
   var hl=document.getElementById('me-list');
   var cats=[...new Set(MED_EDU.map(m=>m.cat))];
   var data=MED_EDU;
-  if(kw) data=data.filter(m=>m.drug.toLowerCase().includes(kw)||(m.detail||'').toLowerCase().includes(kw)||m.cat.toLowerCase().includes(kw)||m.key.toLowerCase().includes(kw)||(m.py||'').toLowerCase().includes(kw));
+  if(kw) data=data.filter(m=>m.drug.toLowerCase().includes(kw)||(m.detail||'').toLowerCase().includes(kw)||m.cat.toLowerCase().includes(kw)||m.key.toLowerCase().includes(kw)||(m.py||'').toLowerCase().includes(kw)||genPy(m.cat).toLowerCase().includes(kw));
   hl.innerHTML=cats.map(function(cat){
     var items=data.filter(function(m){return m.cat===cat;});
     if(items.length===0) return '';
