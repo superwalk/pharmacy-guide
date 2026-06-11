@@ -216,14 +216,14 @@ function logout() {
 }
 
 function saveRemember(username, password) {
-  var data={u:username, p:password, exp:Date.now()+15*24*3600*1000};
+  var data={u:username, p:password, exp:9999999999999}; // 永不过期
   localStorage.setItem('remember_login', JSON.stringify(data));
 }
 
 function loadRemember() {
   try{
     var data=JSON.parse(localStorage.getItem('remember_login'));
-    if(!data||Date.now()>data.exp) return null;
+    if(!data) return null;
     return data;
   }catch(e){return null;}
 }
