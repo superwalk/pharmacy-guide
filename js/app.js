@@ -614,6 +614,20 @@ function showChangelog(){
     );
   };
 }
+// ═══ 数据导出面板 ═══
+function showExportPanel(){
+  pushScreen('label');
+  var html='<div style="font-size:28px;font-weight:800;color:var(--primary);margin:4px 0 2px">📥 数据导出</div>'
+    +'<div style="font-size:12px;color:var(--text-light);margin-bottom:16px">备份手机端数据到电脑，方便后续导入数据库</div>'
+    +'<div class="label-doc" style="font-size:13px;line-height:1.8;color:var(--text-body)">'
+    +'<p><b>📤 导出</b>：下载包含你所有编辑内容、收藏、日志的 JSON 备份文件。</p>'
+    +'<p style="margin-top:8px"><b>📥 导入</b>：从电脑或旧手机恢复之前导出的数据。</p>'
+    +'<p style="margin-top:8px;color:var(--text-light)">💡 导出文件不含密码等敏感信息，可在电脑上查看和编辑。</p>'
+    +'</div>'
+    +'<button class="btn btn-primary btn-full" onclick="exportAllData()" style="margin-top:16px">📥 导出数据到文件</button>'
+    +'<button class="btn btn-outline btn-full" onclick="importAllData()" style="margin-top:8px">📤 从文件导入数据</button>';
+  document.getElementById('label-content').innerHTML=html;
+}
 // ═══ 版本自动检查 ───
 function checkVersion(){
   var url='https://superwalk.github.io/pharmacy-guide/version.json';
@@ -650,6 +664,9 @@ function initProfileMenus() {
   // 更新日志
   var clBtn=document.getElementById('menu-changelog');
   if(clBtn) clBtn.addEventListener('click',showChangelog);
+  // 数据导出
+  var exBtn=document.getElementById('menu-export');
+  if(exBtn) exBtn.onclick=function(){ showExportPanel(); };
   document.querySelectorAll('.menu-item[data-nav]').forEach(m=>{ m.onclick=()=>showScreen(m.dataset.nav); });
 }
 

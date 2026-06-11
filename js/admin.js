@@ -371,3 +371,83 @@ function showUserEditor(user){
   if(!m){setTimeout(bindAdminMenu,200);return;}
   m.onclick=()=>{pushScreen('admin');initAdmin();};
 })();
+
+// ═══ 数据导出 ═══
+function exportAllData() {
+  try {
+    var exportData = {
+      exportTime: new Date().toISOString(),
+      appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.0',
+      custom_data: JSON.parse(localStorage.getItem('custom_data') || '{"drugs":[],"guidelines":[],"education":[],"infusion":[],"diseases":[]}'),
+      edit_logs: JSON.parse(localStorage.getItem('edit_logs') || '[]'),
+      favorites: JSON.parse(localStorage.getItem('favorites') || '[]'),
+      changelog: JSON.parse(localStorage.getItem('changelog_custom_v3') || '[]'),
+      rememberedUser: (function(){
+        try { var s=localStorage.getItem('remembered_user'); return s ? JSON.parse(s) : null; } catch(e) { return null; }
+      })()
+    };
+    // 脱敏：不导出密码
+    if (exportData.rememberedUser) delete exportData.rememberedUser.password;
+
+    var blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var now = new Date();
+    var ts = now.getFullYear()+'-'+
+      String(now.getMonth()+1).padStart(2,'0')+'-'+
+      String(now.getDate()).padStart(2,'0')+'_'+
+      String(now.getHours()).padStart(2,'0')+'-'+
+      String(now.getMinutes()).padStart(2,'0');
+    a.href = url;
+    a.download = 'pharmacy-guide-backup_'+ts+'.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('✅ 数据已导出，请保存到电脑');
+  } catch(e) {
+    toast('❌ 导出失败：'+e.message);
+  }
+}
+
+function importAllData() {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = function() {
+    var file = input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function() {
+      try {
+        var data = JSON.parse(reader.result);
+        var imported = 0;
+        if (data.custom_data) {
+          localStorage.setItem('custom_data', JSON.stringify(data.custom_data));
+          imported++;
+        }
+        if (data.edit_logs) {
+          // 合并编辑日志（新在前）
+          var existing = JSON.parse(localStorage.getItem('edit_logs') || '[]');
+          var merged = data.edit_logs.concat(existing);
+          if (merged.length > 500) merged = merged.slice(0, 500);
+          localStorage.setItem('edit_logs', JSON.stringify(merged));
+          imported++;
+        }
+        if (data.favorites) {
+          localStorage.setItem('favorites', JSON.stringify(data.favorites));
+          imported++;
+        }
+        if (data.changelog) {
+          localStorage.setItem('changelog_custom_v3', JSON.stringify(data.changelog));
+          imported++;
+        }
+        toast('✅ 已导入 ' + imported + ' 项数据，刷新后生效');
+      } catch(e) {
+        toast('❌ 文件格式错误：' + e.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
