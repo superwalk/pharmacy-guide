@@ -209,7 +209,7 @@ function renderKnowledge() {
     `).join('');
     if(kw){
       const dmatches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase()===kw);
-      if(dmatches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配药品 (${dmatches.length})</div>`+dmatches.map(d=>`<div class="list-card" onclick="pushScreen('detail');renderDetail('${d.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${d.name}</div><div class="desc">${d.category} · ${d.indications.slice(0,30)}…</div></div></div>`).join('');
+      if(dmatches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配药品 (${dmatches.length})</div>`+dmatches.map(d=>`<div class="list-card" onclick="pushScreen("detail");renderDetail("${d.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${d.name}</div><div class="desc">${d.category} · ${d.indications.slice(0,30)}…</div></div></div>`).join('');
     }
   } else {
     let cats= DISEASE_CATEGORIES;
@@ -238,7 +238,7 @@ function showDrugList(type,id){
   const label=type==='cat'?DRUG_CATEGORIES.find(c=>c.id===id)?.name||id:id;
   document.getElementById('search-results-input').value=label;
   const sr=document.getElementById('search-results');
-  sr.innerHTML=`<div class="result-group"><div class="result-group-title drugs">💊 ${label} (${drugs.length})</div>`+drugs.map(d=>`<div class="result-item" onclick="pushScreen('detail');renderDetail('${d.id}')">${d.name}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')+`</div>`;
+  sr.innerHTML=`<div class="result-group"><div class="result-group-title drugs">💊 ${label} (${drugs.length})</div>`+drugs.map(d=>`<div class="result-item" onclick="pushScreen("detail");renderDetail("${d.id}')">${d.name}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')+`</div>`;
 }
 
 // ═══ 指南法规 ───
@@ -286,6 +286,8 @@ function openGuide(gid) {
     <div style="font-size:12px;color:var(--text-light);display:flex;gap:6px"><span class="badge badge-blue">${g.system||'法律法规'}</span><span>${g.year||''}</span></div>
     <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(g.content||'')}</p></div>
   `;
+  var md=extractMentionedDrugs(g.content||'');
+  if(md.length>0) document.getElementById('label-content').insertAdjacentHTML('beforeend','<div class="section-title" style="margin-top:8px">💊 指南提及药品</div>'+md.map(function(d){return '<div class="list-card" onclick="pushScreen("detail");renderDetail("'+d.id+'\")" style="cursor:pointer"><div class="icon-box">💊</div><div class="info"><div class="name">'+d.name+'</div><div class="desc">'+d.category+'</div></div></div>';}).join(''));
   showEditBtn({type:'guide',id:gid}); addRecent(gid,'guide');
   document.getElementById('label-content').insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="viewGuideFull(\"'+gid+'\")" style="font-size:13px;padding:6px 16px">📄 查看全文</button></div>');
 }
@@ -382,14 +384,14 @@ function renderCompare() {
   const ct=document.getElementById('compare-table');
   cb.innerHTML=compareList.length===0
     ? '<div style="text-align:center;padding:10px;font-size:13px;color:var(--text-light)">对比篮为空，搜索药品添加</div>'
-    : `<div class="basket-header"><span class="basket-title">对比篮 (${compareList.length}/5)</span><button class="btn btn-sm btn-outline" onclick="compareList=[];renderCompare()">清空</button></div><div class="chips">${compareList.map(id=>{ const d=findDrug(id); return d?`<span class="chip" style="cursor:pointer" onclick="event.stopPropagation();pushScreen('detail');renderDetail('${id}')">${d.name}<span class="close" onclick="event.stopPropagation();event.preventDefault();removeFromCompare('${id}')">✕</span></span>`:''; }).join('')}</div>`;
+    : `<div class="basket-header"><span class="basket-title">对比篮 (${compareList.length}/5)</span><button class="btn btn-sm btn-outline" onclick="compareList=[];renderCompare()">清空</button></div><div class="chips">${compareList.map(id=>{ const d=findDrug(id); return d?`<span class="chip" style="cursor:pointer" onclick="event.stopPropagation();pushScreen("detail");renderDetail("${id}')">${d.name}<span class="close" onclick="event.stopPropagation();event.preventDefault();removeFromCompare('${id}')">✕</span></span>`:''; }).join('')}</div>`;
 
   if(compareList.length<2){ ct.innerHTML=''; return; }
   const drugs=compareList.map(id=>findDrug(id)).filter(Boolean);
   if(drugs.length<2){ ct.innerHTML=''; return; }
   ct.innerHTML=`<div class="compare-table">
     <div class="t-row"><div class="t-hdr">分类</div>${drugs.map(d=>`<div class="t-cell">${d.category}</div>`).join('')}</div>
-    <div class="t-row"><div class="t-hdr">适应症</div>${drugs.map(d=>`<div class="t-cell" onclick="pushScreen('detail');renderDetail('${d.id}')" style="cursor:pointer">${d.indications}</div>`).join('')}</div>
+    <div class="t-row"><div class="t-hdr">适应症</div>${drugs.map(d=>`<div class="t-cell" onclick="pushScreen("detail");renderDetail("${d.id}')" style="cursor:pointer">${d.indications}</div>`).join('')}</div>
     <div class="t-row"><div class="t-hdr">禁忌</div>${drugs.map(d=>`<div class="t-cell" style="color:var(--danger)">${d.contraindications}</div>`).join('')}</div>
     <div class="t-row"><div class="t-hdr">不良反应</div>${drugs.map(d=>`<div class="t-cell">${d.adverse?.slice(0,40)||'—'}…</div>`).join('')}</div>
     <div class="t-row"><div class="t-hdr">用法用量</div>${drugs.map(d=>`<div class="t-cell">${d.dosage}</div>`).join('')}</div>
@@ -529,6 +531,8 @@ function openHealthEdu(hid) {
     <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(h.content||'')}</p></div>
   `;
   showEditBtn({type:'edu',id:hid});
+  var md=extractMentionedDrugs(g.content||'');
+  if(md.length>0) document.getElementById('label-content').insertAdjacentHTML('beforeend','<div class="section-title" style="margin-top:8px">💊 指南提及药品</div>'+md.map(function(d){return '<div class="list-card" onclick="pushScreen("detail");renderDetail("'+d.id+'\")" style="cursor:pointer"><div class="icon-box">💊</div><div class="info"><div class="name">'+d.name+'</div><div class="desc">'+d.category+'</div></div></div>';}).join(''));
   showEditBtn({type:'guide',id:gid}); addRecent(gid,'guide');
   document.getElementById('label-content').insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="viewGuideFull(\"'+gid+'\")" style="font-size:13px;padding:6px 16px">📄 查看全文</button></div>');
 }
@@ -575,7 +579,7 @@ function showDiseaseList(catName) {
   const sr=document.getElementById('search-results');
   let html='';
   if(ds.length>0) html+=`<div class="result-group"><div class="result-group-title diseases">🦠 ${catName} (${ds.length})</div>`+ds.map(d=>`<div class="result-item" onclick="openDisease('${d.name}')">${d.name}</div>`).join('')+`</div>`;
-  if(dr.length>0) html+=`<div class="result-group"><div class="result-group-title drugs">💊 相关药品 (${dr.length})</div>`+dr.map(d=>`<div class="result-item" onclick="pushScreen('detail');renderDetail('${d.id}')">${d.name}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')+`</div>`;
+  if(dr.length>0) html+=`<div class="result-group"><div class="result-group-title drugs">💊 相关药品 (${dr.length})</div>`+dr.map(d=>`<div class="result-item" onclick="pushScreen("detail");renderDetail("${d.id}')">${d.name}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')+`</div>`;
   sr.innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--text-light)">暂无数据</div>';
 }
 
@@ -592,7 +596,7 @@ function openDisease(name) {
     <div class="info-card"><div class="info-label">症状</div><div class="info-value">${hlText(d.symptoms)}</div></div>
     <div class="info-card"><div class="info-label">诊断</div><div class="info-value">${hlText(d.diagnosis)}</div></div>
     <div class="info-card"><div class="info-label">治疗原则</div><div class="info-value">${hlText(d.treatment)}</div></div>`;
-  if(drugs.length>0) html+=`<div class="section-title" style="margin-top:8px">💊 相关药品 (${drugs.length})</div>`+drugs.slice(0,6).map(dr=>`<div class="list-card" onclick="pushScreen('detail');renderDetail('${dr.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${dr.name}</div><div class="desc">${dr.category} · ${(dr.indications||'').slice(0,30)}…</div></div></div>`).join('');
+  if(drugs.length>0) html+=`<div class="section-title" style="margin-top:8px">💊 相关药品 (${drugs.length})</div>`+drugs.slice(0,6).map(dr=>`<div class="list-card" onclick="pushScreen("detail");renderDetail("${dr.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${dr.name}</div><div class="desc">${dr.category} · ${(dr.indications||'').slice(0,30)}…</div></div></div>`).join('');
   if(guides.length>0) html+=`<div class="section-title" style="margin-top:8px">📋 相关指南</div>`+guides.slice(0,3).map(g=>`<div class="list-card" onclick="openGuide('${g.id}')"><div class="icon-box">📋</div><div class="info"><div class="name">${g.title}</div><div class="desc">${g.system} · ${g.year}</div></div></div>`).join('');
   if(!d && drugs.length===0) html+='<div style="text-align:center;padding:40px;color:var(--text-light)">该疾病暂未收录详细信息</div>';
   document.getElementById('label-content').innerHTML=html;
@@ -671,6 +675,16 @@ function viewGuideFull(gid){
   }).catch(function(){
     toast('暂无全文数据');
   });
+}
+// 从文本中提取提及的药品
+function extractMentionedDrugs(text){
+  if(!text) return [];
+  var drugs=allDrugs();
+  var found=[];
+  drugs.forEach(function(d){
+    if(text.indexOf(d.name)>=0 || text.indexOf(d.name.slice(0,-1))>=0) found.push(d);
+  });
+  return found.slice(0,8);
 }
 // ═══ 启动：检查已登录 ───
 (function(){
