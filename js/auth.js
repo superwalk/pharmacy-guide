@@ -165,7 +165,7 @@ function login(username, password) {
   // 合并本地存储的昵称
   const saved = JSON.parse(localStorage.getItem('user_' + u.username) || '{}');
   if (saved.nickname) u.nickname = saved.nickname;
-  if (saved.password) u.password = saved.password;
+  // 不再从user_读密码，密码统一由getUsers()管理
   currentUser = u;
   localStorage.setItem('currentUser', u.username);
   return { ok:true, user:u };
@@ -241,6 +241,10 @@ function changePassword(oldPw, newPw) {
   u.password = newPw;
   currentUser.password = newPw;
   saveUsers(users); // 保存修改后的数组，不能重新getUsers
+  // 清除旧的user_缓存，防止登录时覆盖
+  var saved = JSON.parse(localStorage.getItem('user_' + currentUser.username) || '{}');
+  saved.password = newPw;
+  localStorage.setItem('user_' + currentUser.username, JSON.stringify(saved));
   clearRemember(); // 密码变更后15天免登录失效
   return { ok:true };
 }
