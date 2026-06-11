@@ -256,6 +256,6 @@ function changePassword(oldPw, newPw) {
   var saved = JSON.parse(localStorage.getItem('user_' + currentUser.username) || '{}');
   saved.password = newPw;
   localStorage.setItem('user_' + currentUser.username, JSON.stringify(saved));
-  clearRemember(); // 密码变更后15天免登录失效
+  clearRemember(); // 密码变更后永不过期免登录失效
   return { ok:true };
 }
