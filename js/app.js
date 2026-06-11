@@ -587,7 +587,27 @@ function openMedEdu(mid){
 }
 
 var _currentEditItem=null;
-function showEditBtn(item){ _currentEditItem=item; var btn=document.getElementById('label-edit-btn'); if(btn&&isEditor()) btn.style.display='inline'; }
+function showEditBtn(item){ 
+  _currentEditItem=item; 
+  // 药品详情用状态栏按钮，其他用内联按钮
+  if(item.type==='drug'){
+    var btn=document.getElementById('label-edit-btn'); 
+    if(btn&&isEditor()) btn.style.display='inline';
+  } else {
+    var btn=document.getElementById('label-edit-btn'); if(btn) btn.style.display='none';
+    if(!isEditor()) return;
+    var el=document.getElementById('label-content');
+    var st=el&&el.querySelector('.section-title');
+    if(st&&!st.querySelector('.inline-edit-btn')){
+      var eb=document.createElement('span');
+      eb.className='inline-edit-btn';
+      eb.style.cssText='display:inline-block;margin-left:8px;font-size:13px;color:var(--accent);cursor:pointer;font-weight:600;border:1px solid var(--accent);border-radius:6px;padding:2px 10px';
+      eb.textContent='编辑';
+      eb.onclick=editCurrentItem;
+      st.appendChild(eb);
+    }
+  }
+}
 function editCurrentItem(){
   if(!_currentEditItem) return;
   var t=_currentEditItem.type;
