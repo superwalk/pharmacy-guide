@@ -83,10 +83,12 @@ function genPy(s){
   document.getElementById('login-pw').addEventListener('keydown',e=>{ if(e.key==='Enter') loginSubmit(); });
   document.getElementById('login-user').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('login-pw').focus(); });
   // 密码可见/隐藏
-  document.getElementById('pw-toggle').addEventListener('click',function(){
+  document.getElementById('pw-toggle').addEventListener('click',function(e){
+    e.preventDefault();
     const pw=document.getElementById('login-pw');
     if(pw.type==='password'){ pw.type='text'; this.textContent='🙈'; }
     else { pw.type='password'; this.textContent='👁'; }
+    pw.focus();
   });
 })();
 
@@ -633,8 +635,8 @@ function initProfileMenus() {
   // 绑定小眼睛切换
   setTimeout(function(){
     var t1=document.getElementById('toggle-pw'); var t2=document.getElementById('toggle-pw2');
-    if(t1) t1.onclick=function(){ var el=document.getElementById('old-pw'); var show=el.type==='password'; el.type=show?'text':'password'; t1.textContent=show?'🙈':'👁️'; };
-    if(t2) t2.onclick=function(){ var el=document.getElementById('new-pw'); var show=el.type==='password'; el.type=show?'text':'password'; t2.textContent=show?'🙈':'👁️'; };
+    if(t1) t1.onclick=function(e){ e.preventDefault(); var el=document.getElementById('old-pw'); var show=el.type==='password'; el.type=show?'text':'password'; t1.textContent=show?'🙈':'👁️'; el.focus(); };
+    if(t2) t2.onclick=function(e){ e.preventDefault(); var el=document.getElementById('new-pw'); var show=el.type==='password'; el.type=show?'text':'password'; t2.textContent=show?'🙈':'👁️'; el.focus(); };
   },100); };
   document.getElementById('menu-disclaimer').onclick=()=>{ showModal('免责声明','<div style="font-size:13px;line-height:1.8;color:var(--text-body)"><p>本应用提供的药学知识内容仅供参考和学习交流之用，<span style="color:var(--danger)">不构成医疗建议、诊断或处方依据。</span></p><p style="margin-top:8px">具体用药方案请以药品说明书和临床指南为准，并遵循执业医师或药师的指导。</p><p style="margin-top:8px"><span style="color:var(--danger)">内容仅供药学专业人员学习参考，不替代专业诊断或治疗方案。</span>因参考本资料而产生的任何直接或间接后果，<span style="color:var(--danger)">作者概不负责</span>。</p><p style="margin-top:8px;color:var(--text-light)">© 2026 药学知识指南</p></div>',[{label:'我知道了',primary:true}]); };
   document.getElementById('menu-logout').onclick=()=>{ logout(); location.reload(); };
