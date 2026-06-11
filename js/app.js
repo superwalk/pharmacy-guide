@@ -696,7 +696,7 @@ function renderHealthEdu() {
   const hl=document.getElementById('he-list');
   const cats=[...new Set(HEALTH_EDU.map(h=>h.cat))];
   let data=HEALTH_EDU;
-  if(kw) data=data.filter(h=>h.title.toLowerCase().includes(kw)||h.content.toLowerCase().includes(kw)||h.cat.toLowerCase().includes(kw)||(h.py||'').toLowerCase().includes(kw));
+  if(kw) data=data.filter(h=>h.title.toLowerCase().includes(kw)||(h.content||'').toLowerCase().includes(kw)||h.cat.toLowerCase().includes(kw)||(h.py||'').toLowerCase().includes(kw));
   hl.innerHTML=cats.map(cat=>{
     const items=data.filter(h=>h.cat===cat);
     if(items.length===0) return '';
@@ -730,9 +730,9 @@ function openHealthEdu(hid) {
 function renderInfusion() {
   const kw=(document.getElementById('inf-search')?.value||'').toLowerCase();
   const il=document.getElementById('inf-list');
-  const cats=[...new Set(INFUSION_DATA.map(i=>i.cat))];
+  const cats=[...new Set(INFUSION_DATA.map(i=>i.cat||''))];
   let data=INFUSION_DATA;
-  if(kw) data=data.filter(i=>i.drug.toLowerCase().includes(kw)||i.note.toLowerCase().includes(kw)||i.cat.includes(kw)||(i.interact||'').includes(kw));
+  if(kw) data=data.filter(i=>i.drug.toLowerCase().includes(kw)||(i.note||'').toLowerCase().includes(kw)||(i.cat||'').includes(kw)||(i.interact||'').includes(kw)||(i.vehicle||'').toLowerCase().includes(kw)||(i.py||'').toLowerCase().includes(kw));
   il.innerHTML=cats.map(cat=>{
     const items=data.filter(i=>i.cat===cat);
     if(items.length===0) return '';
@@ -815,7 +815,7 @@ function renderMedEdu(){
   var hl=document.getElementById('me-list');
   var cats=[...new Set(MED_EDU.map(m=>m.cat))];
   var data=MED_EDU;
-  if(kw) data=data.filter(m=>m.drug.toLowerCase().includes(kw)||m.detail.toLowerCase().includes(kw)||m.cat.toLowerCase().includes(kw)||m.key.toLowerCase().includes(kw)||(m.py||'').toLowerCase().includes(kw));
+  if(kw) data=data.filter(m=>m.drug.toLowerCase().includes(kw)||(m.detail||'').toLowerCase().includes(kw)||m.cat.toLowerCase().includes(kw)||m.key.toLowerCase().includes(kw)||(m.py||'').toLowerCase().includes(kw));
   hl.innerHTML=cats.map(function(cat){
     var items=data.filter(function(m){return m.cat===cat;});
     if(items.length===0) return '';
