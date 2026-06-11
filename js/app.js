@@ -684,20 +684,33 @@ function viewGuideFull(gid){
     if(r.ok) return r.text();
     throw new Error('no full text');
   }).then(function(text){
-    // 清理PDF提取残留：孤立的页码数字、空白行
-    text=text.replace(/<\/?[^>]+>/g,'').replace(/\n{4,}/g,'\n\n').replace(/\n\d+\n/g,'\n');
-    // 标题渲染
-    text='<div style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">'+
-         text.replace(/^### (.+)/gm,'<h4 style="margin:12px 0 4px;color:var(--primary-dark);font-size:15px">$1</h4>')
-             .replace(/^## (.+)/gm,'<h3 style="margin:14px 0 6px;color:var(--primary-dark);font-size:16px">$1</h3>')
-             .replace(/^# (.+)/gm,'<h2 style="margin:16px 0 8px;color:var(--primary);font-size:18px">$1</h2>')
-             .replace(/^- (.+)/gm,'<li style="margin-left:16px">$1</li>')+
-         '</div>';
+    // 按段落分割
+    var paras=text.split(/\n{2,}/).filter(function(p){return p.trim();});
+    var html='<div class="section-title" style="font-size:20px">'+g.title+'</div>'
+           +'<div style="font-size:12px;color:var(--text-light);margin:4px 0 16px">📄 原始指南全文 · 来源：知识库</div>';
+    
+    paras.forEach(function(p){
+      p=p.trim();
+      if(!p) return;
+      // 大标题：一、二、三、...  or 一级标题
+      if(/^[一二三四五六七八九十]、/.test(p)){
+        html+='<h3 style="margin:18px 0 8px;color:var(--primary);font-size:17px;font-weight:700;border-left:3px solid var(--primary);padding-left:8px">'+p+'</h3>';
+      }
+      // 二级标题：（一）（二）...
+      else if(/^[（(][一二三四五六七八九十]+[）)]/.test(p)){
+        html+='<h4 style="margin:14px 0 6px;color:var(--primary-dark);font-size:15px;font-weight:600">'+p+'</h4>';
+      }
+      // 数字小标题：1. 2. 3. 
+      else if(/^\d+[\.\、]/.test(p) && p.length<60){
+        html+='<div style="margin:10px 0 4px 16px;font-weight:600;color:var(--text-body);font-size:14px">'+p+'</div>';
+      }
+      // 普通段落
+      else {
+        html+='<p style="margin:8px 0;font-size:14px;line-height:1.9;color:var(--text-body)">'+p+'</p>';
+      }
+    });
     pushScreen('label');
-    document.getElementById('label-content').innerHTML=
-      '<div class="section-title" style="font-size:20px">'+g.title+'</div>'+
-      '<div style="font-size:12px;color:var(--text-light);margin-bottom:8px">📄 原始指南全文 · 来源：知识库</div>'+
-      '<div class="label-doc">'+text+'</div>';
+    document.getElementById('label-content').innerHTML=html;
   }).catch(function(){
     toast('该指南暂无原始全文数据');
   });
