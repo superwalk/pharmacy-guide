@@ -254,7 +254,7 @@ function openGuide(gid) {
     <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(g.content||'')}</p></div>
   `;
   showEditBtn({type:'guide',id:gid});
-  document.getElementById('label-content').insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="viewGuideFull('+gid+')" style="font-size:13px;padding:6px 16px">📄 查看全文</button></div>');
+  document.getElementById('label-content').insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="viewGuideFull(\"'+gid+'\")" style="font-size:13px;padding:6px 16px">📄 查看全文</button></div>');
 }
 
 // ═══ 药品详情 ───
@@ -497,7 +497,7 @@ function openHealthEdu(hid) {
   `;
   showEditBtn({type:'edu',id:hid});
   showEditBtn({type:'guide',id:gid});
-  document.getElementById('label-content').insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="viewGuideFull('+gid+')" style="font-size:13px;padding:6px 16px">📄 查看全文</button></div>');
+  document.getElementById('label-content').insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="viewGuideFull(\"'+gid+'\")" style="font-size:13px;padding:6px 16px">📄 查看全文</button></div>');
 }
 
 // ═══ 输液配伍 ─══
