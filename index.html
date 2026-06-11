@@ -259,6 +259,43 @@
 <script src="js/calc.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/app.js"></script>
-<script>try{'serviceWorker' in navigator && navigator.serviceWorker.register('sw.js');}catch(e){}</script>
+<script>try{
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').then(function(r){
+      // 检测到等待中的新版本
+      if(r.waiting) showSwUpdate(r);
+      // 监听新版本下载
+      r.addEventListener('updatefound',function(){
+        var sw=r.installing;
+        sw.addEventListener('statechange',function(){
+          if(sw.state==='installed'&&navigator.serviceWorker.controller) showSwUpdate(r);
+        });
+      });
+    });
+    function showSwUpdate(r){
+      var t=document.getElementById('toast');
+      t.innerHTML='📦 发现新版本，<b style="color:#15803D">点击刷新</b>';
+      t.style.pointerEvents='auto';
+      t.style.cursor='pointer';
+      t.classList.add('show');
+      t.onclick=function(){
+        t.onclick=null;
+        t.style.pointerEvents='none';
+        t.style.cursor='';
+        if(r.waiting) r.waiting.postMessage('skip-waiting');
+      };
+      // 长时间显示，一小时后消失
+      clearTimeout(window._toastTimer);
+      window._toastTimer=setTimeout(function(){t.classList.remove('show');},3600000);
+    }
+    // 新 SW 接管后自动刷新
+    var _refreshing=false;
+    navigator.serviceWorker.addEventListener('controllerchange',function(){
+      if(_refreshing) return;
+      _refreshing=true;
+      window.location.reload();
+    });
+  }
+}catch(e){}</script>
 
 </div></body></html>

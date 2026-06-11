@@ -26,12 +26,14 @@ function loadHealthEduDetail(id, cb) { _loadDetail('healthedu', id, cb); }
 function loadInfusionDetail(id, cb) { _loadDetail('infusion', id, cb); }
 
 // ═══ Toast ───
+var _toastTimer = null;
 function toast(msg, cb) {
   const t=document.getElementById('toast');
+  clearTimeout(_toastTimer);
   t.textContent=msg; t.classList.add('show');
   if(cb){ t.style.pointerEvents='auto'; t.onclick=()=>{ cb(); t.classList.remove('show'); }; }
   else { t.style.pointerEvents='none'; t.onclick=null; }
-  setTimeout(()=>t.classList.remove('show'), cb?4000:2000);
+  _toastTimer=setTimeout(()=>t.classList.remove('show'), cb?4000:2000);
 }
 
 // ═══ 弹窗 ───
