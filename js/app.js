@@ -797,7 +797,6 @@ function refreshUMList(){
       if(u.username==='walkman0097'){ toast('不能删除管理员账户'); return; }
       showModal('确认删除','<p>确定删除用户 <b>'+escHTML(u.username)+'</b>？</p>',[{label:'取消'},{label:'删除',primary:true,style:'background:var(--danger)',onClick:function(){
         removeUser(u.username);
-        addEditLog('账户',u.username,'删除');
         refreshUMList();
         toast('已删除');
       }}]);
@@ -837,7 +836,6 @@ function showUserEditor(user){
       if(isNew){
         var r=addUser({username:uname,password:upass,nickname:unick||uname,role:urole||'user'});
         if(!r.ok){ toast(r.msg); return; }
-        addEditLog('账户',uname,'新增');
         // 复制并提示
         var info='用户名：'+uname+'\n密码：'+upass;
         navigator.clipboard.writeText(info).then(function(){
@@ -848,7 +846,6 @@ function showUserEditor(user){
           [{label:'确定',primary:true}]);
       } else {
         updateUser(u.username,{password:upass,nickname:unick||u.nickname,role:urole||'user'});
-        addEditLog('账户',u.username,'编辑');
       }
       refreshUMList();
       if(!isNew) toast('保存成功');
