@@ -96,181 +96,58 @@ function renderAdminList(type, kw) {
   const list = document.getElementById('admin-list');
   kw = (kw||'').toLowerCase().trim();
   var html = '';
-
-  // ── 全局搜索模式：有关键词时跨所有数据源搜索 ──
-  if (kw) {
-    try {
+  try {
+    if (type === 'drugs') {
       var drugs = allDrugs();
-      var drugRes = drugs.filter(function(d){
+      var filtered = drugs.filter(function(d){
+        if (!kw) return true;
         return (d.name||'').toLowerCase().indexOf(kw)>=0||(d.category||'').toLowerCase().indexOf(kw)>=0||(d.subcategory||'').toLowerCase().indexOf(kw)>=0||(d.indications||'').toLowerCase().indexOf(kw)>=0||(d.py||'').toLowerCase().indexOf(kw)>=0||genPy(d.name||'').indexOf(kw)>=0||genPy(d.category||'').indexOf(kw)>=0;
       });
-      if (drugRes.length > 0) {
-      html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title drugs" style="font-size:14px;font-weight:600;padding:8px 0">💊 药品 ('+drugRes.length+')</div>';
-      drugRes.forEach(function(d){
+      html = filtered.map(function(d) {
         var origIdx = drugs.indexOf(d);
-        html += '<div class="cat-card" style="margin-bottom:6px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(d.name)+'</span><span class="badge badge-green" style="margin-left:6px">'+esc(d.category)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="drug">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="drug">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">适应症：'+esc((d.indications||'').slice(0,50))+'…</div></div>';
+        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(d.name)+'</span><span class="badge badge-green" style="margin-left:6px">'+esc(d.category)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="drug">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="drug">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">适应症：'+esc((d.indications||'').slice(0,50))+'…</div></div>';
+      }).join('');
+    } else if (type === 'guidelines') {
+      var all = [...allGuides(), ...LAWS];
+      var filtered = all.filter(function(g){
+        if (!kw) return true;
+        return (g.title||'').toLowerCase().indexOf(kw)>=0||(g.system||'').toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||(g.year||'')===kw||(g.py||'').toLowerCase().indexOf(kw)>=0||genPy(g.title||'').indexOf(kw)>=0;
       });
-      html += '</div>';
-    }
-
-    // 指南+法规
-    var allGuidesLaws = [...allGuides(), ...LAWS];
-    var glRes = allGuidesLaws.filter(function(g){
-      return (g.title||'').toLowerCase().indexOf(kw)>=0||(g.system||'').toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||(g.year||'')===kw||(g.py||'').toLowerCase().indexOf(kw)>=0||genPy(g.title||'').indexOf(kw)>=0;
-    });
-    if (glRes.length > 0) {
-      html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title guides" style="font-size:14px;font-weight:600;padding:8px 0">📋 指南/法规 ('+glRes.length+')</div>';
-      glRes.forEach(function(g){
-        var origIdx = allGuidesLaws.indexOf(g);
-        html += '<div class="cat-card" style="margin-bottom:6px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(g.title)+'</span><span class="badge badge-blue" style="margin-left:6px">'+esc(g.system||'法规')+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="guide">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="guide">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc(g.year||'')+' · '+esc((g.content||'').slice(0,50))+'…</div></div>';
+      html = filtered.map(function(g) {
+        var origIdx = all.indexOf(g);
+        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(g.title)+'</span><span class="badge badge-blue" style="margin-left:6px">'+esc(g.system||'法规')+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="guide">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="guide">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc(g.year||'')+' · '+esc((g.content||'').slice(0,50))+'…</div></div>';
+      }).join('');
+    } else if (type === 'education') {
+      var filtered = HEALTH_EDU.filter(function(h){
+        if (!kw) return true;
+        return (h.title||'').toLowerCase().indexOf(kw)>=0||(h.cat||'').toLowerCase().indexOf(kw)>=0||(h.content||'').toLowerCase().indexOf(kw)>=0||(h.py||'').toLowerCase().indexOf(kw)>=0||genPy(h.title||'').indexOf(kw)>=0||genPy(h.cat||'').indexOf(kw)>=0;
       });
-      html += '</div>';
-    }
-
-    // 科普教育
-    var eduRes = HEALTH_EDU.filter(function(h){
-      return (h.title||'').toLowerCase().indexOf(kw)>=0||(h.cat||'').toLowerCase().indexOf(kw)>=0||(h.content||'').toLowerCase().indexOf(kw)>=0||(h.py||'').toLowerCase().indexOf(kw)>=0||genPy(h.title||'').indexOf(kw)>=0||genPy(h.cat||'').indexOf(kw)>=0;
-    });
-    if (eduRes.length > 0) {
-      html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title" style="font-size:14px;font-weight:600;padding:8px 0;color:#D97706">📖 科普教育 ('+eduRes.length+')</div>';
-      eduRes.forEach(function(h){
+      html = filtered.map(function(h) {
         var origIdx = HEALTH_EDU.indexOf(h);
-        html += '<div class="cat-card" style="margin-bottom:6px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(h.title)+'</span><span class="badge badge-blue" style="margin-left:6px">'+esc(h.cat)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="edu">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((h.content||'').slice(0,50))+'…</div></div>';
+        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(h.title)+'</span><span class="badge badge-blue" style="margin-left:6px">'+esc(h.cat)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="edu">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((h.content||'').slice(0,50))+'…</div></div>';
+      }).join('');
+    } else if (type === 'infusion') {
+      var filtered = INFUSION_DATA.filter(function(inf){
+        if (!kw) return true;
+        return (inf.drug||'').toLowerCase().indexOf(kw)>=0||(inf.cat||'').toLowerCase().indexOf(kw)>=0||(inf.vehicle||'').toLowerCase().indexOf(kw)>=0||(inf.note||'').toLowerCase().indexOf(kw)>=0||(inf.py||'').toLowerCase().indexOf(kw)>=0||genPy(inf.drug||'').indexOf(kw)>=0;
       });
-      html += '</div>';
-    }
-
-    // 输液配伍
-    var infRes = INFUSION_DATA.filter(function(inf){
-      return (inf.drug||'').toLowerCase().indexOf(kw)>=0||(inf.cat||'').toLowerCase().indexOf(kw)>=0||(inf.vehicle||'').toLowerCase().indexOf(kw)>=0||(inf.note||'').toLowerCase().indexOf(kw)>=0||(inf.py||'').toLowerCase().indexOf(kw)>=0||genPy(inf.drug||'').indexOf(kw)>=0;
-    });
-    if (infRes.length > 0) {
-      html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title" style="font-size:14px;font-weight:600;padding:8px 0;color:#7C3AED">💉 输液配伍 ('+infRes.length+')</div>';
-      infRes.forEach(function(inf){
+      html = filtered.map(function(inf) {
         var origIdx = INFUSION_DATA.indexOf(inf);
-        html += '<div class="cat-card" style="margin-bottom:6px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(inf.drug)+'</span><span class="badge badge-blue" style="margin-left:6px">'+esc(inf.cat)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="inf">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">载体：'+esc(inf.vehicle||'')+' · 浓度：'+esc(inf.conc||'')+'</div></div>';
+        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(inf.drug)+'</span><span class="badge badge-blue" style="margin-left:6px">'+esc(inf.cat)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="inf">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">载体：'+esc(inf.vehicle||'')+' · 浓度：'+esc(inf.conc||'')+'</div></div>';
+      }).join('');
+    } else if (type === 'diseases') {
+      var filtered = DISEASES.filter(function(ds){
+        if (!kw) return true;
+        return (ds.name||'').toLowerCase().indexOf(kw)>=0||(ds.cat||'').toLowerCase().indexOf(kw)>=0||(ds.desc||'').toLowerCase().indexOf(kw)>=0;
       });
-      html += '</div>';
-    }
-
-    // 疾病
-    var disRes = DISEASES.filter(function(ds){
-      return (ds.name||'').toLowerCase().indexOf(kw)>=0||(ds.cat||'').toLowerCase().indexOf(kw)>=0||(ds.desc||'').toLowerCase().indexOf(kw)>=0;
-    });
-    if (disRes.length > 0) {
-      html += '<div class="result-group" style="margin-bottom:8px"><div class="result-group-title diseases" style="font-size:14px;font-weight:600;padding:8px 0">🦠 疾病 ('+disRes.length+')</div>';
-      disRes.forEach(function(ds){
+      html = filtered.map(function(ds) {
         var origIdx = DISEASES.indexOf(ds);
-        html += '<div class="cat-card" style="margin-bottom:6px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(ds.name)+'</span><span class="badge badge-blue" style="margin-left:6px">'+esc(ds.cat)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="disease">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((ds.desc||'').slice(0,50))+'…</div></div>';
-      });
-      html += '</div>';
+        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+esc(ds.name)+'</span><span class="badge badge-blue" style="margin-left:6px">'+esc(ds.cat)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="disease">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((ds.desc||'').slice(0,50))+'…</div></div>';
+      }).join('');
+    } else if (type === 'users') {
+      renderUserList(); return;
     }
-
-    if (!html) html = '<div style="text-align:center;padding:40px;color:var(--text-light)">未找到匹配的内容</div>';
-    list.innerHTML = html;
-    bindAdminEvents(null);
-    }catch(e){ list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-light)">搜索出错，请重试</div>'; }
-    return;
-  }
-
-  // ── 无关键词：按当前标签页渲染（原有逻辑） ──
-  if (type === 'drugs') {
-    const drugs = allDrugs();
-    var filtered = drugs.filter(function(d){
-      if (!kw) return true;
-      return (d.name||'').toLowerCase().indexOf(kw)>=0||(d.category||'').toLowerCase().indexOf(kw)>=0||(d.subcategory||'').toLowerCase().indexOf(kw)>=0||(d.indications||'').toLowerCase().indexOf(kw)>=0||(d.py||'').toLowerCase().indexOf(kw)>=0;
-    });
-    html = filtered.map(function(d) {
-      var origIdx = drugs.indexOf(d);
-      return `
-      <div class="cat-card" style="margin-bottom:8px">
-        <div class="cat-header">
-          <div style="flex:1;min-width:0"><span class="cat-name">${esc(d.name)}</span><span class="badge badge-green" style="margin-left:6px">${esc(d.category)}</span></div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${origIdx}" data-type="drug">编辑</button>
-            <button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="${origIdx}" data-type="drug">删除</button>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--text-light)">适应症：${esc(d.indications?.slice(0,50)||'')}…</div>
-      </div>`;
-    }).join('');
-  } else if (type === 'guidelines') {
-    var all = [...allGuides(), ...LAWS];
-    var filtered = all.filter(function(g){
-      if (!kw) return true;
-      return (g.title||'').toLowerCase().indexOf(kw)>=0||(g.system||'').toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||(g.year||'')===kw;
-    });
-    html = filtered.map(function(g) {
-      var origIdx = all.indexOf(g);
-      return `
-      <div class="cat-card" style="margin-bottom:8px">
-        <div class="cat-header">
-          <div style="flex:1;min-width:0"><span class="cat-name">${esc(g.title)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(g.system||'法规')}</span></div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${origIdx}" data-type="guide">编辑</button>
-            <button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="${origIdx}" data-type="guide">删除</button>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--text-light)">${esc(g.year||'')} · ${esc((g.content||'').slice(0,50))}…</div>
-      </div>`;
-    }).join('');
-  } else if (type === 'education') {
-    var eduFiltered = HEALTH_EDU.filter(function(h){
-      if (!kw) return true;
-      return (h.title||'').toLowerCase().indexOf(kw)>=0||(h.cat||'').toLowerCase().indexOf(kw)>=0||(h.content||'').toLowerCase().indexOf(kw)>=0;
-    });
-    html = eduFiltered.map(function(h) {
-      var origIdx = HEALTH_EDU.indexOf(h);
-      return `
-      <div class="cat-card" style="margin-bottom:8px">
-        <div class="cat-header">
-          <div style="flex:1;min-width:0"><span class="cat-name">${esc(h.title)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(h.cat)}</span></div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${origIdx}" data-type="edu">编辑</button>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--text-light)">${esc((h.content||'').slice(0,50))}…</div>
-      </div>`;
-    }).join('');
-  } else if (type === 'infusion') {
-    var infFiltered = INFUSION_DATA.filter(function(inf){
-      if (!kw) return true;
-      return (inf.drug||'').toLowerCase().indexOf(kw)>=0||(inf.cat||'').toLowerCase().indexOf(kw)>=0||(inf.vehicle||'').toLowerCase().indexOf(kw)>=0||(inf.note||'').toLowerCase().indexOf(kw)>=0;
-    });
-    html = infFiltered.map(function(inf) {
-      var origIdx = INFUSION_DATA.indexOf(inf);
-      return `
-      <div class="cat-card" style="margin-bottom:8px">
-        <div class="cat-header">
-          <div style="flex:1;min-width:0"><span class="cat-name">${esc(inf.drug)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(inf.cat)}</span></div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${origIdx}" data-type="inf">编辑</button>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--text-light)">载体：${esc(inf.vehicle||'')} · 浓度：${esc(inf.conc||'')}</div>
-      </div>`;
-    }).join('');
-  } else if (type === 'diseases') {
-    var disFiltered = DISEASES.filter(function(ds){
-      if (!kw) return true;
-      return (ds.name||'').toLowerCase().indexOf(kw)>=0||(ds.cat||'').toLowerCase().indexOf(kw)>=0||(ds.desc||'').toLowerCase().indexOf(kw)>=0;
-    });
-    html = disFiltered.map(function(ds) {
-      var origIdx = DISEASES.indexOf(ds);
-      return `
-      <div class="cat-card" style="margin-bottom:8px">
-        <div class="cat-header">
-          <div style="flex:1;min-width:0"><span class="cat-name">${esc(ds.name)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(ds.cat)}</span></div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${origIdx}" data-type="disease">编辑</button>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--text-light)">${esc((ds.desc||'').slice(0,50))}…</div>
-      </div>`;
-    }).join('');
-  } else if (type === 'users') {
-    renderUserList(); return;
-  }
+  } catch(e) { /* 搜索过滤异常，保持空列表 */ }
   list.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--text-light)">暂无数据</div>';
   bindAdminEvents(type);
 }
