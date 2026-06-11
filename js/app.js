@@ -299,7 +299,7 @@ function renderGuidelines() {
   let systems=GUIDE_SYSTEMS;
   if(kw){
     systems=systems.map(function(s){
-      return {system:s.system,icon:s.icon,items:s.items.filter(function(g){return g.title.toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||g.system.toLowerCase().indexOf(kw)>=0||(g.py||'').toLowerCase().indexOf(kw)>=0||genPy(g.system).toLowerCase().indexOf(kw)>=0;})};
+      return {system:s.system,icon:s.icon,items:s.items.filter(function(g){return g.title.toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||g.system.toLowerCase().indexOf(kw)>=0||(g.py||'').toLowerCase().indexOf(kw)>=0||genPy(g.title).toLowerCase().indexOf(kw)>=0||genPy(g.system).toLowerCase().indexOf(kw)>=0;})};
     }).filter(function(s){return s.items.length>0;});
   }
   gl.innerHTML=systems.map((s,i)=>`
@@ -528,9 +528,9 @@ function initSearch() {
     var dr=[],gd=[],dis=[],lw=[],rd=[],inf=[],me=[];
     var me=[];
     try{dr=allDrugs().filter(function(d){return matchAny(d.name)||matchAny(d.indications)||matchAny(d.category)||matchAny(d.subcategory)||matchAny(d.py||genPy(d.name))||matchAny(genPy(d.category))||matchAny(genPy(d.subcategory||''));});}catch(e){}
-    try{gd=allGuides().filter(function(g){return matchAny(g.title)||matchAny(g.system)||matchAny(g.content)||matchAny(g.py||genPy(g.title))||matchAny(genPy(g.system));});}catch(e){}
+    try{gd=allGuides().filter(function(g){return matchAny(g.title)||matchAny(g.system)||matchAny(g.content)||matchAny(g.py)||matchAny(genPy(g.title))||matchAny(genPy(g.system));});}catch(e){}
     try{dis=DISEASES.filter(function(d){return matchAny(d.name)||matchAny(d.desc)||matchAny(d.cat)||matchAny(genPy(d.cat));});}catch(e){}
-    try{lw=LAWS.filter(function(l){return matchAny(l.title)||matchAny(l.content)||matchAny(l.py||genPy(l.title));});}catch(e){}
+    try{lw=LAWS.filter(function(l){return matchAny(l.title)||matchAny(l.content)||matchAny(l.py)||matchAny(genPy(l.title));});}catch(e){}
     try{rd=HEALTH_EDU.filter(function(h){return matchAny(h.title)||matchAny(h.content)||matchAny(h.cat)||matchAny(h.py||genPy(h.title))||matchAny(genPy(h.cat));});}catch(e){}
     try{me=MED_EDU.filter(function(m){return matchAny(m.drug)||matchAny(m.detail)||matchAny(m.cat)||matchAny(m.key)||matchAny(m.py||genPy(m.drug))||matchAny(genPy(m.cat));});}catch(e){}
     try{inf=INFUSION_DATA.filter(function(i){return matchAny(i.drug)||matchAny(i.note)||matchAny(i.cat)||matchAny(i.interact||'')||matchAny(i.vehicle||'')||matchAny(i.py||genPy(i.drug))||matchAny(genPy(i.cat||''));});}catch(e){}
