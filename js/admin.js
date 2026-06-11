@@ -52,12 +52,9 @@ function initAdmin() {
     t.onclick = () => {
       document.querySelectorAll('#admin-tabs .segment-item').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
-      renderAdminList(t.dataset.tab);
+      renderAdminList(t.dataset.tab, document.getElementById('admin-search')?.value||'');
       const labels = { drugs:'+ 新增药品', guidelines:'+ 新增指南', education:'+ 新增科普', infusion:'+ 新增配伍', diseases:'+ 新增疾病', users:'+ 新增用户' };
       document.getElementById('admin-add-btn').textContent = labels[t.dataset.tab] || '+ 新增';
-      // 导出导入按钮仅在药品标签显示
-      var exportBar = document.getElementById('admin-export-bar');
-      if(exportBar) exportBar.style.display = t.dataset.tab === 'drugs' ? 'flex' : 'none';
     };
   });
 
@@ -71,71 +68,128 @@ function initAdmin() {
     else if (t === 'users') showUserEditor();
   };
 
+  // 搜索框实时过滤
+  var searchInput = document.getElementById('admin-search');
+  if (searchInput) {
+    var _searchTimer = null;
+    searchInput.oninput = function(){
+      clearTimeout(_searchTimer);
+      var t2 = document.querySelector('#admin-tabs .segment-item.active');
+      var kw = this.value;
+      _searchTimer = setTimeout(function(){ renderAdminList(t2?.dataset?.tab||'drugs', kw); }, 200);
+    };
+  }
+
+  // 权限控制：所有管理员可见推送到仓库；仅walkman0097可见导出导入
+  var isSuper = currentUser && currentUser.username === 'walkman0097';
+  var syncBtn = document.getElementById('admin-sync-btn');
+  var expBtn = document.getElementById('admin-export-btn');
+  var impBtn = document.getElementById('admin-import-btn');
+  if (syncBtn) syncBtn.style.display = 'inline-flex';
+  if (expBtn) expBtn.style.display = isSuper ? 'inline-flex' : 'none';
+  if (impBtn) impBtn.style.display = isSuper ? 'inline-flex' : 'none';
+
   renderAdminList('drugs');
 }
 
-function renderAdminList(type) {
+function renderAdminList(type, kw) {
   const list = document.getElementById('admin-list');
+  kw = (kw||'').toLowerCase().trim();
   var html = '';
   if (type === 'drugs') {
     const drugs = allDrugs();
-    html = drugs.map((d, i) => `
+    var filtered = drugs.filter(function(d){
+      if (!kw) return true;
+      return (d.name||'').toLowerCase().indexOf(kw)>=0||(d.category||'').toLowerCase().indexOf(kw)>=0||(d.subcategory||'').toLowerCase().indexOf(kw)>=0||(d.indications||'').toLowerCase().indexOf(kw)>=0||(d.py||'').toLowerCase().indexOf(kw)>=0;
+    });
+    html = filtered.map(function(d) {
+      var origIdx = drugs.indexOf(d);
+      return `
       <div class="cat-card" style="margin-bottom:8px">
         <div class="cat-header">
           <div style="flex:1;min-width:0"><span class="cat-name">${esc(d.name)}</span><span class="badge badge-green" style="margin-left:6px">${esc(d.category)}</span></div>
           <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="drug">编辑</button>
-            <button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="${i}" data-type="drug">删除</button>
+            <button class="btn btn-sm btn-outline" data-edit="${origIdx}" data-type="drug">编辑</button>
+            <button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="${origIdx}" data-type="drug">删除</button>
           </div>
         </div>
         <div style="font-size:12px;color:var(--text-light)">适应症：${esc(d.indications?.slice(0,50)||'')}…</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   } else if (type === 'guidelines') {
     var all = [...allGuides(), ...LAWS];
-    html = all.map((g, i) => `
+    var filtered = all.filter(function(g){
+      if (!kw) return true;
+      return (g.title||'').toLowerCase().indexOf(kw)>=0||(g.system||'').toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||(g.year||'')===kw;
+    });
+    html = filtered.map(function(g) {
+      var origIdx = all.indexOf(g);
+      return `
       <div class="cat-card" style="margin-bottom:8px">
         <div class="cat-header">
           <div style="flex:1;min-width:0"><span class="cat-name">${esc(g.title)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(g.system||'法规')}</span></div>
           <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="guide">编辑</button>
-            <button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="${i}" data-type="guide">删除</button>
+            <button class="btn btn-sm btn-outline" data-edit="${origIdx}" data-type="guide">编辑</button>
+            <button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="${origIdx}" data-type="guide">删除</button>
           </div>
         </div>
         <div style="font-size:12px;color:var(--text-light)">${esc(g.year||'')} · ${esc((g.content||'').slice(0,50))}…</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   } else if (type === 'education') {
-    html = HEALTH_EDU.map((h, i) => `
+    var eduFiltered = HEALTH_EDU.filter(function(h){
+      if (!kw) return true;
+      return (h.title||'').toLowerCase().indexOf(kw)>=0||(h.cat||'').toLowerCase().indexOf(kw)>=0||(h.content||'').toLowerCase().indexOf(kw)>=0;
+    });
+    html = eduFiltered.map(function(h) {
+      var origIdx = HEALTH_EDU.indexOf(h);
+      return `
       <div class="cat-card" style="margin-bottom:8px">
         <div class="cat-header">
           <div style="flex:1;min-width:0"><span class="cat-name">${esc(h.title)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(h.cat)}</span></div>
           <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="edu">编辑</button>
+            <button class="btn btn-sm btn-outline" data-edit="${origIdx}" data-type="edu">编辑</button>
           </div>
         </div>
         <div style="font-size:12px;color:var(--text-light)">${esc((h.content||'').slice(0,50))}…</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   } else if (type === 'infusion') {
-    html = INFUSION_DATA.map((inf, i) => `
+    var infFiltered = INFUSION_DATA.filter(function(inf){
+      if (!kw) return true;
+      return (inf.drug||'').toLowerCase().indexOf(kw)>=0||(inf.cat||'').toLowerCase().indexOf(kw)>=0||(inf.vehicle||'').toLowerCase().indexOf(kw)>=0||(inf.note||'').toLowerCase().indexOf(kw)>=0;
+    });
+    html = infFiltered.map(function(inf) {
+      var origIdx = INFUSION_DATA.indexOf(inf);
+      return `
       <div class="cat-card" style="margin-bottom:8px">
         <div class="cat-header">
           <div style="flex:1;min-width:0"><span class="cat-name">${esc(inf.drug)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(inf.cat)}</span></div>
           <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="inf">编辑</button>
+            <button class="btn btn-sm btn-outline" data-edit="${origIdx}" data-type="inf">编辑</button>
           </div>
         </div>
         <div style="font-size:12px;color:var(--text-light)">载体：${esc(inf.vehicle||'')} · 浓度：${esc(inf.conc||'')}</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   } else if (type === 'diseases') {
-    html = DISEASES.map((d, i) => `
+    var disFiltered = DISEASES.filter(function(ds){
+      if (!kw) return true;
+      return (ds.name||'').toLowerCase().indexOf(kw)>=0||(ds.cat||'').toLowerCase().indexOf(kw)>=0||(ds.desc||'').toLowerCase().indexOf(kw)>=0;
+    });
+    html = disFiltered.map(function(ds) {
+      var origIdx = DISEASES.indexOf(ds);
+      return `
       <div class="cat-card" style="margin-bottom:8px">
         <div class="cat-header">
-          <div style="flex:1;min-width:0"><span class="cat-name">${esc(d.name)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(d.cat)}</span></div>
+          <div style="flex:1;min-width:0"><span class="cat-name">${esc(ds.name)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(ds.cat)}</span></div>
           <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="disease">编辑</button>
+            <button class="btn btn-sm btn-outline" data-edit="${origIdx}" data-type="disease">编辑</button>
           </div>
         </div>
-        <div style="font-size:12px;color:var(--text-light)">${esc((d.desc||'').slice(0,50))}…</div>
-      </div>`).join('');
+        <div style="font-size:12px;color:var(--text-light)">${esc((ds.desc||'').slice(0,50))}…</div>
+      </div>`;
+    }).join('');
   } else if (type === 'users') {
     renderUserList(); return;
   }

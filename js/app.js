@@ -574,6 +574,9 @@ function renderProfile() {
   // 用户管理仅编辑员以上可见
   var um=document.getElementById('menu-user-mgmt');
   if(um) um.style.display=isEditor()?'flex':'none';
+  // 数据导出菜单：仅管理员可见（普通用户无此入口）
+  var exMenu=document.getElementById('menu-export');
+  if(exMenu) exMenu.style.display=isEditor()?'flex':'none';
 }
 // ═══ 版本更新 ───
 var APP_VERSION='1.0.0';
@@ -622,17 +625,18 @@ function showChangelog(){
 }
 // ═══ 数据导出面板 ═══
 function showExportPanel(){
+  var isSuper = currentUser && currentUser.username === 'walkman0097';
   pushScreen('label');
   var html='<div style="font-size:28px;font-weight:800;color:var(--primary);margin:4px 0 2px">📥 数据导出</div>'
-    +'<div style="font-size:12px;color:var(--text-light);margin-bottom:16px">备份手机端数据到电脑，方便后续导入数据库</div>'
+    +'<div style="font-size:12px;color:var(--text-light);margin-bottom:16px">手机端数据同步与管理</div>'
     +'<div class="label-doc" style="font-size:13px;line-height:1.8;color:var(--text-body)">'
-    +'<p><b>📤 导出</b>：下载包含你所有编辑内容、收藏、日志的 JSON 备份文件。</p>'
-    +'<p style="margin-top:8px"><b>📥 导入</b>：从电脑或旧手机恢复之前导出的数据。</p>'
-    +'<p style="margin-top:8px;color:var(--text-light)">💡 导出文件不含密码等敏感信息，可在电脑上查看和编辑。</p>'
+    +'<p style="margin-top:8px"><b>☁️ 同步到仓库</b>：将手机端新增的数据推送到GitHub仓库，保留所有编辑记录。</p>'
+    +(isSuper?'<p style="margin-top:8px"><b>📤 导出</b>：下载包含所有编辑内容、收藏、日志的 JSON 备份文件。</p>':'')
+    +(isSuper?'<p style="margin-top:8px"><b>📥 导入</b>：从电脑或旧手机恢复之前导出的备份数据。</p>':'')
     +'</div>'
-    +'<button class="btn btn-primary btn-full" onclick="exportAllData()" style="margin-top:16px">📥 导出数据到文件</button>'
-    +'<button class="btn btn-outline btn-full" onclick="syncToGitHub()" style="margin-top:8px">☁️ 同步到 GitHub 仓库</button>'
-    +'<button class="btn btn-outline btn-full" onclick="importAllData()" style="margin-top:8px">📤 从文件导入数据</button>';
+    +'<button class="btn btn-primary btn-full" onclick="syncToGitHub()" style="margin-top:16px">☁️ 同步到 GitHub 仓库</button>'
+    +(isSuper?'<button class="btn btn-outline btn-full" onclick="exportAllData()" style="margin-top:8px">📥 导出数据到文件</button>':'')
+    +(isSuper?'<button class="btn btn-outline btn-full" onclick="importAllData()" style="margin-top:8px">📤 从文件导入数据</button>':'');
   document.getElementById('label-content').innerHTML=html;
 }
 // ═══ 版本自动检查 ───
@@ -842,24 +846,10 @@ var _currentEditItem=null;
 function showEditBtn(item){ 
   _currentEditItem=item; 
   var btn=document.getElementById('label-edit-btn'); 
-  if(item.type==='drug'){
-    if(btn&&isEditor()) btn.style.display='inline';
-    return;
+  if(btn&&isEditor()){
+    btn.style.display='inline';
+    btn.onclick=editCurrentItem;
   }
-  if(btn) btn.style.display='none';
-  if(!isEditor()) return;
-  var el=document.getElementById('label-content');
-  if(!el||el.querySelector('.inline-edit-row')) return;
-  var row=document.createElement('div');
-  row.className='inline-edit-row';
-  row.style.cssText='display:flex;justify-content:flex-end;margin-bottom:8px';
-  var eb=document.createElement('span');
-  eb.style.cssText='font-size:13px;color:var(--accent);cursor:pointer;font-weight:600;border:1px solid var(--accent);border-radius:6px;padding:2px 10px';
-  eb.textContent='编辑';
-  eb.onclick=editCurrentItem;
-  row.appendChild(eb);
-  var st=el.querySelector('.section-title');
-  if(st) st.after(row);
 }
 function editCurrentItem(){
   if(!_currentEditItem) return;
