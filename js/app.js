@@ -565,9 +565,9 @@ function renderProfile() {
   // 编辑记录仅编辑员以上可见
   var elog=document.getElementById('menu-edit-log');
   if(elog) elog.style.display=isEditor()?'flex':'none';
-  // 用户管理仅admin可见
+  // 用户管理仅编辑员以上可见
   var um=document.getElementById('menu-user-mgmt');
-  if(um) um.style.display=(currentUser.username==='walkman0097')?'flex':'none';
+  if(um) um.style.display=isEditor()?'flex':'none';
 }
 // ═══ 版本更新 ───
 var APP_VERSION='1.0.0';
