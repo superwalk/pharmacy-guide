@@ -51,7 +51,7 @@ function initAdmin() {
       document.querySelectorAll('#admin-tabs .segment-item').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
       renderAdminList(t.dataset.tab);
-      const labels = { drugs:'+ 新增药品', guidelines:'+ 新增指南', education:'+ 新增科普', infusion:'+ 新增配伍', diseases:'+ 新增疾病' };
+      const labels = { drugs:'+ 新增药品', guidelines:'+ 新增指南', education:'+ 新增科普', infusion:'+ 新增配伍', diseases:'+ 新增疾病', users:'+ 新增用户' };
       document.getElementById('admin-add-btn').textContent = labels[t.dataset.tab] || '+ 新增';
     };
   });
@@ -63,6 +63,7 @@ function initAdmin() {
     else if (t === 'education') showEduEditor();
     else if (t === 'infusion') showInfEditor();
     else if (t === 'diseases') showDiseaseEditor();
+    else if (t === 'users') showUserEditor();
   };
 
   renderAdminList('drugs');
@@ -130,6 +131,8 @@ function renderAdminList(type) {
         </div>
         <div style="font-size:12px;color:var(--text-light)">${esc((d.desc||'').slice(0,50))}…</div>
       </div>`).join('');
+  } else if (type === 'users') {
+    renderUserList(); return;
   }
   list.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--text-light)">暂无数据</div>';
   bindAdminEvents(type);
@@ -280,6 +283,57 @@ function getCust(){ try{return JSON.parse(localStorage.getItem('custom_data')||'
 function saveCust(cd){ localStorage.setItem('custom_data',JSON.stringify(cd)); }
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function peg(id){ return (document.getElementById(id)?.value||'').trim(); }
+
+// ═══ 用户管理 ═══
+function renderUserList(){
+  var list=document.getElementById('admin-list');
+  var users=getUsers();
+  list.innerHTML='';
+  if(users.length===0){ list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">暂无用户</div>'; return; }
+  var roleLabel={admin:'管理员',editor:'编辑',user:'普通用户'};
+  users.forEach(function(u){
+    var row=document.createElement('div');
+    row.className='list-card';
+    row.style.cssText='display:flex;align-items:center;gap:8px';
+    row.innerHTML='<div class="icon-box">👤</div><div class="info" style="flex:1"><div class="name">'+u.username+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+u.nickname+'</div></div><button class="btn btn-sm btn-outline" style="margin-right:4px">编辑</button><button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)">删除</button>';
+    row.querySelectorAll('button')[0].onclick=function(){ showUserEditor(u); };
+    row.querySelectorAll('button')[1].onclick=function(){
+      if(u.username===currentUser.username){ toast('不能删除自己'); return; }
+      showModal('确认删除','<p>确定删除用户 <b>'+u.username+'</b>？</p>',[{label:'取消'},{label:'删除',primary:true,style:'background:var(--danger)',onClick:function(){
+        removeUser(u.username); renderUserList();
+        addEditLog('用户',u.username,'删除');
+        toast('已删除');
+      }}]);
+    };
+    list.appendChild(row);
+  });
+}
+
+function showUserEditor(user){
+  var isNew=!user;
+  var u=user||{};
+  showModal(isNew?'新增用户':'编辑用户',
+    '<div style="display:flex;flex-direction:column;gap:8px">'+
+    '<input id="ed-uname" placeholder="用户名（字母数字）" value="'+esc(u.username||'')+'" '+(isNew?'':'disabled')+' style="background:'+(isNew?'':'var(--bg)')+'">'+
+    '<input id="ed-upass" placeholder="密码" value="'+esc(u.password||'')+'">'+
+    '<input id="ed-unick" placeholder="昵称" value="'+esc(u.nickname||'')+'">'+
+    '<select id="ed-urole"><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>编辑</option><option value="admin" '+(u.role==='admin'?'selected':'')+'>管理员</option></select>'+
+    '</div>',
+    [{label:'取消'},{label:'保存',primary:true,onClick:function(){
+      var uname=peg('ed-uname'); var upass=peg('ed-upass'); var unick=peg('ed-unick'); var urole=peg('ed-urole');
+      if(!uname||!upass){ toast('用户名和密码不能为空'); return; }
+      if(isNew){
+        var r=addUser({username:uname,password:upass,nickname:unick||uname,role:urole||'user'});
+        if(!r.ok){ toast(r.msg); return; }
+        addEditLog('用户',uname,'新增');
+      } else {
+        updateUser(u.username,{password:upass,nickname:unick||u.nickname,role:urole||'user'});
+        addEditLog('用户',u.username,'编辑');
+      }
+      renderUserList(); toast(isNew?'新增成功':'保存成功');
+    }}]
+  );
+}
 
 (function bindAdminMenu(){
   var m=document.querySelector('#menu-edit-content');

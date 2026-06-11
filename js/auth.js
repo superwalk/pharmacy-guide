@@ -105,7 +105,47 @@ const USERS = [
   { username:'user099', password:'cos4179', role:'user', nickname:'药师099' },
 ];
 
-function findUser(username) { return USERS.find(u => u.username === username); }
+function findUser(username) {
+  const users = getUsers();
+  return users.find(u => u.username === username);
+}
+
+// 用户管理 — 从localStorage加载，无则用默认
+function getUsers() {
+  try {
+    var saved = localStorage.getItem('custom_users');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  localStorage.setItem('custom_users', JSON.stringify(USERS));
+  return USERS.slice();
+}
+
+function saveUsers(users) {
+  localStorage.setItem('custom_users', JSON.stringify(users));
+}
+
+function addUser(user) {
+  var users = getUsers();
+  if (users.find(u => u.username === user.username)) return { ok: false, msg: '用户名已存在' };
+  users.push(user);
+  saveUsers(users);
+  return { ok: true };
+}
+
+function removeUser(username) {
+  var users = getUsers();
+  users = users.filter(u => u.username !== username);
+  saveUsers(users);
+}
+
+function updateUser(username, updates) {
+  var users = getUsers();
+  var idx = users.findIndex(u => u.username === username);
+  if (idx < 0) return { ok: false };
+  Object.assign(users[idx], updates);
+  saveUsers(users);
+  return { ok: true };
+}
 
 function login(username, password) {
   const u = findUser(username);
