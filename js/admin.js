@@ -283,6 +283,7 @@ function getCust(){ try{return JSON.parse(localStorage.getItem('custom_data')||'
 function saveCust(cd){ localStorage.setItem('custom_data',JSON.stringify(cd)); }
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function peg(id){ return (document.getElementById(id)?.value||'').trim(); }
+function genRandPw(){ var c='abcdefghjkmnpqrstuvwxyz23456789'; var p=''; for(var i=0;i<8;i++) p+=c[Math.floor(Math.random()*c.length)]; return p; }
 
 // ═══ 用户管理 ═══
 function renderUserList(){
@@ -312,27 +313,49 @@ function renderUserList(){
 function showUserEditor(user){
   var isNew=!user;
   var u=user||{};
+  if(isNew){
+    var users=getUsers();
+    var maxNum=0;
+    users.forEach(function(x){
+      var m=x.username.match(/^user(\d+)$/);
+      if(m){ var n=parseInt(m[1]); if(n>maxNum) maxNum=n; }
+    });
+    u.username='user'+String(maxNum+1).padStart(3,'0');
+    u.password=genRandPw();
+  }
   showModal(isNew?'新增用户':'编辑用户',
     '<div style="display:flex;flex-direction:column;gap:8px">'+
-    '<input id="ed-uname" placeholder="用户名（字母数字）" value="'+esc(u.username||'')+'" '+(isNew?'':'disabled')+' style="background:'+(isNew?'':'var(--bg)')+'">'+
-    '<input id="ed-upass" placeholder="密码" value="'+esc(u.password||'')+'">'+
+    '<input id="ed-uname" placeholder="用户名" value="'+esc(u.username||'')+'" '+(isNew?'':'disabled')+'>'+
+    '<div style="display:flex;gap:6px"><input id="ed-upass" placeholder="密码" value="'+esc(u.password||'')+'" style="flex:1"><button class="btn btn-sm btn-outline" id="ed-genpw" style="white-space:nowrap">🎲 随机</button></div>'+
     '<input id="ed-unick" placeholder="昵称" value="'+esc(u.nickname||'')+'">'+
     '<select id="ed-urole"><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>编辑</option></select>'+
     '</div>',
-    [{label:'取消'},{label:'保存',primary:true,onClick:function(){
+    [{label:'取消'},{label:isNew?'新增并复制':'保存',primary:true,onClick:function(){
       var uname=peg('ed-uname'); var upass=peg('ed-upass'); var unick=peg('ed-unick'); var urole=peg('ed-urole');
       if(!uname||!upass){ toast('用户名和密码不能为空'); return; }
       if(isNew){
         var r=addUser({username:uname,password:upass,nickname:unick||uname,role:urole||'user'});
         if(!r.ok){ toast(r.msg); return; }
         addEditLog('用户',uname,'新增');
+        var info='用户名：'+uname+'\n密码：'+upass;
+        navigator.clipboard.writeText(info).then(function(){
+          toast('已复制账号信息');
+        }).catch(function(){});
+        showModal('✅ 新增成功',
+          '<div style="text-align:center;line-height:2"><b>'+uname+'</b><br>密码：<b>'+upass+'</b></div><div style="font-size:12px;color:var(--text-light);margin-top:6px">已自动复制到剪贴板</div>',
+          [{label:'确定',primary:true}]);
       } else {
         updateUser(u.username,{password:upass,nickname:unick||u.nickname,role:urole||'user'});
         addEditLog('用户',u.username,'编辑');
       }
-      renderUserList(); toast(isNew?'新增成功':'保存成功');
+      renderUserList();
+      if(!isNew) toast('保存成功');
     }}]
   );
+  setTimeout(function(){
+    var btn=document.getElementById('ed-genpw');
+    if(btn) btn.onclick=function(){ document.getElementById('ed-upass').value=genRandPw(); };
+  },100);
 }
 
 (function bindAdminMenu(){
