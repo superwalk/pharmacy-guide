@@ -55,6 +55,9 @@ function initAdmin() {
       renderAdminList(t.dataset.tab);
       const labels = { drugs:'+ 新增药品', guidelines:'+ 新增指南', education:'+ 新增科普', infusion:'+ 新增配伍', diseases:'+ 新增疾病', users:'+ 新增用户' };
       document.getElementById('admin-add-btn').textContent = labels[t.dataset.tab] || '+ 新增';
+      // 导出导入按钮仅在药品标签显示
+      var exportBar = document.getElementById('admin-export-bar');
+      if(exportBar) exportBar.style.display = t.dataset.tab === 'drugs' ? 'flex' : 'none';
     };
   });
 
