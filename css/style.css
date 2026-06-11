@@ -207,7 +207,7 @@ svg{display:block}
 .toast.show{opacity:1}
 
 /* ── 置顶按钮 ── */
-.back-to-top{position:fixed;bottom:86px;right:16px;width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;font-size:18px;line-height:36px;text-align:center;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .25s;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.back-to-top{position:fixed;bottom:86px;right:16px;width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;font-size:18px;line-height:36px;text-align:center;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .25s;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.15);touch-action:none;user-select:none;-webkit-user-select:none}
 .back-to-top.show{opacity:.85;pointer-events:auto}
 .back-to-top:active{opacity:1;transform:scale(.92)}
 

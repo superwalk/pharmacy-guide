@@ -275,11 +275,11 @@ function renderKnowledge() {
     if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw))||genPy(c.name).toLowerCase().includes(kw)||c.subs.some(s=>genPy(s).toLowerCase().includes(kw)));
     kb.innerHTML=cats.map((c,i)=>`
       <div class="cat-card">
-        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${i})" data-cat-expanded="true">
+        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${i})" data-cat-expanded="false">
           <span class="cat-name">${kw ? highlightKw(c.name, kw) : c.name}</span>
-          <span class="cat-subs-count" style="font-size:12px;color:var(--text-light);margin-right:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▼</span></span>
+          <span class="cat-subs-count" style="font-size:12px;color:var(--text-light);margin-right:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▶</span></span>
         </div>
-        <div class="cat-items" id="cat-group-${i}" style="padding:4px 12px 10px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();showDrugList('sub','${s}')">${kw ? highlightKw(s, kw) : s}</span>`).join('')}</div>
+        <div class="cat-items" id="cat-group-${i}" style="display:none;padding:4px 12px 10px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();showDrugList('sub','${s}')">${kw ? highlightKw(s, kw) : s}</span>`).join('')}</div>
       </div>
     `).join('');
     if(kw){
@@ -290,7 +290,7 @@ function renderKnowledge() {
   } else {
     let cats= DISEASE_CATEGORIES;
     if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw))||genPy(c.name).toLowerCase().includes(kw)||c.subs.some(s=>genPy(s).toLowerCase().includes(kw)));
-    kb.innerHTML=cats.map((c,i)=>`\n      <div class="cat-card">\n        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${100+i})" data-cat-expanded="true">\n          <span class="cat-name">${kw ? highlightKw(c.name, kw) : c.name}</span>\n          <span style="font-size:12px;color:var(--text-light);margin-right:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▼</span></span>\n        </div>\n        <div class="cat-items" id="cat-group-${100+i}" style="padding:4px 12px 10px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();openDisease('${s}')">${kw ? highlightKw(s, kw) : s}</span>`).join('')}</div>\n      </div>\n    `).join('');
+    kb.innerHTML=cats.map((c,i)=>`\n      <div class="cat-card">\n        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${100+i})" data-cat-expanded="false">\n          <span class="cat-name">${kw ? highlightKw(c.name, kw) : c.name}</span>\n          <span style="font-size:12px;color:var(--text-light);margin-right:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▶</span></span>\n        </div>\n        <div class="cat-items" id="cat-group-${100+i}" style="display:none;padding:4px 12px 10px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();openDisease('${s}')">${kw ? highlightKw(s, kw) : s}</span>`).join('')}</div>\n      </div>\n    `).join('');
     if(kw){
       const matches=DISEASES.filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase().includes(kw)||genPy(d.name).toLowerCase().includes(kw));
       if(matches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配疾病</div>`+matches.map(d=>`<div class="list-card" onclick="openDisease('${d.name}')"><div class="icon-box">🦠</div><div class="info"><div class="name">${highlightKw(d.name, kw)}</div><div class="desc">${(d.desc||'').slice(0,40)}…</div></div></div>`).join('');
