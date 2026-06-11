@@ -223,7 +223,12 @@ function renderKnowledge() {
   }
 
   document.getElementById('kb-search').oninput=renderKnowledge;
-  const gs=document.getElementById('guide-search'); if(gs) gs.oninput=renderGuidelines;
+  bindGuideSearch();
+}
+
+function bindGuideSearch(){
+  var gs=document.getElementById('guide-search');
+  if(gs){ gs.oninput=renderGuidelines; }
 }
 
 function showDrugList(type,id){
@@ -249,10 +254,9 @@ function renderGuidelines() {
   const gl=document.getElementById('guide-list');
   let systems=GUIDE_SYSTEMS;
   if(kw){
-    systems=GUIDE_SYSTEMS.map(s=>({
-      ...s,
-      items:s.items.filter(g=>g.title.toLowerCase().includes(kw)||(g.content||'').toLowerCase().includes(kw)||g.system.toLowerCase().includes(kw)||(g.py||'').toLowerCase().includes(kw))
-    })).filter(s=>s.items.length>0);
+    systems=systems.map(function(s){
+      return {system:s.system,icon:s.icon,items:s.items.filter(function(g){return g.title.toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||g.system.toLowerCase().indexOf(kw)>=0||(g.py||'').toLowerCase().indexOf(kw)>=0;})};
+    }).filter(function(s){return s.items.length>0;});
   }
   gl.innerHTML=systems.map((s,i)=>`
     <div class="cat-card" style="margin-bottom:8px">
@@ -265,8 +269,6 @@ function renderGuidelines() {
   `).join('');
   if(systems.length===0&&kw) gl.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">未找到匹配的指南或法规</div>';
   gl.querySelectorAll('.guide-item').forEach(item=>{ item.onclick=()=>openGuide(item.dataset.gid); });
-  // 确保搜索绑定
-  var gs2=document.getElementById('guide-search'); if(gs2 && !gs2._bound){ gs2.oninput=renderGuidelines; gs2._bound=true; }
 }
 
 function toggleGuideGroup(header) {
