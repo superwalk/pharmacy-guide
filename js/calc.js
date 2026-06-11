@@ -5,6 +5,69 @@ function renderCalc() {
     <div class="section-title" style="font-size:26px">计算工具</div>
     <div class="search-bar search-sm" style="margin-bottom:16px"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#94A3B8" stroke-width="2"/></svg><input id="calc-filter" placeholder="搜索工具…" oninput="filterCalcTools()"></div>
     <div id="calc-tools">
+      ${calcCard('🫘 肌酐清除率 CrCl','crcl','Cockcroft-Gault 公式 — 调整肾排泄药物剂量的基石',`
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="crcl-sex" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px;border:1px solid var(--border)"><option value="male">男</option><option value="female">女</option></select>
+          <input id="crcl-age" type="number" placeholder="年龄(岁)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="crcl-w" type="number" placeholder="体重(kg)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.1">
+          <input id="crcl-scr" type="number" placeholder="血肌酐(μmol/L)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.1">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="calcCrCl()">计算 CrCl</button>
+        <div id="crcl-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
+      ${calcCard('💧 输液速度与泵速','infusion','滴速↔ml/h、μg/kg/min↔ml/h 双向换算',`
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="inf-mode" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)" onchange="toggleInfMode()">
+            <option value="rate">滴速 → ml/h</option>
+            <option value="pump">μg/kg/min → ml/h</option>
+          </select>
+        </div>
+        <div id="inf-rate-panel">
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="inf-drops" type="number" placeholder="滴速(滴/分)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px">
+            <select id="inf-drop-factor" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)"><option value="20">20滴/ml</option><option value="15">15滴/ml</option><option value="60">60滴/ml(微量)</option></select>
+          </div>
+        </div>
+        <div id="inf-pump-panel" style="display:none">
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="inf-dose" type="number" placeholder="剂量 μg/kg/min" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.01">
+            <input id="inf-w" type="number" placeholder="体重(kg)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.1">
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="inf-conc" type="number" placeholder="药液浓度(mg/ml)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.01">
+            <input id="inf-vol" type="number" placeholder="液体总量(ml)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="calcInfusion()">计算</button>
+        <div id="inf-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
+      ${calcCard('🧪 浓度稀释计算','dilution','原液浓度 → 目标浓度 → 取多少加多少',`
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="dil-c1" type="number" placeholder="原液浓度" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.01">
+          <input id="dil-c2" type="number" placeholder="目标浓度" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.01">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="dil-v2" type="number" placeholder="目标体积(ml)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px">
+          <select id="dil-unit" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)"><option value="mg">mg/ml</option><option value="percent">%</option><option value="mmol">mmol/L</option></select>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="calcDilution()">计算</button>
+        <div id="dil-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
+      ${calcCard('💉 皮试液配置','skin','青霉素/头孢/链霉素/普鲁卡因/TAT 标准化配置',`
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="skin-drug" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)">
+            <option value="peni">青霉素 (80万U)</option>
+            <option value="ceph">头孢唑林 (0.5g)</option>
+            <option value="strep">链霉素 (100万U)</option>
+            <option value="proc">普鲁卡因 (40mg)</option>
+            <option value="tat">TAT (1500U)</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="showSkinTest()">查看配置步骤</button>
+        <div id="skin-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
       ${calcCard('👶 儿童体重估算','weight','适用于无法称重时的体重估算',`
         <div style="display:flex;gap:8px;margin-bottom:8px">
           <input id="cw-age" type="number" placeholder="年龄" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px">
@@ -148,6 +211,88 @@ function toggleCalcFav(id){
 // 查找计算工具
 function findCalcTool(id){
   return (typeof CALC_TOOLS!=='undefined'?CALC_TOOLS:[]).find(function(c){return c.id===id;});
+}
+
+// ═══ 新增计算工具 ═══
+
+// 1. 肌酐清除率 CrCl
+function calcCrCl(){
+  var sex=document.getElementById('crcl-sex').value;
+  var age=parseFloat(document.getElementById('crcl-age').value);
+  var w=parseFloat(document.getElementById('crcl-w').value);
+  var scr=parseFloat(document.getElementById('crcl-scr').value);
+  var r=document.getElementById('crcl-result');
+  if(!age||!w||!scr){ r.textContent='请填写完整信息'; r.style.display='block'; return; }
+  // μmol/L → mg/dL (÷88.4)
+  var scrMg=scr/88.4;
+  var crcl=((140-age)*w)/(72*scrMg);
+  if(sex==='female') crcl*=0.85;
+  var stage=crcl>=90?'肾功能正常':crcl>=60?'CKD 2期(轻度下降)':crcl>=30?'CKD 3期(中度下降)':crcl>=15?'CKD 4期(重度下降)':'CKD 5期(肾衰竭)';
+  var color=crcl>=60?'var(--primary)':crcl>=30?'var(--accent)':'var(--danger)';
+  r.style.display='block';
+  r.innerHTML='<div style="font-size:22px;font-weight:700;color:'+color+'">CrCl ≈ '+crcl.toFixed(1)+' mL/min</div><div style="margin-top:6px">'+stage+'</div><div style="font-size:11px;color:var(--text-light);margin-top:4px">Cockcroft-Gault公式 | Scr='+scr+'μmol/L ('+scrMg.toFixed(2)+'mg/dL)</div>';
+}
+
+// 2. 输液速度与泵速
+function toggleInfMode(){
+  var mode=document.getElementById('inf-mode').value;
+  document.getElementById('inf-rate-panel').style.display=mode==='rate'?'block':'none';
+  document.getElementById('inf-pump-panel').style.display=mode==='pump'?'block':'none';
+}
+function calcInfusion(){
+  var mode=document.getElementById('inf-mode').value;
+  var r=document.getElementById('inf-result');
+  if(mode==='rate'){
+    var drops=parseFloat(document.getElementById('inf-drops').value);
+    var factor=parseFloat(document.getElementById('inf-drop-factor').value);
+    if(!drops){ r.textContent='请输入滴速'; r.style.display='block'; return; }
+    var mlh=(drops*60)/factor;
+    r.style.display='block';
+    r.innerHTML='<div style="font-size:20px;font-weight:700;color:var(--primary)">'+mlh.toFixed(1)+' ml/h</div><div style="font-size:12px;color:var(--text-light);margin-top:4px">'+drops+'滴/分 × 60分 ÷ '+factor+'滴/ml</div>';
+  } else {
+    var dose=parseFloat(document.getElementById('inf-dose').value);
+    var w=parseFloat(document.getElementById('inf-w').value);
+    var conc=parseFloat(document.getElementById('inf-conc').value);
+    var vol=parseFloat(document.getElementById('inf-v').value);
+    if(!dose||!w||!conc||!vol){ r.textContent='请填写完整信息'; r.style.display='block'; return; }
+    // μg/kg/min → ml/h: (dose × w × 60) / (conc × 1000) = ml/h
+    var mlh=(dose*w*60)/(conc*1000);
+    r.style.display='block';
+    r.innerHTML='<div style="font-size:20px;font-weight:700;color:var(--primary)">'+mlh.toFixed(2)+' ml/h</div><div style="font-size:12px;color:var(--text-light);margin-top:4px">'+dose+'μg/kg/min × '+w+'kg × 60min ÷ ('+conc+'mg/ml×1000)</div><div style="font-size:11px;color:var(--text-light);margin-top:2px">药液总量'+vol+'ml，约可输注 '+(vol/mlh).toFixed(1)+' 小时</div>';
+  }
+}
+
+// 3. 浓度稀释
+function calcDilution(){
+  var c1=parseFloat(document.getElementById('dil-c1').value);
+  var c2=parseFloat(document.getElementById('dil-c2').value);
+  var v2=parseFloat(document.getElementById('dil-v2').value);
+  var unit=document.getElementById('dil-unit').value;
+  var r=document.getElementById('dil-result');
+  if(!c1||!c2||!v2){ r.textContent='请填写完整信息'; r.style.display='block'; return; }
+  if(c2>=c1){ r.textContent='目标浓度必须低于原液浓度'; r.style.display='block'; return; }
+  var v1=(c2*v2)/c1;
+  var add=v2-v1;
+  var unitLabel={mg:'mg/ml',percent:'%',mmol:'mmol/L'};
+  r.style.display='block';
+  r.innerHTML='<div style="font-size:18px;font-weight:700;color:var(--primary)">取原液 <b>'+v1.toFixed(2)+'</b> ml</div><div style="font-size:18px;font-weight:700;color:var(--accent);margin-top:4px">加溶媒 <b>'+add.toFixed(2)+'</b> ml</div><div style="font-size:12px;color:var(--text-light);margin-top:6px">'+c1+unitLabel[unit]+' → '+c2+unitLabel[unit]+'，总量'+v2+'ml<br>公式：C₁V₁ = C₂V₂</div>';
+}
+
+// 4. 皮试液配置
+var SKIN_TEST_DATA={
+  peni:{name:'青霉素',steps:['取80万U青霉素 + 4ml NS → 20万U/ml','取0.1ml + 0.9ml NS → 2万U/ml','取0.1ml + 0.9ml NS → 2000U/ml','取0.1ml + 0.9ml NS → 200U/ml','最终皮试液：200U/ml，皮内注射0.1ml(20U)']},
+  ceph:{name:'头孢唑林',steps:['取0.5g + 2ml NS → 250mg/ml','取0.2ml + 0.8ml NS → 50mg/ml','取0.1ml + 0.9ml NS → 5mg/ml','取0.1ml + 0.9ml NS → 0.5mg/ml','最终皮试液：0.5mg/ml，皮内注射0.1ml(0.05mg)']},
+  strep:{name:'链霉素',steps:['取100万U + 3.5ml NS → 25万U/ml','取0.1ml + 0.9ml NS → 2.5万U/ml','取0.1ml + 0.9ml NS → 2500U/ml','取0.1ml + 0.9ml NS → 250U/ml','最终皮试液：250U/ml，皮内注射0.1ml(25U)']},
+  proc:{name:'普鲁卡因',steps:['取40mg/2ml原液 → 20mg/ml','取0.1ml + 0.9ml NS → 2mg/ml','取0.1ml + 0.9ml NS → 0.2mg/ml','最终皮试液：0.2mg/ml，皮内注射0.1ml(0.02mg)']},
+  tat:{name:'TAT',steps:['取1500U + 1ml NS → 1500U/ml','取0.1ml + 0.9ml NS → 150U/ml','取0.1ml + 0.9ml NS → 15U/ml','取0.1ml + 0.9ml NS → 1.5U/ml','最终皮试液：1.5U/ml，皮内注射0.1ml(0.15U)']}
+};
+function showSkinTest(){
+  var drug=document.getElementById('skin-drug').value;
+  var data=SKIN_TEST_DATA[drug];
+  var r=document.getElementById('skin-result');
+  if(!data){ r.textContent='请选择药品'; r.style.display='block'; return; }
+  r.style.display='block';
+  r.innerHTML='<div style="font-weight:700;color:var(--primary);margin-bottom:8px">'+data.name+'皮试液配置</div>'+data.steps.map(function(s,i){return '<div style="display:flex;gap:8px;margin:6px 0"><span style="background:var(--primary);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">'+(i+1)+'</span><span style="font-size:13px">'+s+'</span></div>';}).join('')+'<div style="font-size:11px;color:var(--text-light);margin-top:8px">⚠️ 配置后标注药品名称、浓度、时间，4小时内使用</div>';
 }
 
 function filterCalcTools(){ const kw=document.getElementById('calc-filter').value.toLowerCase(); document.querySelectorAll('#calc-tools .detail-hero').forEach(el=>{ el.style.display=el.textContent.toLowerCase().includes(kw)?'block':'none'; }); }

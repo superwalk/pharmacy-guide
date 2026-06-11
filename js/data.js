@@ -373,6 +373,10 @@ const MED_EDU = [
 
 // ═══ 计算工具元数据 ═══
 const CALC_TOOLS = [
+  { id:'crcl', name:'肌酐清除率 CrCl', cat:'肾功' },
+  { id:'infusion', name:'输液速度与泵速', cat:'输液' },
+  { id:'dilution', name:'浓度稀释计算', cat:'调配' },
+  { id:'skin', name:'皮试液配置', cat:'调配' },
   { id:'weight', name:'儿童体重估算', cat:'体重' },
   { id:'bsa', name:'体表面积 BSA', cat:'体表面积' },
   { id:'potency', name:'抗生素效价单位换算', cat:'剂量换算' },
