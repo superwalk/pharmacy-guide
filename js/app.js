@@ -931,7 +931,7 @@ function showUserEditor(user){
   showModal(isNew?'新增用户':'编辑用户',
     '<div style="display:flex;flex-direction:column;gap:8px">'+
     '<input id="ed-uname" placeholder="用户名" value="'+escHTML(u.username||'')+'" '+(isNew?'':'disabled')+'>'+
-    '<div style="display:flex;gap:6px"><input id="ed-upass" placeholder="密码" value="'+escHTML(u.password||'')+'" style="flex:1"><button class="btn btn-sm btn-outline" id="ed-genpw" style="white-space:nowrap">🎲 随机</button></div>'+
+    '<div style="display:flex;gap:6px"><input id="ed-upass" placeholder="密码" value="'+escHTML(u.password||'')+'" style="flex:1">'+(isNew?'<button class="btn btn-sm btn-outline" id="ed-genpw" style="white-space:nowrap">🎲 随机</button>':'')+'</div>'+
     '<input id="ed-unick" placeholder="昵称" value="'+escHTML(u.nickname||'')+'">'+
     '<select id="ed-urole" '+(u.username==='walkman0097'?'disabled':'')+'><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>管理员</option></select>'+
     '</div>',
