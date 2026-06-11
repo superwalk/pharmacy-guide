@@ -271,7 +271,7 @@ function showDiseaseEditor(item, index) {
   showModal(isNew?'新增疾病':'编辑疾病',
     `<div style="display:flex;flex-direction:column;gap:10px">
       <input id="ed-dname" value="${esc(d.name)}" placeholder="名称 *">
-      <input id="ed-dcat" value="${esc(d.cat)}" placeholder="分类 *">
+      <select id="ed-dcat">${DISEASE_CATEGORIES.map(function(c){return '<option value="'+c.name+'"'+(d.cat===c.name?' selected':'')+'>'+c.name+'</option>';}).join('')}</select>
       <input id="ed-ddesc" value="${esc(d.desc||'')}" placeholder="定义">
       <input id="ed-dsympt" value="${esc(d.symptoms||'')}" placeholder="症状">
       <input id="ed-ddiag" value="${esc(d.diagnosis||'')}" placeholder="诊断">

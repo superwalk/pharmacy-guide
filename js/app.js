@@ -193,6 +193,7 @@ function initApp() {
   initSearch();
   initCompare();
   initProfileMenus();
+  bindGuideSearch();
   checkVersion(); // 自动检查版本更新
   // 置顶按钮——监听各屏幕容器的滚动
   function onScreenScroll(){
@@ -855,7 +856,6 @@ function openDisease(name) {
   document.getElementById('label-content').innerHTML=html;
   addRecent(d?d.id:name,'disease');
   if(d) {
-    showEditBtn({type:'disease',id:d.id});
     loadDiseaseDetail(d.id, function(full) {
       var detail = full || d;
       var db = document.getElementById('disease-body');
