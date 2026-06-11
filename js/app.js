@@ -133,6 +133,11 @@ function initApp() {
   initSearch();
   initCompare();
   initProfileMenus();
+  // 置顶按钮
+  window.addEventListener('scroll',function(){
+    var btn=document.getElementById('back-to-top');
+    if(btn) btn.classList.toggle('show',window.scrollY>300);
+  });
 }
 
 // ═══ 时钟 ───
