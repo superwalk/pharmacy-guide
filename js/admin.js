@@ -294,13 +294,25 @@ function renderUserList(){
   list.innerHTML='';
   if(users.length===0){ list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">暂无用户</div>'; return; }
   var roleLabel={admin:'管理员',editor:'管理员',user:'普通用户'};
+  // 获取内置用户名列表
+  var builtinUsernames = (typeof USERS !== 'undefined') ? USERS.map(function(u){return u.username;}) : [];
   users.forEach(function(u){
+    var isBuiltin = builtinUsernames.indexOf(u.username) !== -1;
     var row=document.createElement('div');
     row.className='list-card';
     row.style.cssText='display:flex;align-items:center;gap:8px';
-    row.innerHTML='<div class="icon-box">👤</div><div class="info" style="flex:1"><div class="name">'+u.username+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+u.nickname+'</div></div><button class="btn btn-sm btn-outline" style="margin-right:4px">编辑</button><button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)">删除</button>';
-    row.querySelectorAll('button')[0].onclick=function(){ showUserEditor(u); };
-    row.querySelectorAll('button')[1].onclick=function(){
+    row.innerHTML='<div class="icon-box">👤</div><div class="info" style="flex:1"><div class="name">'+u.username+(isBuiltin?'':' <span style="font-size:10px;color:var(--accent)">手机端</span>')+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+u.nickname+'</div></div>'
+      + (isBuiltin ? '' : '<button class="btn btn-sm btn-outline" style="margin-right:2px;font-size:11px">☁️导出</button>')
+      + '<button class="btn btn-sm btn-outline" style="margin-right:4px">编辑</button>'
+      + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)">删除</button>';
+    var btns = row.querySelectorAll('button');
+    var btnIdx = 0;
+    if (!isBuiltin) {
+      btns[btnIdx].onclick=function(){ syncOneUserToGitHub(u); };
+      btnIdx++;
+    }
+    btns[btnIdx].onclick=function(){ showUserEditor(u); };
+    btns[btnIdx+1].onclick=function(){
       if(u.username===currentUser.username){ toast('不能删除自己'); return; }
       if(u.username==='walkman0097'){ toast('不能删除管理员账户'); return; }
       showModal('确认删除','<p>确定删除用户 <b>'+u.username+'</b>？</p>',[{label:'取消'},{label:'删除',primary:true,style:'background:var(--danger)',onClick:function(){
@@ -518,6 +530,82 @@ function doSyncToGitHub(token) {
   }).then(function(r){
     if (r.status === 201 || r.status === 200) {
       toast('✅ 已同步到仓库，电脑端可以开始合并');
+    } else {
+      return r.json().then(function(e){ throw new Error(e.message || '同步失败'); });
+    }
+  }).catch(function(e){
+    toast('❌ 同步失败：'+e.message);
+  });
+}
+
+// ═══ 单独导出单个用户到GitHub ═══
+function syncOneUserToGitHub(user) {
+  var token = localStorage.getItem(GITHUB_TOKEN_KEY);
+  if (!token) {
+    showModal('GitHub 令牌',
+      '<p style="font-size:12px;color:var(--text-light);margin-bottom:8px">需要先设置 GitHub Token 才能同步。</p>'
+      +'<input id="github-token-input" type="password" placeholder="输入 GitHub Token" style="width:100%">'
+      +'<label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--text-light)"><input type="checkbox" id="save-token-cb" checked> 记住此令牌</label>',
+      [{label:'取消'},{label:'确认同步',primary:true,onClick:function(){
+        var tk = document.getElementById('github-token-input').value.trim();
+        if (!tk) { toast('请输入令牌'); return; }
+        if (document.getElementById('save-token-cb').checked) {
+          localStorage.setItem(GITHUB_TOKEN_KEY, tk);
+        }
+        doSyncOneUser(user, tk);
+      }}]
+    );
+    return;
+  }
+  doSyncOneUser(user, token);
+}
+
+function doSyncOneUser(user, token) {
+  // 只导出这一个用户
+  var exportData = {
+    exportTime: new Date().toISOString(),
+    appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.0',
+    new_users: [{
+      username: user.username,
+      password: user.password,
+      role: user.role || 'user',
+      nickname: user.nickname || user.username
+    }]
+  };
+  
+  var now = new Date();
+  var ts = now.getFullYear()+'-'+
+    String(now.getMonth()+1).padStart(2,'0')+'-'+
+    String(now.getDate()).padStart(2,'0')+'_'+
+    String(now.getHours()).padStart(2,'0')+'-'+
+    String(now.getMinutes()).padStart(2,'0');
+  var filename = 'data/exports/new-user_'+user.username+'_'+ts+'.json';
+  var content = btoa(unescape(encodeURIComponent(JSON.stringify(exportData, null, 2))));
+  
+  toast('⏳ 正在导出用户 '+user.username+' 到仓库…');
+  
+  fetch('https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+filename+'?ref='+GITHUB_BRANCH, {
+    headers: { 'Authorization': 'Bearer '+token, 'Accept': 'application/vnd.github.v3+json' }
+  }).then(function(r){
+    return r.json().then(function(body){
+      return {status: r.status, sha: body.sha};
+    });
+  }).then(function(result){
+    var body = {
+      message: '📱 新增用户：'+user.username+' ('+(user.nickname||user.username)+')',
+      content: content,
+      branch: GITHUB_BRANCH
+    };
+    if (result.sha) body.sha = result.sha;
+    
+    return fetch('https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+filename, {
+      method: 'PUT',
+      headers: { 'Authorization': 'Bearer '+token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+      body: JSON.stringify(body)
+    });
+  }).then(function(r){
+    if (r.status === 201 || r.status === 200) {
+      toast('✅ 用户 '+user.username+' 已导出到仓库，告诉我一声即可合并进源码');
     } else {
       return r.json().then(function(e){ throw new Error(e.message || '同步失败'); });
     }
