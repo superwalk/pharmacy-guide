@@ -31,7 +31,27 @@ function toggleFav(id) { let f=getFavs(); if(f.includes(id)) f=f.filter(x=>x!==i
 function getNotes() { return JSON.parse(localStorage.getItem(noteKey())||'{}'); }
 function saveNote(drugId, text) { const n=getNotes(); n[drugId]=text; localStorage.setItem(noteKey(),JSON.stringify(n)); }
 function getRecent() { return JSON.parse(localStorage.getItem(recentKey())||'[]'); }
-function addRecent(id) { let r=getRecent(); r=r.filter(x=>x!==id); r.unshift(id); if(r.length>10)r.pop(); localStorage.setItem(recentKey(),JSON.stringify(r)); }
+function addRecent(id, type) { 
+  type=type||'drug';
+  let r=getRecent(); r=r.filter(x=>!(x.id===id&&x.type===type)); 
+  r.unshift({id:id,type:type}); if(r.length>15)r.pop(); 
+  localStorage.setItem(recentKey(),JSON.stringify(r)); 
+}
+
+// 简易拼音首字母（新增内容自动支持搜索）
+function genPy(s){
+  var m={a:'阿啊嗄哎哀埃癌矮艾碍爱鞍氨安俺按暗岸胺案肮昂凹熬袄傲奥澳',b:'芭捌扒叭吧巴拔把坝霸罢爸白柏百摆败拜班搬板版扮拌伴瓣半办邦帮绑棒磅胞包薄保堡饱宝抱报暴爆杯碑悲北辈背贝倍备被奔苯本笨崩绷泵蹦逼鼻比笔彼碧毕毙币痹闭必辟壁臂避编贬扁便变辨辩遍标彪表别彬斌滨冰柄丙饼病并玻波播拨波博勃铂伯帛船渤泊驳捕补不布步部',c:'擦猜裁材才财睬踩采彩菜餐参蚕残惭惨灿苍舱仓沧藏操曹草策侧册测层插叉茶查察岔差柴蝉馋缠铲产阐昌场尝常长偿肠厂敞畅唱抄超朝潮吵炒车扯撤彻臣辰尘晨沉陈趁撑成呈乘程惩澄诚承骋秤吃持池迟弛驰耻齿尺赤翅充冲虫崇抽酬畴稠愁筹仇绸丑臭初出橱厨锄除楚础储触处揣川穿传船喘串疮窗床创吹炊锤垂春椿醇唇纯刺次聪从丛凑粗醋簇促崔催脆翠村存寸措挫错',d:'搭达答打大呆歹戴带代贷袋待逮怠丹单胆旦但诞弹蛋当挡党档刀倒岛导到稻悼道盗德得灯登等邓堤低滴迪敌笛抵底地帝弟递颠碘点典电甸店奠殿雕吊钓调跌爹碟蝶叠丁盯钉顶定订丢东冬董懂动栋洞都督毒读堵赌杜肚度渡端短段断堆队对吨蹲盾多夺躲朵'};
+  var py='';
+  for(var i=0;i<s.length;i++){
+    var c=s[i];
+    if(c>='a'&&c<='z') py+=c.toUpperCase();
+    else if(c>='A'&&c<='Z') py+=c;
+    else {
+      for(var k in m){ if(m[k].indexOf(c)>=0){ py+=k.toUpperCase(); break; } }
+    }
+  }
+  return py||s;
+}
 
 // ═══ 登录 ═══
 (function initLogin(){
@@ -152,11 +172,23 @@ function renderHome() {
   const rl=document.getElementById('recent-list');
   const recent=getRecent();
   if(recent.length===0){ rl.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px">暂无浏览记录</div>'; return; }
-  rl.innerHTML=recent.map(id=>{
-    const d=findDrug(id); if(!d)return '';
-    return `<div class="list-card" data-drug="${d.id}"><div class="icon-box">💊</div><div class="info"><div class="name">${d.name}</div><div class="desc">${d.category} · ${d.indications.slice(0,20)}…</div></div></div>`;
+  rl.innerHTML=recent.map(e=>{
+    var id=e.id||e, type=e.type||'drug';
+    if(type==='drug'){ var d=findDrug(id); if(d) return `<div class="list-card" data-drug="${d.id}" data-type="drug"><div class="icon-box">💊</div><div class="info"><div class="name">${d.name}</div><div class="desc">${d.category}</div></div></div>`; }
+    if(type==='guide'){ var g=allGuides().find(x=>x.id===id)||LAWS.find(x=>x.id===id); if(g) return `<div class="list-card" data-gid="${g.id}" data-type="guide"><div class="icon-box">📋</div><div class="info"><div class="name">${g.title}</div><div class="desc">${g.system||'法规'} · ${g.year||''}</div></div></div>`; }
+    if(type==='disease'){ var d2=DISEASES.find(x=>x.id===id); if(d2) return `<div class="list-card" data-did="${d2.id}" data-type="disease"><div class="icon-box">🦠</div><div class="info"><div class="name">${d2.name}</div><div class="desc">${d2.cat}</div></div></div>`; }
+    if(type==='edu'){ var h=HEALTH_EDU.find(x=>x.id===id); if(h) return `<div class="list-card" data-hid="${h.id}" data-type="edu"><div class="icon-box">📖</div><div class="info"><div class="name">${h.title}</div><div class="desc">${h.cat}</div></div></div>`; }
+    if(type==='inf'){ var inf=INFUSION_DATA.find(x=>x.id===id); if(inf) return `<div class="list-card" data-iid="${inf.id}" data-type="inf"><div class="icon-box">💉</div><div class="info"><div class="name">${inf.drug}</div><div class="desc">${inf.cat}</div></div></div>`; }
+    return '';
   }).join('');
-  rl.querySelectorAll('.list-card').forEach(c=>c.onclick=()=>{ addRecent(c.dataset.drug); pushScreen('detail'); renderDetail(c.dataset.drug); });
+  rl.querySelectorAll('.list-card').forEach(c=>{
+    var t2=c.dataset.type;
+    if(t2==='drug') c.onclick=()=>{ addRecent(c.dataset.drug,'drug'); pushScreen('detail'); renderDetail(c.dataset.drug); };
+    else if(t2==='guide') c.onclick=()=>{ addRecent(c.dataset.gid,'guide'); openGuide(c.dataset.gid); };
+    else if(t2==='disease') c.onclick=()=>{ addRecent(c.dataset.did,'disease'); openDiseaseById(c.dataset.did); };
+    else if(t2==='edu') c.onclick=()=>{ addRecent(c.dataset.hid,'edu'); openHealthEdu(c.dataset.hid); };
+    else if(t2==='inf') c.onclick=()=>{ addRecent(c.dataset.iid,'inf'); openInfusion(c.dataset.iid); };
+  });
 }
 
 // ═══ 知识库 ───
@@ -248,12 +280,13 @@ function openGuide(gid) {
   const g = allGuides().find(x => x.id === gid) || LAWS.find(x => x.id === gid);
   if (!g) return;
   pushScreen('label');
+  addRecent(gid,'guide');
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:20px">${g.title}</div>
     <div style="font-size:12px;color:var(--text-light);display:flex;gap:6px"><span class="badge badge-blue">${g.system||'法律法规'}</span><span>${g.year||''}</span></div>
     <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(g.content||'')}</p></div>
   `;
-  showEditBtn({type:'guide',id:gid});
+  showEditBtn({type:'guide',id:gid}); addRecent(gid,'guide');
   document.getElementById('label-content').insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="viewGuideFull(\"'+gid+'\")" style="font-size:13px;padding:6px 16px">📄 查看全文</button></div>');
 }
 
@@ -331,7 +364,7 @@ function renderFavorites() {
   items=items.concat(allGuides().filter(g=>fv.includes(g.id)).map(g=>({id:g.id,type:'guide',name:g.title,cat:g.system})));
   if(kw) items=items.filter(i=>i.name.toLowerCase().includes(kw)||i.cat.includes(kw));
   fl.innerHTML=items.map(i=>`<div class="list-card" data-id="${i.id}" data-type="${i.type}"><div class="icon-box">${i.type==='drug'?'💊':'📋'}</div><div class="info"><div class="name">${i.name}</div><div class="desc">${i.cat}</div></div></div>`).join('');
-  fl.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{ if(c.dataset.type==='drug'){ addRecent(c.dataset.id); pushScreen('detail'); renderDetail(c.dataset.id); } }; });
+  fl.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{ if(c.dataset.type==='drug'){ addRecent(c.dataset.id); addRecent(c.dataset.id,'drug'); } }; });
   document.getElementById('fav-search').oninput=renderFavorites;
 }
 
@@ -465,7 +498,7 @@ function viewMyNotes() {
   if(entries.length===0){ ml.innerHTML=''; me.style.display='block'; return; }
   me.style.display='none';
   ml.innerHTML=entries.map(([id,text])=>{ const d=findDrug(id); return d?`<div class="list-card" data-drug="${id}"><div class="icon-box">💊</div><div class="info"><div class="name">${d.name}</div><div class="desc">${text.slice(0,40)}…</div></div></div>`:''; }).join('');
-  ml.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{ pushScreen('detail'); renderDetail(c.dataset.drug); }; });
+  ml.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{ addRecent(c.dataset.drug,'drug'); pushScreen('detail'); renderDetail(c.dataset.drug); }; });
 }
 
 // ═══ 科普教育 ─══
@@ -496,7 +529,7 @@ function openHealthEdu(hid) {
     <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(h.content||'')}</p></div>
   `;
   showEditBtn({type:'edu',id:hid});
-  showEditBtn({type:'guide',id:gid});
+  showEditBtn({type:'guide',id:gid}); addRecent(gid,'guide');
   document.getElementById('label-content').insertAdjacentHTML('beforeend','<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="viewGuideFull(\"'+gid+'\")" style="font-size:13px;padding:6px 16px">📄 查看全文</button></div>');
 }
 
@@ -563,7 +596,7 @@ function openDisease(name) {
   if(guides.length>0) html+=`<div class="section-title" style="margin-top:8px">📋 相关指南</div>`+guides.slice(0,3).map(g=>`<div class="list-card" onclick="openGuide('${g.id}')"><div class="icon-box">📋</div><div class="info"><div class="name">${g.title}</div><div class="desc">${g.system} · ${g.year}</div></div></div>`).join('');
   if(!d && drugs.length===0) html+='<div style="text-align:center;padding:40px;color:var(--text-light)">该疾病暂未收录详细信息</div>';
   document.getElementById('label-content').innerHTML=html;
-  showEditBtn({type:'disease',id:d.id});
+  addRecent(d?d.id:name,'disease'); showEditBtn({type:'disease',id:d.id});
 }
 
 function renderMedEdu(){
