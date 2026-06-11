@@ -3,7 +3,7 @@ let currentUser = null;
 
 // 从 users.json 同步过来的核心数据
 const USERS = [
-  { username:'walkman0097', password:'walkman0097', role:'admin', nickname:'管理员' },
+  { username:'walkman0097', password:'@Ab7704..Di', role:'admin', nickname:'管理员' },
   { username:'user001', password:'exr3690', role:'editor', nickname:'管理员-λ' },
   { username:'user002', password:'wfx4480', role:'editor', nickname:'管理员-θ' },
   { username:'user003', password:'qdf0212', role:'editor', nickname:'管理员-σ' },
@@ -114,7 +114,18 @@ function findUser(username) {
 function getUsers() {
   try {
     var saved = localStorage.getItem('custom_users');
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      var users = JSON.parse(saved);
+      // 同步源码中的USERS变更(如密码重置)到本地，不覆盖本地新增用户
+      USERS.forEach(function(su){
+        var local = users.find(function(u){ return u.username === su.username; });
+        if (local) {
+          // 仅同步密码(源码密码优先)，保留本地昵称/角色变更
+          local.password = su.password;
+        }
+      });
+      return users;
+    }
   } catch(e) {}
   localStorage.setItem('custom_users', JSON.stringify(USERS));
   return USERS.slice();
