@@ -162,9 +162,16 @@ function renderCalc() {
           <select id="skin-drug" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)">
             <option value="peni">青霉素 (80万U)</option>
             <option value="ceph">头孢唑林 (0.5g)</option>
+            <option value="cefuroxime">头孢呋辛 (0.75g)</option>
+            <option value="ceftriaxone">头孢曲松 (1g)</option>
+            <option value="ceftazidime">头孢他啶 (1g)</option>
+            <option value="cefoperazone">头孢哌酮 (1g)</option>
+            <option value="cefotaxime">头孢噻肟 (1g)</option>
+            <option value="cefoxitin">头孢西丁 (1g)</option>
+            <option value="mezlocillin">美洛西林 (1g)</option>
             <option value="strep">链霉素 (100万U)</option>
             <option value="proc">普鲁卡因 (40mg)</option>
-            <option value="tat">TAT (1500U)</option>
+            <option value="tat">TAT破伤风抗毒素 (1500U)</option>
           </select>
         </div>
         <button class="btn btn-primary btn-full" onclick="showSkinTest()">查看配置步骤</button>
@@ -264,6 +271,39 @@ function renderCalc() {
           <button class="btn btn-primary btn-full" style="margin-top:8px" onclick="showSurgeryRec()">查看推荐</button>
           <div id="surg-rec-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none;margin-top:8px;background:var(--bg);border-radius:10px"></div>
         </div>
+      `)}
+      ${calcCard('🩹 利多卡因最大剂量','lidocaine','按体重计算安全剂量 — 含/不含肾上腺素',`
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="lido-w" type="number" placeholder="体重(kg)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.1">
+          <select id="lido-epi" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)">
+            <option value="no">不含肾上腺素</option><option value="yes">含肾上腺素</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="lido-conc" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)">
+            <option value="1">1% (10mg/ml)</option><option value="2">2% (20mg/ml)</option>
+          </select>
+          <input id="lido-vol" type="number" placeholder="计划用量(ml)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="calcLidocaine()">计算安全剂量</button>
+        <div id="lido-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
+      ${calcCard('🔥 烧伤补液计算','burn','国内通用公式 / Parkland公式 — 第1个24h补液方案',`
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="burn-w" type="number" placeholder="体重(kg)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px" step="0.1">
+          <input id="burn-bsa" type="number" placeholder="烧伤面积(%)" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="burn-formula" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:14px;border:1px solid var(--border)">
+            <option value="china">国内通用公式</option><option value="parkland">Parkland公式</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="calcBurn()">计算补液方案</button>
+        <div id="burn-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
+      `)}
+      ${calcCard('💉 破伤风脱敏注射','tat-desense','TAT皮试阳性时的脱敏注射方案',`
+        <button class="btn btn-primary btn-full" onclick="showTatDesense()">查看脱敏方案</button>
+        <div id="tat-desense-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
       `)}
       ${calcCard('🩸 化验指标参考值','lab','血常规/肝功/肾功/凝血/电解质/血糖/血脂/甲状腺/心肌/感染/尿常规',`
         <div class="search-bar search-sm" style="margin-bottom:8px"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#94A3B8" stroke-width="2"/></svg><input id="lab-filter" placeholder="搜索化验项目…" oninput="filterLabTable()"></div>
@@ -383,10 +423,17 @@ function calcDilution(){
 // 4. 皮试液配置
 var SKIN_TEST_DATA={
   peni:{name:'青霉素',steps:['取80万U青霉素 + 4ml NS → 20万U/ml','取0.1ml + 0.9ml NS → 2万U/ml','取0.1ml + 0.9ml NS → 2000U/ml','取0.1ml + 0.9ml NS → 200U/ml','最终皮试液：200U/ml，皮内注射0.1ml(20U)']},
-  ceph:{name:'头孢唑林',steps:['取0.5g + 2ml NS → 250mg/ml','取0.2ml + 0.8ml NS → 50mg/ml','取0.1ml + 0.9ml NS → 5mg/ml','取0.1ml + 0.9ml NS → 0.5mg/ml','最终皮试液：0.5mg/ml，皮内注射0.1ml(0.05mg)']},
+  ceph:{name:'头孢唑林(0.5g)',steps:['取0.5g + 2ml NS → 250mg/ml','取0.2ml + 0.8ml NS → 50mg/ml','取0.1ml + 0.9ml NS → 5mg/ml','取0.1ml + 0.9ml NS → 0.5mg/ml','最终皮试液：0.5mg/ml，皮内注射0.1ml(0.05mg)']},
+  cefuroxime:{name:'头孢呋辛(0.75g)',steps:['取0.75g + 3ml NS → 250mg/ml','取0.2ml + 0.8ml NS → 50mg/ml','取0.1ml + 0.9ml NS → 5mg/ml','取0.1ml + 0.9ml NS → 0.5mg/ml','最终皮试液：0.5mg/ml，皮内注射0.1ml(0.05mg)']},
+  ceftriaxone:{name:'头孢曲松(1g)',steps:['取1g + 4ml NS → 250mg/ml','取0.2ml + 0.8ml NS → 50mg/ml','取0.1ml + 0.9ml NS → 5mg/ml','取0.1ml + 0.9ml NS → 0.5mg/ml','最终皮试液：0.5mg/ml，皮内注射0.1ml(0.05mg)']},
+  ceftazidime:{name:'头孢他啶(1g)',steps:['取1g + 4ml NS → 250mg/ml','取0.2ml + 0.8ml NS → 50mg/ml','取0.1ml + 0.9ml NS → 5mg/ml','取0.1ml + 0.9ml NS → 0.5mg/ml','最终皮试液：0.5mg/ml，皮内注射0.1ml(0.05mg)']},
+  cefoperazone:{name:'头孢哌酮(1g)',steps:['取1g + 4ml NS → 250mg/ml','取0.2ml + 0.8ml NS → 50mg/ml','取0.1ml + 0.9ml NS → 5mg/ml','取0.1ml + 0.9ml NS → 0.5mg/ml','最终皮试液：0.5mg/ml，皮内注射0.1ml(0.05mg)']},
+  cefotaxime:{name:'头孢噻肟(1g)',steps:['取1g + 4ml NS → 250mg/ml','取0.2ml + 0.8ml NS → 50mg/ml','取0.1ml + 0.9ml NS → 5mg/ml','取0.1ml + 0.9ml NS → 0.5mg/ml','最终皮试液：0.5mg/ml，皮内注射0.1ml(0.05mg)']},
+  cefoxitin:{name:'头孢西丁(1g)',steps:['取1g + 4ml NS → 250mg/ml','取0.2ml + 0.8ml NS → 50mg/ml','取0.1ml + 0.9ml NS → 5mg/ml','取0.1ml + 0.9ml NS → 0.5mg/ml','最终皮试液：0.5mg/ml，皮内注射0.1ml(0.05mg)']},
+  mezlocillin:{name:'美洛西林(1g)',steps:['取1g + 4ml NS → 250mg/ml','取0.2ml + 0.8ml NS → 50mg/ml','取0.1ml + 0.9ml NS → 5mg/ml','取0.1ml + 0.9ml NS → 0.5mg/ml','最终皮试液：0.5mg/ml，皮内注射0.1ml(0.05mg)']},
   strep:{name:'链霉素',steps:['取100万U + 3.5ml NS → 25万U/ml','取0.1ml + 0.9ml NS → 2.5万U/ml','取0.1ml + 0.9ml NS → 2500U/ml','取0.1ml + 0.9ml NS → 250U/ml','最终皮试液：250U/ml，皮内注射0.1ml(25U)']},
   proc:{name:'普鲁卡因',steps:['取40mg/2ml原液 → 20mg/ml','取0.1ml + 0.9ml NS → 2mg/ml','取0.1ml + 0.9ml NS → 0.2mg/ml','最终皮试液：0.2mg/ml，皮内注射0.1ml(0.02mg)']},
-  tat:{name:'TAT',steps:['取1500U + 1ml NS → 1500U/ml','取0.1ml + 0.9ml NS → 150U/ml','取0.1ml + 0.9ml NS → 15U/ml','取0.1ml + 0.9ml NS → 1.5U/ml','最终皮试液：1.5U/ml，皮内注射0.1ml(0.15U)']}
+  tat:{name:'TAT破伤风抗毒素',steps:['取1500U + 1ml NS → 1500U/ml','取0.1ml + 0.9ml NS → 150U/ml','取0.1ml + 0.9ml NS → 15U/ml','取0.1ml + 0.9ml NS → 1.5U/ml','最终皮试液：1.5U/ml，皮内注射0.1ml(0.15U)']}
 };
 function showSkinTest(){
   var drug=document.getElementById('skin-drug').value;
@@ -395,6 +442,98 @@ function showSkinTest(){
   if(!data){ r.textContent='请选择药品'; r.style.display='block'; return; }
   r.style.display='block';
   r.innerHTML='<div style="font-weight:700;color:var(--primary);margin-bottom:8px">'+data.name+'皮试液配置</div>'+data.steps.map(function(s,i){return '<div style="display:flex;gap:8px;margin:6px 0"><span style="background:var(--primary);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">'+(i+1)+'</span><span style="font-size:13px">'+s+'</span></div>';}).join('')+'<div style="font-size:11px;color:var(--text-light);margin-top:8px">⚠️ 配置后标注药品名称、浓度、时间，4小时内使用</div>';
+}
+
+// ═══ 利多卡因最大剂量 ═══
+function calcLidocaine(){
+  var w=parseFloat(document.getElementById('lido-w').value);
+  var epi=document.getElementById('lido-epi').value;
+  var conc=parseFloat(document.getElementById('lido-conc').value);
+  var vol=parseFloat(document.getElementById('lido-vol').value);
+  var r=document.getElementById('lido-result');
+  if(!w){ r.textContent='请输入体重'; r.style.display='block'; return; }
+  var maxMg=epi==='yes'?Math.min(7*w,500):Math.min(4.5*w,300);
+  var maxVol=maxMg/(conc*10); // conc是百分比, 1%=10mg/ml
+  var html='<div style="font-size:18px;font-weight:700;color:var(--primary)">最大剂量：'+maxMg.toFixed(0)+' mg</div>'+
+    '<div style="font-size:14px;color:var(--accent);margin-top:4px">最大体积：'+maxVol.toFixed(1)+' ml ('+conc+'%)</div>'+
+    '<div style="font-size:12px;color:var(--text-light);margin-top:6px">'+(epi==='yes'?'含肾上腺素：7 mg/kg，不超过500mg':'不含肾上腺素：4.5 mg/kg，不超过300mg')+'</div>';
+  if(vol){
+    var pct=(vol/maxVol*100).toFixed(0);
+    html+='<div style="font-size:13px;margin-top:6px;color:'+(pct>100?'var(--danger)':'var(--primary)')+'">计划用量 '+vol+'ml = '+pct+'% 最大安全剂量'+(pct>100?' ⚠️ 超出安全范围！':'')+'</div>';
+  }
+  r.style.display='block';
+  r.innerHTML=html;
+}
+
+// ═══ 烧伤补液计算 ═══
+function calcBurn(){
+  var w=parseFloat(document.getElementById('burn-w').value);
+  var bsa=parseFloat(document.getElementById('burn-bsa').value);
+  var formula=document.getElementById('burn-formula').value;
+  var r=document.getElementById('burn-result');
+  if(!w||!bsa){ r.textContent='请填写体重和烧伤面积'; r.style.display='block'; return; }
+  if(bsa<1||bsa>100){ r.textContent='烧伤面积应在1-100之间'; r.style.display='block'; return; }
+  var html;
+  if(formula==='china'){
+    var total=1.5*w*bsa+2000;
+    var crystal=total*0.666;
+    var colloid=total*0.334;
+    var first8=crystal*0.5;
+    html='<div style="font-weight:700;color:var(--primary);margin-bottom:8px">🇨🇳 国内通用公式（第1个24h）</div>'+
+      '<div style="font-size:16px;font-weight:700;color:var(--accent)">总补液量：'+total.toFixed(0)+' ml</div>'+
+      '<div style="font-size:12px;margin-top:6px;line-height:1.8">'+
+      '公式：(1.5ml × '+w+'kg × '+bsa+'%) + 2000ml 生理需要量</div>'+
+      '<div style="margin-top:10px;background:var(--bg);border-radius:10px;padding:10px;line-height:1.8;font-size:13px">'+
+      '<div>🔹 晶体液：<b>'+crystal.toFixed(0)+' ml</b>（总量2/3）</div>'+
+      '<div>🔹 胶体液：<b>'+colloid.toFixed(0)+' ml</b>（总量1/3）</div>'+
+      '<div>🔹 水分(5%GS)：<b>2000 ml</b>（生理需要量）</div>'+
+      '<hr style="margin:6px 0;border-color:var(--border)">'+
+      '<div><b>前8h输注：</b>'+first8.toFixed(0)+' ml 晶体液</div>'+
+      '<div><b>后16h输注：</b>'+crystal.toFixed(0)+' ml 晶体液 + '+colloid.toFixed(0)+' ml 胶体液</div>'+
+      '</div>';
+  } else {
+    var total=4*w*bsa;
+    var first8=total*0.5;
+    html='<div style="font-weight:700;color:var(--primary);margin-bottom:8px">🇺🇸 Parkland公式（第1个24h）</div>'+
+      '<div style="font-size:16px;font-weight:700;color:var(--accent)">总补液量：'+total.toFixed(0)+' ml</div>'+
+      '<div style="font-size:12px;margin-top:6px;line-height:1.8">'+
+      '公式：4ml × '+w+'kg × '+bsa+'% 乳酸林格液</div>'+
+      '<div style="margin-top:10px;background:var(--bg);border-radius:10px;padding:10px;line-height:1.8;font-size:13px">'+
+      '<div>🔹 前8h：<b>'+first8.toFixed(0)+' ml</b></div>'+
+      '<div>🔹 后16h：<b>'+first8.toFixed(0)+' ml</b></div>'+
+      '<hr style="margin:6px 0;border-color:var(--border)">'+
+      '<div style="font-size:11px;color:var(--text-light)">纯晶体液方案，第2个24h补胶体液+水分</div>'+
+      '</div>';
+  }
+  r.style.display='block';
+  r.innerHTML=html;
+}
+
+// ═══ 破伤风脱敏注射方案 ═══
+var TAT_DESENSE_DATA=[
+  {seq:1,dose:'0.1ml',dilution:'1:20(75U/ml)',method:'皮下注射'},
+  {seq:2,dose:'0.2ml',dilution:'1:20(75U/ml)',method:'皮下注射'},
+  {seq:3,dose:'0.3ml',dilution:'1:20(75U/ml)',method:'皮下注射'},
+  {seq:4,dose:'0.4ml',dilution:'1:20(75U/ml)',method:'皮下注射'},
+  {seq:5,dose:'0.1ml',dilution:'原液(1500U/ml)',method:'皮下注射'},
+  {seq:6,dose:'0.2ml',dilution:'原液(1500U/ml)',method:'皮下注射'},
+  {seq:7,dose:'0.3ml',dilution:'原液(1500U/ml)',method:'皮下注射'},
+  {seq:8,dose:'0.5ml',dilution:'原液(1500U/ml)',method:'肌内注射'},
+  {seq:9,dose:'剩余量',dilution:'原液(1500U/ml)',method:'肌内注射'}
+];
+function showTatDesense(){
+  var r=document.getElementById('tat-desense-result');
+  r.style.display='block';
+  r.innerHTML='<div style="font-weight:700;color:var(--primary);margin-bottom:8px">💉 TAT脱敏注射方案</div>'+
+    '<div style="font-size:12px;background:#FEF3C7;border-radius:8px;padding:8px;margin-bottom:10px;color:#92400E">⚠️ 皮试阳性(或可疑阳性)时采用，注射前备好肾上腺素等抢救药物</div>'+
+    '<table style="width:100%;border-collapse:collapse;font-size:12px">'+
+    '<tr style="background:var(--bg)"><th style="padding:6px;border-bottom:2px solid var(--border);text-align:left">#</th><th style="padding:6px;border-bottom:2px solid var(--border);text-align:left">剂量</th><th style="padding:6px;border-bottom:2px solid var(--border);text-align:left">稀释</th><th style="padding:6px;border-bottom:2px solid var(--border);text-align:left">方式</th></tr>'+
+    TAT_DESENSE_DATA.map(function(d){return '<tr><td style="padding:5px;border-bottom:1px solid var(--border)">'+(d.seq>0?d.seq:'')+'</td><td style="padding:5px;border-bottom:1px solid var(--border);font-weight:600">'+d.dose+'</td><td style="padding:5px;border-bottom:1px solid var(--border)">'+d.dilution+'</td><td style="padding:5px;border-bottom:1px solid var(--border)">'+d.method+'</td></tr>';}).join('')+
+    '</table>'+
+    '<div style="font-size:11px;color:var(--text-light);margin-top:8px;line-height:1.6">'+
+    '📋 每次间隔20分钟，观察有无呼吸困难、荨麻疹等反应<br>'+
+    '📋 如有反应，下次剂量不增加或减量，反应严重停用并抗过敏<br>'+
+    '📋 脱敏完成后再将余量一次肌注</div>';
 }
 
 function filterCalcTools(){ const kw=document.getElementById('calc-filter').value.toLowerCase(); document.querySelectorAll('#calc-tools .detail-hero').forEach(el=>{ el.style.display=el.textContent.toLowerCase().includes(kw)?'block':'none'; }); }
