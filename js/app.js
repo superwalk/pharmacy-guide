@@ -801,7 +801,7 @@ function openDisease(name) {
   pushScreen('label');
   let html='<div class="section-title" style="font-size:22px">'+name+'</div>';
   if(d) html+=`
-    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px"><span class="badge badge-blue">${d.cat}</span></div>
+    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span></span>${isEditor()?'<button class="btn btn-sm btn-outline" onclick="editCurrentItem()">编辑</button>':''}</div>
     <div id="disease-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>`;
   if(drugs.length>0) html+=`<div class="section-title" style="margin-top:8px">💊 相关药品 (${drugs.length})</div>`+drugs.slice(0,6).map(dr=>`<div class="list-card" onclick="pushScreen('detail');renderDetail('${dr.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${dr.name}</div><div class="desc">${dr.category} · ${(dr.indications||'').slice(0,30)}…</div></div></div>`).join('');
   if(guides.length>0) html+=`<div class="section-title" style="margin-top:8px">📋 相关指南</div>`+guides.slice(0,3).map(g=>`<div class="list-card" onclick="openGuide('${g.id}')"><div class="icon-box">📋</div><div class="info"><div class="name">${g.title}</div><div class="desc">${g.system} · ${g.year}</div></div></div>`).join('');
@@ -984,7 +984,7 @@ function genRandPw(){
 function escHTML(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function viewGuideFull(gid){
-  var g=allGuides().find(function(x){return x.id===gid;});
+  var g=allGuides().find(function(x){return x.id===gid;})||LAWS.find(function(x){return x.id===gid;});
   if(!g){ toast('未找到指南'); return; }
   var url='guides/'+gid+'.md';
   fetch(url).then(function(r){

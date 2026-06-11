@@ -142,7 +142,7 @@ function renderAdminList(type, kw) {
       });
       html = filtered.map(function(ds) {
         var origIdx = DISEASES.indexOf(ds);
-        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(ds.name), kw)+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(ds.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="disease">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((ds.desc||'').slice(0,50))+'…</div></div>';
+        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(ds.name), kw)+'</span></div></div><div style="display:flex;justify-content:space-between;align-items:center;padding:0 12px 10px;font-size:12px;color:var(--text-light)"><span>'+highlightKw(esc(ds.cat), kw)+'</span><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="disease">编辑</button></div></div>';
       }).join('');
     } else if (type === 'users') {
       renderUserList(); return;
@@ -202,7 +202,7 @@ function showGuidelineEditor(guide, index) {
   showModal(isNew?'新增指南':'编辑指南',
     `<div style="display:flex;flex-direction:column;gap:10px">
       <input id="ed-gtitle" value="${esc(g.title)}" placeholder="标题 *">
-      <input id="ed-gsystem" value="${esc(g.system||'')}" placeholder="所属系统 *">
+      <select id="ed-gsystem"><option value="">— 选择系统 —</option>${GUIDE_SYSTEMS.filter(function(s){return s.system!=='法律法规'&&s.system!=='其他';}).map(function(s){return '<option value="'+s.system+'"'+(g.system===s.system?' selected':'')+'>'+s.system+'</option>';}).join('')}</select>
       <input id="ed-gyear" value="${esc(g.year||'')}" placeholder="年份">
       <textarea id="ed-gcontent" style="min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical" placeholder="内容">${esc(g.content||'')}</textarea>
     </div>`,
