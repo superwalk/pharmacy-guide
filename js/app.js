@@ -74,31 +74,26 @@ function loginSubmit() {
   const e=document.getElementById('login-error');
   const b=document.getElementById('login-btn');
   
-  // 1. 空输入检测
-  if(!u && !p){ showLoginErr(e,'请输入用户名和密码','warn'); return; }
-  if(!u){ showLoginErr(e,'请输入用户名','warn'); document.getElementById('login-user').focus(); return; }
-  if(!p){ showLoginErr(e,'请输入密码','warn'); document.getElementById('login-pw').focus(); return; }
+  // 1. 空输入检测 — 用弹窗提示
+  if(!u && !p){ showModal('登录提示','<p style="text-align:center">请输入用户名和密码</p>',[{label:'知道了',primary:true}]); return; }
+  if(!u){ showModal('登录提示','<p style="text-align:center">请输入用户名</p>',[{label:'知道了',primary:true,onClick:()=>document.getElementById('login-user').focus()}]); return; }
+  if(!p){ showModal('登录提示','<p style="text-align:center">请输入密码</p>',[{label:'知道了',primary:true,onClick:()=>document.getElementById('login-pw').focus()}]); return; }
   
-  // 2. 显示加载中
-  b.textContent='登录中…'; b.style.opacity='0.7'; showLoginErr(e,'','');
+  b.textContent='登录中…'; b.style.opacity='0.7';
   
-  // 3. 模拟网络延迟 + 校验
   setTimeout(()=>{
     const r=login(u,p);
     if(r.ok){
       if(document.getElementById('remember-pw').checked) saveRemember(u,p);
-      showLoginErr(e,'登录成功 ✓','success');
-      setTimeout(()=>{ initApp(); },500);
+      initApp();
     } else {
       b.textContent='登 录'; b.style.opacity='1';
       if(r.msg.includes('不存在')){
-        showLoginErr(e,'❌ 用户「'+u+'」不存在，请检查用户名是否正确','error');
-        document.getElementById('login-user').select();
-      } else if(r.msg.includes('密码')){
-        showLoginErr(e,'❌ 密码错误，请重新输入','error');
-        document.getElementById('login-pw').select();
+        showModal('登录失败','<p style="text-align:center">用户「'+u+'」不存在</p>',[{label:'重新输入',primary:true,onClick:()=>document.getElementById('login-user').select()}]);
+      } else if(r.msg.includes('密码错误')){
+        showModal('登录失败','<p style="text-align:center">'+r.msg+'</p>',[{label:'重新输入',primary:true,onClick:()=>document.getElementById('login-pw').select()}]);
       } else {
-        showLoginErr(e,'⚠️ '+r.msg,'warn');
+        showModal('登录失败','<p style="text-align:center">'+r.msg+'</p>',[{label:'知道了',primary:true}]);
       }
     }
   },400);
@@ -510,7 +505,7 @@ function renderProfile() {
 }
 function initProfileMenus() {
   document.getElementById('edit-nickname-btn').onclick=()=>{ showModal('修改昵称','<input id="new-nickname" placeholder="输入新昵称" value="'+currentUser.nickname+'">',[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const n=document.getElementById('new-nickname').value.trim(); if(n) updateNickname(n); }}]); };
-  document.getElementById('menu-change-pw').onclick=()=>{ showModal('修改密码','<div style="position:relative"><input id="old-pw" type="password" placeholder="原密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw">👁️</span></div><div style="position:relative;margin-top:8px"><input id="new-pw" type="password" placeholder="新密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw2">👁️</span></div>',[{label:'取消'},{label:'确认修改',primary:true,onClick:()=>{ const o=document.getElementById('old-pw').value; const n=document.getElementById('new-pw').value; if(!n||n.length<4){ toast('密码至少4位'); return false; } const r=changePassword(o,n); if(!r.ok){ toast(r.msg); return false; } toast('密码已修改，下次登录生效'); }}]);
+  document.getElementById('menu-change-pw').onclick=()=>{ showModal('修改密码','<div style="position:relative"><input id="old-pw" type="password" placeholder="原密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw">👁️</span></div><div style="position:relative;margin-top:8px"><input id="new-pw" type="password" placeholder="新密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw2">👁️</span></div>',[{label:'取消'},{label:'确认修改',primary:true,onClick:()=>{ const o=document.getElementById('old-pw').value; const n=document.getElementById('new-pw').value; if(!n||n.length<4){ toast('密码至少4位'); return false; } const r=changePassword(o,n); if(!r.ok){ toast(r.msg); return false; } logout(); location.reload(); }}]);
   // 绑定小眼睛切换
   setTimeout(function(){
     var t1=document.getElementById('toggle-pw'); var t2=document.getElementById('toggle-pw2');
