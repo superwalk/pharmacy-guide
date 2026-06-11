@@ -734,6 +734,7 @@ function showUserEditor(user){
     });
     u.username='user'+String(maxNum+1).padStart(3,'0');
     u.password=genRandPw();
+    u.nickname=u.username;
   }
   showModal(isNew?'新增用户':'编辑用户',
     '<div style="display:flex;flex-direction:column;gap:8px">'+
