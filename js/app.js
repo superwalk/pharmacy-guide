@@ -536,15 +536,6 @@ function openHealthEdu(hid) {
     <div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">${hlText(h.content||'')}</p></div>
   `;
   showEditBtn({type:'edu',id:hid});
-  var md=extractMentionedDrugs(g.content||'');
-  if(md.length>0) document.getElementById('label-content').insertAdjacentHTML('beforeend','<div class="section-title" style="margin-top:8px">💊 指南提及药品</div>'+md.map(function(d){return '<div class="list-card" onclick="pushScreen("detail");renderDetail("'+d.id+'\")" style="cursor:pointer"><div class="icon-box">💊</div><div class="info"><div class="name">'+d.name+'</div><div class="desc">'+d.category+'</div></div></div>';}).join(''));
-  showEditBtn({type:'guide',id:gid}); addRecent(gid,'guide');
-  var fnBtn=document.createElement('button');
-  fnBtn.className='btn btn-outline btn-sm';
-  fnBtn.style.cssText='font-size:13px;padding:6px 16px;margin-top:12px';
-  fnBtn.textContent='📄 查看全文';
-  fnBtn.onclick=function(){ viewGuideFull(gid); };
-  document.getElementById('label-content').appendChild(fnBtn);
 }
 
 // ═══ 输液配伍 ─══
