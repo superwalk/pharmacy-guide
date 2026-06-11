@@ -728,7 +728,7 @@ function showUserEditor(user){
     '<input id="ed-uname" placeholder="用户名" value="'+escHTML(u.username||'')+'" '+(isNew?'':'disabled')+'>'+
     '<input id="ed-upass" placeholder="密码" value="'+escHTML(u.password||'')+'">'+
     '<input id="ed-unick" placeholder="昵称" value="'+escHTML(u.nickname||'')+'">'+
-    '<select id="ed-urole"><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>编辑</option><option value="admin" '+(u.role==='admin'?'selected':'')+'>管理员</option></select>'+
+    '<select id="ed-urole"><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>编辑</option></select>'+
     '</div>',
     [{label:'取消'},{label:'保存',primary:true,onClick:function(){
       var uname=document.getElementById('ed-uname').value.trim();
