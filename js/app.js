@@ -340,33 +340,14 @@ function openGuide(gid) {
     var detail = full || g;
     var gb = document.getElementById('guide-body');
     if(!gb) return;
-    gb.innerHTML = '<div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">'+hlText(detail.content||'')+'</p></div>';
+    var html = '<div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">'+hlText(detail.content||'')+'</p></div>';
+    if(detail.sourceUrl){
+      html += '<div style="margin-top:12px"><a href="'+detail.sourceUrl+'" target="_blank" class="btn btn-outline btn-sm" style="font-size:13px;padding:6px 16px;text-decoration:none;display:inline-block">🔗 查看原文</a></div>';
+    } else {
+      html += '<div style="margin-top:12px"><button class="btn btn-outline btn-sm" style="font-size:13px;padding:6px 16px" onclick="viewGuideFull(\''+gid+'\')">📄 查看全文</button></div>';
+    }
+    gb.innerHTML = html;
   });
-  return;
-}
-  var md=extractMentionedDrugs(g.content||'');
-  if(md.length>0){
-    var titleEl=document.createElement('div');
-    titleEl.className='section-title';
-    titleEl.style.marginTop='8px';
-    titleEl.textContent='💊 指南提及药品';
-    document.getElementById('label-content').appendChild(titleEl);
-    md.forEach(function(d){
-      var card=document.createElement('div');
-      card.className='list-card';
-      card.style.cursor='pointer';
-      card.innerHTML='<div class="icon-box">💊</div><div class="info"><div class="name">'+d.name+'</div><div class="desc">'+d.category+'</div></div>';
-      card.onclick=function(){ pushScreen('detail'); renderDetail(d.id); };
-      document.getElementById('label-content').appendChild(card);
-    });
-  }
-  showEditBtn({type:'guide',id:gid}); addRecent(gid,'guide');
-  var fnBtn=document.createElement('button');
-  fnBtn.className='btn btn-outline btn-sm';
-  fnBtn.style.cssText='font-size:13px;padding:6px 16px;margin-top:12px';
-  fnBtn.textContent='📄 查看全文';
-  fnBtn.onclick=function(){ viewGuideFull(gid); };
-  document.getElementById('label-content').appendChild(fnBtn);
 }
 
 // ═══ 药品详情 ───
