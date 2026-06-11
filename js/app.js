@@ -324,6 +324,7 @@ function showDrugList(type,id){
 
 // ═══ 指南法规 ───
 function renderGuidelines() {
+  bindGuideSearch();
   const kw=(document.getElementById('guide-search')?.value||'').toLowerCase();
   const gl=document.getElementById('guide-list');
   let systems=getGuideSystems();
