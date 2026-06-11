@@ -201,6 +201,7 @@ function clearFails(username) {
 function logout() {
   currentUser = null;
   localStorage.removeItem('currentUser');
+  clearRemember();
 }
 
 function saveRemember(username, password) {
