@@ -442,9 +442,9 @@ function openGuide(gid) {
     if(!gb) return;
     var html = '<div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">'+hlText(detail.content||'')+'</p></div>';
     if(detail.sourceUrl){
-      html += '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><a href="'+detail.sourceUrl+'" target="_blank" class="btn btn-outline btn-sm" style="font-size:13px;padding:6px 16px;text-decoration:none;display:inline-block">🔗 查看原文</a>'+(isEditor()?'<button class="btn btn-outline btn-sm" style="font-size:13px;padding:6px 16px" onclick="syncItemToGitHub({type:\'guide\',id:\''+gid+'\'})">☁️ 推送</button>':'')+'</div>';
+      html += '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><a href="'+detail.sourceUrl+'" target="_blank" class="btn btn-outline btn-sm" style="font-size:13px;padding:6px 16px;text-decoration:none;display:inline-block">🔗 查看原文</a></div>';
     } else {
-      html += '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" style="font-size:13px;padding:6px 16px" onclick="viewGuideFull(\''+gid+'\')">📄 查看全文</button>'+(isEditor()?'<button class="btn btn-outline btn-sm" style="font-size:13px;padding:6px 16px" onclick="syncItemToGitHub({type:\'guide\',id:\''+gid+'\'})">☁️ 推送</button>':'')+'</div>';
+      html += '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" style="font-size:13px;padding:6px 16px" onclick="viewGuideFull(\''+gid+'\')">📄 查看全文</button></div>';
     }
     html += renderNote(gid);
     gb.innerHTML = html;
@@ -502,7 +502,7 @@ function renderDetail(drugId) {
         <button class="btn btn-outline" id="detail-cmp">⚖️ 加入对比</button>
         <button class="btn btn-primary" id="detail-label">📄 说明书</button>
       </div>
-      ${isEditor()?`<div style="display:flex;justify-content:flex-end;align-items:center;gap:6px"><button class="btn btn-sm btn-outline" id="export-detail-btn" title="上传到仓库">☁️</button><button class="btn btn-sm btn-outline" id="edit-detail-btn">编辑</button></div>`:''}
+      ${isEditor()?`<div style="display:flex;justify-content:flex-end;align-items:center;gap:6px"><button class="btn btn-sm btn-outline" id="edit-detail-btn">编辑</button></div>`:''}
     </div>
     <div id="detail-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
@@ -781,12 +781,10 @@ function showExportPanel(){
   var html='<div style="font-size:28px;font-weight:800;color:var(--primary);margin:4px 0 2px">📥 数据导出</div>'
     +'<div style="font-size:12px;color:var(--text-light);margin-bottom:16px">手机端数据同步与管理</div>'
     +'<div class="label-doc" style="font-size:13px;line-height:1.8;color:var(--text-body)">'
-    +'<p style="margin-top:8px"><b>☁️ 同步到仓库</b>：将手机端新增的数据推送到GitHub仓库，保留所有编辑记录。</p>'
     +(isSuper?'<p style="margin-top:8px"><b>📤 导出</b>：下载包含所有编辑内容、收藏、日志的 JSON 备份文件。</p>':'')
     +(isSuper?'<p style="margin-top:8px"><b>📥 导入</b>：从电脑或旧手机恢复之前导出的备份数据。</p>':'')
     +'</div>'
-    +'<button class="btn btn-primary btn-full" onclick="syncToGitHub()" style="margin-top:16px">☁️ 同步到 GitHub 仓库</button>'
-    +(isSuper?'<button class="btn btn-outline btn-full" onclick="exportAllData()" style="margin-top:8px">📥 导出数据到文件</button>':'')
+    +(isSuper?'<button class="btn btn-outline btn-full" onclick="exportAllData()" style="margin-top:16px">📥 导出数据到文件</button>':'')
     +(isSuper?'<button class="btn btn-outline btn-full" onclick="importAllData()" style="margin-top:8px">📤 从文件导入数据</button>':'');
   document.getElementById('label-content').innerHTML=html;
 }
@@ -841,10 +839,9 @@ function viewMyNotes() {
   const me=document.getElementById('mynotes-empty');
   if(entries.length===0){ ml.innerHTML=''; me.style.display='block'; return; }
   me.style.display='none';
-  ml.innerHTML=entries.map(([id,text])=>{ const c=findContentById(id); return c?`<div class="list-card" data-note-id="${id}" data-note-type="${c.type}"><div class="icon-box">${c.icon}</div><div class="info"><div class="name">${c.name}</div><div class="desc">${text.slice(0,40)}…</div></div>${isEditor()?'<button class="btn btn-sm btn-outline note-push-btn" data-note-id="'+id+'" data-note-type="'+c.type+'" style="font-size:11px;flex-shrink:0">☁️</button>':''}</div>`:''; }).join('');
-  ml.querySelectorAll('.list-card').forEach(c=>{ c.onclick=(e)=>{ if(e.target.closest('.note-push-btn')) return;
+  ml.innerHTML=entries.map(([id,text])=>{ const c=findContentById(id); return c?`<div class="list-card" data-note-id="${id}" data-note-type="${c.type}"><div class="icon-box">${c.icon}</div><div class="info"><div class="name">${c.name}</div><div class="desc">${text.slice(0,40)}…</div></div></div>`:''; }).join('');
+  ml.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{
     var id=c.dataset.noteId; var tp=c.dataset.noteType; if(tp==='drug'){ addRecent(id,'drug'); pushScreen('detail'); renderDetail(id); } else if(tp==='guide'){ openGuide(id); } else if(tp==='disease'){ var ds=DISEASES.find(function(x){return x.id===id;}); if(ds) openDisease(ds.name); } else if(tp==='edu'){ openHealthEdu(id); } else if(tp==='infusion'){ openInfusion(id); } else if(tp==='med'){ openMedEdu(id); } }; });
-  ml.querySelectorAll('.note-push-btn').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); syncItemToGitHub({type:this.dataset.noteType,id:this.dataset.noteId}); }; });
 }
 
 // ═══ 科普教育 ─══
@@ -952,7 +949,7 @@ function openDisease(name) {
   pushScreen('label');
   let html='<div class="section-title" style="font-size:22px">'+name+'</div>';
   if(d) html+=`
-    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span></span>${isEditor()?'<span style="display:flex;gap:6px"><button class="btn btn-sm btn-outline" onclick="syncItemToGitHub({type:\'disease\',id:\''+d.id+'\'})" title="上传到仓库">☁️</button><button class="btn btn-sm btn-outline" onclick="editCurrentItem()">编辑</button></span>':''}</div>
+    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span></span>${isEditor()?'<span style="display:flex;gap:6px"><button class="btn btn-sm btn-outline" onclick="editCurrentItem()">编辑</button></span>':''}</div>
     <div id="disease-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>`;
   if(drugs.length>0) html+=`<div class="section-title" style="margin-top:8px">💊 相关药品 (${drugs.length})</div>`+drugs.slice(0,6).map(dr=>`<div class="list-card" onclick="pushScreen('detail');renderDetail('${dr.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${dr.name}</div><div class="desc">${dr.category} · ${(dr.indications||'').slice(0,30)}…</div></div></div>`).join('');
   if(guides.length>0) html+=`<div class="section-title" style="margin-top:8px">📋 相关指南</div>`+guides.slice(0,3).map(g=>`<div class="list-card" onclick="openGuide('${g.id}')"><div class="icon-box">📋</div><div class="info"><div class="name">${g.title}</div><div class="desc">${g.system} · ${g.year}</div></div></div>`).join('');
@@ -1137,9 +1134,7 @@ function showUserEditor(user){
         }).catch(function(){});
         showModal('✅ 新增成功',
           '<div style="text-align:center;line-height:2"><b>'+uname+'</b><br>密码：<b>'+upass+'</b></div><div style="font-size:12px;color:var(--text-light);margin-top:6px">已自动复制到剪贴板</div>',
-          [{label:'确定',primary:true},{label:'☁️ 同步到仓库',onClick:function(){
-            syncOneUserToGitHub({username:uname,password:upass,nickname:unick||uname,role:urole||'user'});
-          }}]);
+          [{label:'确定',primary:true}]);
       } else {
         updateUser(u.username,{password:upass,nickname:unick||u.nickname,role:urole||'user'});
         // 同步更新 user_{username} 缓存，防止下次加载时被源码密码覆盖
