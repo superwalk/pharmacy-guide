@@ -318,6 +318,21 @@ function clearEditLogs() {
 
 function initAdmin() {
   if (!isEditor()) { toast('无权限访问'); goBack(); return; }
+  // 收藏后台管理按钮
+  var adminContent = document.querySelector('#screen-admin .content');
+  if (adminContent && !adminContent.querySelector('.admin-fav')) {
+    var favBtn = document.createElement('span');
+    favBtn.className = 'admin-fav';
+    favBtn.style.cssText = 'font-size:13px;color:var(--primary);cursor:pointer;float:right';
+    var isF = isPageFav('page_admin');
+    favBtn.textContent = isF ? '⭐' : '☆';
+    favBtn.title = '收藏后台管理';
+    favBtn.onclick = function(){
+      togglePageFav('page_admin');
+      favBtn.textContent = isPageFav('page_admin') ? '⭐' : '☆';
+    };
+    adminContent.insertBefore(favBtn, adminContent.firstChild);
+  }
 
   document.querySelectorAll('#admin-tabs .segment-item').forEach(t => {
     t.onclick = () => {
