@@ -360,16 +360,26 @@ function showForgotPasswordQuestions(uname, email, questions){
 function showSecuritySettings(){
   var u = currentUser;
   var qOpts = SECURITY_QUESTIONS.map(function(q, i){
-    var sel = '';
-    if(u && u.security_q1 === q) sel = 'selected';
-    return '<option value="'+i+'" '+sel+'>'+q+'</option>';
-  }).join('');
+    return '<option value="'+i+'">'+q+'</option>';
+  });
+  // 三个下拉默认分别选中0,1,2（若已有保存则使用已保存值）
+  function makeOpts(savedQ, defaultIdx) {
+    return SECURITY_QUESTIONS.map(function(q, i){
+      var sel = '';
+      if (savedQ && savedQ === q) sel = 'selected';
+      else if (!savedQ && i === defaultIdx) sel = 'selected';
+      return '<option value="'+i+'" '+sel+'>'+q+'</option>';
+    }).join('');
+  }
+  var q1 = makeOpts(u.security_q1, 0);
+  var q2 = makeOpts(u.security_q2, 1);
+  var q3 = makeOpts(u.security_q3, 2);
   var html =
-    '<div style="display:flex;flex-direction:column;gap:8px">'+
+    '<div style="display:flex;flex-direction:column;gap:6px">'+
     '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔐 设置密保问题（用于找回密码）</div>'+
-    '<div style="display:flex;gap:4px"><select id="ss-sq1" style="flex:1">'+qOpts+'</select><input id="ss-sa1" placeholder="答案1" value="'+(u.security_a1||'')+'" style="width:40%"></div>'+
-    '<div style="display:flex;gap:4px"><select id="ss-sq2" style="flex:1">'+qOpts+'</select><input id="ss-sa2" placeholder="答案2" value="'+(u.security_a2||'')+'" style="width:40%"></div>'+
-    '<div style="display:flex;gap:4px"><select id="ss-sq3" style="flex:1">'+qOpts+'</select><input id="ss-sa3" placeholder="答案3" value="'+(u.security_a3||'')+'" style="width:40%"></div>'+
+    '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题1</div><div style="display:flex;gap:4px"><select id="ss-sq1" style="flex:1">'+q1+'</select><input id="ss-sa1" placeholder="答案1" value="'+(u.security_a1||'')+'" style="flex:1"></div></div>'+
+    '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题2</div><div style="display:flex;gap:4px"><select id="ss-sq2" style="flex:1">'+q2+'</select><input id="ss-sa2" placeholder="答案2" value="'+(u.security_a2||'')+'" style="flex:1"></div></div>'+
+    '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题3</div><div style="display:flex;gap:4px"><select id="ss-sq3" style="flex:1">'+q3+'</select><input id="ss-sa3" placeholder="答案3" value="'+(u.security_a3||'')+'" style="flex:1"></div></div>'+
     '</div>';
   showModal('🔐 密保设置', html, [{label:'取消'},{label:'保存',primary:true,onClick:function(){
     var sq1 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq1').value)];
