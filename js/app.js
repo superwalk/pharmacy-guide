@@ -480,6 +480,7 @@ function showSecuritySettings(){
     if (sa2) { updates.security_q2 = sq2; updates.security_a2 = sa2; currentUser.security_q2 = sq2; currentUser.security_a2 = sa2; }
     if (sa3) { updates.security_q3 = sq3; updates.security_a3 = sa3; currentUser.security_q3 = sq3; currentUser.security_a3 = sa3; }
     updateUser(currentUser.username, updates);
+    document.getElementById('modal-overlay').classList.remove('show');
     toast('密保设置已保存');
   };
   // 查看已设置的密保（需验证密码）
