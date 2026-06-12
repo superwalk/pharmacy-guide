@@ -255,10 +255,22 @@ function showBrowseStats() {
   } else {
     top.forEach(function(v, i){
       var icon = typeIcon[v.type] || '📄';
-      html += '<div class="list-card"><div class="icon-box">'+icon+'</div><div class="info"><div class="name"><span style="color:'+(i<3?'var(--danger)':'var(--text-light)')+';font-weight:'+(i<3?'800':'400')+'">#'+(i+1)+'</span> '+v.name+'</div><div class="desc">浏览 '+v.count+' 次</div></div></div>';
+      html += '<div class="list-card hot-item" data-hot-id="'+v.id+'" data-hot-type="'+v.type+'"><div class="icon-box">'+icon+'</div><div class="info"><div class="name"><span style="color:'+(i<3?'var(--danger)':'var(--text-light)')+';font-weight:'+(i<3?'800':'400')+'">#'+(i+1)+'</span> '+v.name+'</div><div class="desc">浏览 '+v.count+' 次</div></div></div>';
     });
   }
   document.getElementById('label-content').innerHTML = html;
+  // 绑定热门点击跳转
+  document.querySelectorAll('.hot-item').forEach(function(el){
+    el.onclick = function(){
+      var id = el.dataset.hotId, type = el.dataset.hotType;
+      if (type === 'drug') { addRecent(id,'drug'); pushScreen('detail'); renderDetail(id); }
+      else if (type === 'guide') { addRecent(id,'guide'); openGuide(id); }
+      else if (type === 'disease') { var ds = DISEASES.find(function(x){return x.id===id;}); if(ds) openDisease(ds.name); }
+      else if (type === 'edu') { openHealthEdu(id); }
+      else if (type === 'med') { openMedEdu(id); }
+      else if (type === 'inf') { openInfusion(id); }
+    };
+  });
 }
 
 // ═══ 注册新账号 ═══
@@ -1248,11 +1260,10 @@ function initProfileMenus() {
       return '<div style="margin:4px 0 4px 48px;font-size:13px;color:var(--text-body)">'+l+'</div>';
     }).join('');
     document.getElementById('label-content').innerHTML = '<div class="section-title" style="font-size:22px">📖 更新与帮助</div>'
-      + '<div style="margin-bottom:16px"><div class="info-card" style="margin:0"><div class="info-label">📋 更新日志</div><div class="info-value" style="padding:8px 0">' + logHtml + '</div></div></div>'
-      + (isAdmin ? '<button class="btn btn-outline btn-sm" id="edit-changelog-btn" style="margin-bottom:16px">✏️ 编辑更新日志</button>' : '')
-      + '<div class="section-title" style="font-size:18px;margin-top:4px">📖 使用帮助' + roleLabel + '</div>'
-      + '<div class="label-doc" id="guide-content" style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">' + guide + '</div>'
-      + (isAdmin ? '<button class="btn btn-outline btn-full" id="edit-guide-btn" style="margin-top:20px">✏️ 编辑使用帮助</button>' : '');
+      + '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="cursor:pointer;background:linear-gradient(135deg,#E0F2FE,#BAE6FD)" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">📋 更新日志</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></div><div class="guide-items" style="display:none"><div class="info-value" style="padding:8px 0">' + logHtml + '</div>'
+      + (isAdmin ? '<button class="btn btn-outline btn-sm" id="edit-changelog-btn" style="margin-bottom:8px">✏️ 编辑更新日志</button>' : '') + '</div></div>'
+      + '<div class="cat-card"><div class="cat-header" style="cursor:pointer;background:linear-gradient(135deg,#DCFCE7,#BBF7D0)" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">📖 使用帮助' + roleLabel + '</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></div><div class="guide-items" style="display:none"><div class="label-doc" id="guide-content" style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">' + guide + '</div>'
+      + (isAdmin ? '<button class="btn btn-outline btn-full" id="edit-guide-btn" style="margin-top:8px">✏️ 编辑使用帮助</button>' : '') + '</div></div>';
     var editChangelogBtn = document.getElementById('edit-changelog-btn');
     if (editChangelogBtn) editChangelogBtn.onclick = function(){
       var logs = getChangelog();
