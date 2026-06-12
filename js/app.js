@@ -1371,10 +1371,9 @@ function initProfileMenus() {
       + '</div>';
     // 导出导入按钮（仅admin）
     var exportBtns = isAdmin ? '<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="exportAllData()">📥 导出数据</button><button class="btn btn-outline btn-sm" onclick="importAllData()">📤 导入数据</button></div>' : '';
-    document.getElementById('label-content').innerHTML = '<div class="section-title" style="font-size:22px">📖 更新与帮助</div>'
-      // 数据卡片 - 圆角方框扁平化
-      + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);margin-bottom:6px">📦 数据概览</div>'
-      + dbInfo + '</div>'
+    document.getElementById('label-content').innerHTML = '<div class="section-title" style="font-size:22px">📖 系统与帮助</div>'
+      // 数据卡片 - 手风琴折叠
+      + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📦 数据概览</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">' + dbInfo + '</div></div>'
       // 更新日志卡片
       + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📋 更新日志</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">' + logHtml
       + (isAdmin ? '<button class="btn btn-outline btn-sm" id="edit-changelog-btn" style="margin-top:6px">✏️ 编辑</button>' : '') + '</div></div>'
