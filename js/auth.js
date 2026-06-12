@@ -333,10 +333,11 @@ function showFindUsername() {
       var users = getUsers();
       var match = users.find(function(u){ return u.nickname === nickname; });
       if (!match) {
-        // 遍历所有 localStorage user_<用户名> 条目查找
+        // 遍历所有 localStorage user_<用户名> 条目查找（用下标遍历兼容所有浏览器）
         try {
-          for (var key in localStorage) {
-            if (key.indexOf('user_') === 0) {
+          for (var i = 0; i < localStorage.length; i++) {
+            var key = localStorage.key(i);
+            if (key && key.indexOf('user_') === 0) {
               var data = JSON.parse(localStorage.getItem(key) || '{}');
               if (data.nickname === nickname) {
                 match = { username: key.slice(5), nickname: data.nickname };
