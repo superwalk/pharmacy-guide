@@ -371,7 +371,7 @@ function forgotPasswordVerify(username, email) {
   var users = getUsers();
   var u = users.find(function(x){ return x.username === username });
   if (!u) return { ok:false, step:'check', msg:'用户不存在' };
-  if (u.email !== email) return { ok:false, step:'check', msg:'邮箱不匹配' };
+  // email参数不再需要，直接检查密保
   if (!u.security_a1 && !u.security_a2 && !u.security_a3) return { ok:false, step:'check', msg:'该用户未设置密保问题，请联系管理员重置密码' };
   // 只返回有答案的问题
   var qs = [];
@@ -393,7 +393,6 @@ function forgotPasswordReset(username, email, answers) {
   var users = getUsers();
   var u = users.find(function(x){ return x.username === username });
   if (!u) return { ok:false, msg:'用户不存在' };
-  if (u.email !== email) return { ok:false, msg:'邮箱不匹配' };
   // 验证：任意一个答案匹配即通过
   var anyCorrect = false;
   var answersProvided = [];
