@@ -1,7 +1,7 @@
 // ═══ 内容管理 ═══
 
 // 编辑日志
-function addEditLog(type, name, action) {
+function addEditLog(type, name, action, itemId) {
   try {
     var logs = JSON.parse(localStorage.getItem('edit_logs') || '[]');
     logs.unshift({
@@ -9,7 +9,8 @@ function addEditLog(type, name, action) {
       user: currentUser ? currentUser.nickname : '未知',
       type: type,
       name: name,
-      action: action
+      action: action,
+      id: itemId || ''
     });
     if (logs.length > 200) logs = logs.slice(0, 200);
     localStorage.setItem('edit_logs', JSON.stringify(logs));
@@ -112,20 +113,81 @@ function showReviewPanel() {
 
 function showEditLogs() {
   pushScreen('label');
+  var isAdmin = currentUser && currentUser.username === 'walkman0097';
   var logs = JSON.parse(localStorage.getItem('edit_logs') || '[]');
   // 过滤掉账户操作（只保留内容编辑）
   logs = logs.filter(function(l){ return l.type !== '用户' && l.type !== '账户'; });
-  var html = '<div class="section-title" style="font-size:22px">📝 编辑记录</div>';
+  var html = '<div class="section-title" style="font-size:22px">📝 编辑记录与审核</div>';
+  // 管理员可见待审核列表
+  if (isAdmin) {
+    var pending = [];
+    try { pending = JSON.parse(localStorage.getItem('pending_edits') || '[]'); } catch(e) {}
+    if (pending.length > 0) {
+      html += '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="cursor:pointer;background:linear-gradient(135deg,#FEF3C7,#FDE68A)" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">📋 待审核 <span style="font-size:12px;color:var(--danger)">('+pending.length+')</span></span><span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></div><div class="guide-items" style="display:none">';
+      pending.forEach(function(p, idx){
+        html += '<div class="list-card" style="display:flex;align-items:center;gap:8px"><div class="icon-box">📝</div><div class="info" style="flex:1"><div class="name">' + p.type + '：' + p.name + '</div><div class="desc">编辑者：' + p.editor + ' · ' + p.time + '</div></div>'
+          + '<button class="btn btn-sm" style="background:var(--primary);color:#fff;border:none;font-size:11px" data-approve="'+idx+'">通过</button>'
+          + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger);font-size:11px" data-reject="'+idx+'">驳回</button></div>';
+      });
+      html += '<button class="btn btn-outline btn-sm" id="clear-review-btn" style="margin-top:4px;font-size:11px">🗑️ 清空已处理</button></div></div>';
+    }
+  }
+  // 编辑记录列表
   if (logs.length === 0) {
     html += '<div style="text-align:center;padding:40px;color:var(--text-light)">暂无编辑记录</div>';
   } else {
-    html += '<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn btn-sm btn-outline" onclick="clearEditLogs()">清空记录</button></div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:12px;color:var(--text-light)">共 '+logs.length+' 条记录</span><button class="btn btn-sm btn-outline" onclick="clearEditLogs()">清空记录</button></div>';
     logs.forEach(function(l) {
       var color = l.action === '新增' ? 'var(--primary)' : (l.action === '删除' ? 'var(--danger)' : 'var(--accent)');
-      html += '<div class="list-card"><div class="icon-box" style="font-size:12px">' + l.action + '</div><div class="info"><div class="name">' + l.name + '</div><div class="desc" style="font-size:11px">' + l.user + ' · ' + l.action + l.type + ' · ' + l.time + '</div></div></div>';
+      var clickAttr = l.id ? ' data-log-id="'+l.id+'" data-log-type="'+l.type+'"' : '';
+      html += '<div class="list-card"'+clickAttr+'><div class="icon-box" style="font-size:12px;color:'+color+'">' + l.action + '</div><div class="info"><div class="name">' + l.name + '</div><div class="desc" style="font-size:11px">' + l.user + ' · ' + l.type + ' · ' + l.time + '</div></div></div>';
     });
   }
   document.getElementById('label-content').innerHTML = html;
+  // 绑定点击跳转
+  document.querySelectorAll('[data-log-id]').forEach(function(el){
+    el.onclick = function(){
+      var id = el.dataset.logId, type = el.dataset.logType;
+      if (type === '药品') { var d = findDrug(id); if(d){ addRecent(id,'drug'); pushScreen('detail'); renderDetail(id); } else toast('内容可能已被删除'); }
+      else if (type === '指南') { addRecent(id,'guide'); openGuide(id); }
+      else if (type === '疾病') { var ds = DISEASES.find(function(x){return x.id===id;}); if(ds) openDisease(ds.name); else toast('内容可能已被删除'); }
+      else if (type === '科普') { openHealthEdu(id); }
+      else if (type === '用药教育') { openMedEdu(id); }
+      else if (type === '配伍') { openInfusion(id); }
+    };
+  });
+  // 绑定审核按钮
+  if (isAdmin) {
+    document.querySelectorAll('[data-approve]').forEach(function(btn){
+      btn.onclick = function(e){ e.stopPropagation();
+        var idx = parseInt(btn.dataset.approve);
+        var pending = JSON.parse(localStorage.getItem('pending_edits') || '[]');
+        var item = pending[idx];
+        if (!item) return;
+        trySupabaseUpsert(item.table, item.data);
+        pending.splice(idx, 1);
+        localStorage.setItem('pending_edits', JSON.stringify(pending));
+        toast('已通过：' + item.name);
+        showEditLogs();
+      };
+    });
+    document.querySelectorAll('[data-reject]').forEach(function(btn){
+      btn.onclick = function(e){ e.stopPropagation();
+        var idx = parseInt(btn.dataset.reject);
+        var pending = JSON.parse(localStorage.getItem('pending_edits') || '[]');
+        pending.splice(idx, 1);
+        localStorage.setItem('pending_edits', JSON.stringify(pending));
+        toast('已驳回');
+        showEditLogs();
+      };
+    });
+    var clearBtn = document.getElementById('clear-review-btn');
+    if (clearBtn) clearBtn.onclick = function(){
+      localStorage.setItem('pending_edits', '[]');
+      toast('已清空');
+      showEditLogs();
+    };
+  }
 }
 
 function clearEditLogs() {
@@ -329,7 +391,7 @@ function showDrugEditor(drug, index) {
       if(!nd.name||!nd.category||!nd.indications){toast('名称/分类/适应症为必填');return;}
       var cd=getCust();
       if(isNew){cd.drugs.unshift(nd);}else if(index>=DRUGS.length){cd.drugs[index-DRUGS.length]=nd;}else{cd.drugOverlay=cd.drugOverlay||{};cd.drugOverlay[d.id]=nd;}
-      saveCust(cd); renderAdminList('drugs'); addEditLog('药品',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('drugs'); addEditLog('药品',nd.name,isNew?'新增':'编辑', nd.id); toast(isNew?'新增成功':'保存成功');
       // 同步到 Supabase
       trySyncOrQueue('drugs', {id:nd.id,name:nd.name,py:genPy(nd.name),category:nd.category,subcategory:nd.subcategory,type:nd.type,indications:nd.indications,contraindications:nd.contraindications||null,adverse:nd.adverse||null, dosage:nd.dosage||null, storage:nd.storage||null, interactions:nd.interactions||null, label:nd.label|| null, is_custom:true}, '药品', nd.name);
     }}]
@@ -375,7 +437,7 @@ function showGuidelineEditor(guide, index) {
       if(!ng.title||!ng.system){toast('标题和系统为必填');return;}
       var cd=getCust();
       if(isNew){cd.guidelines.unshift(ng);}else if(index>=GUIDELINES.length){cd.guidelines[index-GUIDELINES.length]=ng;}else{cd.glOverlay=cd.glOverlay||{};cd.glOverlay[g.id]=ng;}
-      saveCust(cd); renderAdminList('guidelines'); addEditLog('指南',ng.title,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('guidelines'); addEditLog('指南',ng.title,isNew?'新增':'编辑', ng.id); toast(isNew?'新增成功':'保存成功');
       // 同步到 Supabase
       trySyncOrQueue('guidelines', {id:ng.id,title:ng.title,system:ng.system,year:ng.year||null,content:ng.content||null,source_url:ng.sourceUrl||null,py:genPy(ng.title),is_custom:true}, '指南', ng.title);
     }}]
@@ -397,7 +459,7 @@ function showEduEditor(item, index) {
       var cd=getCust();
       cd.education=cd.education||[];
       if(isNew){cd.education.unshift(ne);}else{var idx=cd.education.findIndex(x=>x.id===h.id);if(idx>=0)cd.education[idx]=ne;else{cd.eduOverlay=cd.eduOverlay||{};cd.eduOverlay[h.id]=ne;}}
-      saveCust(cd); renderAdminList('education'); addEditLog('科普',ne.title,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('education'); addEditLog('科普',ne.title,isNew?'新增':'编辑', ne.id); toast(isNew?'新增成功':'保存成功');
       // 同步到 Supabase
       trySyncOrQueue('health_edu', {id:ne.id,cat:ne.cat,title:ne.title,py:genPy(ne.title),content:ne.content||null,is_custom:true}, '科普', ne.title);
     }}]
@@ -420,7 +482,7 @@ function showMedEduEditor(item, index) {
       var cd=getCust();
       cd.mededu=cd.mededu||[];
       if(isNew){cd.mededu.unshift(nm);}else{var idx=cd.mededu.findIndex(x=>x.id===m.id);if(idx>=0)cd.mededu[idx]=nm;else{cd.medOverlay=cd.medOverlay||{};cd.medOverlay[m.id]=nm;}}
-      saveCust(cd); renderAdminList('mededu'); addEditLog('用药教育',nm.drug,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('mededu'); addEditLog('用药教育',nm.drug,isNew?'新增':'编辑', nm.id); toast(isNew?'新增成功':'保存成功');
       // 同步到 Supabase（注意字段映射：key→key_point）
       trySyncOrQueue('med_edu', {id:nm.id,cat:nm.cat||null,drug:nm.drug,py:genPy(nm.drug),key_point:nm.key,detail:nm.detail||null,is_custom:true}, '用药教育', nm.drug);
     }}]
@@ -445,7 +507,7 @@ function showInfEditor(item, index) {
       var cd=getCust();
       cd.infusion=cd.infusion||[];
       if(isNew){cd.infusion.unshift(ni);}else{var idx=cd.infusion.findIndex(x=>x.id===inf.id);if(idx>=0)cd.infusion[idx]=ni;else{cd.infOverlay=cd.infOverlay||{};cd.infOverlay[inf.id]=ni;}}
-      saveCust(cd); renderAdminList('infusion'); addEditLog('配伍',ni.drug,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('infusion'); addEditLog('配伍',ni.drug,isNew?'新增':'编辑', ni.id); toast(isNew?'新增成功':'保存成功');
       // 同步到 Supabase
       trySyncOrQueue('infusion_data', {id:ni.id,cat:ni.cat||null,drug:ni.drug,py:genPy(ni.drug),vehicle:ni.vehicle||null,conc:ni.conc||null,speed:ni.speed||null,note:ni.note||null,is_custom:true}, '配伍', ni.drug);
     }}]
@@ -470,7 +532,7 @@ function showDiseaseEditor(item, index) {
       var cd=getCust();
       cd.diseases=cd.diseases||[];
       if(isNew){cd.diseases.unshift(nd);}else{var idx=cd.diseases.findIndex(x=>x.id===d.id);if(idx>=0)cd.diseases[idx]=nd;else{cd.disOverlay=cd.disOverlay||{};cd.disOverlay[d.id]=nd;}}
-      saveCust(cd); renderAdminList('diseases'); addEditLog('疾病',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      saveCust(cd); renderAdminList('diseases'); addEditLog('疾病',nd.name,isNew?'新增':'编辑', nd.id); toast(isNew?'新增成功':'保存成功');
       // 同步到 Supabase（注意字段映射：desc→description）
       trySyncOrQueue('diseases', {id:nd.id,name:nd.name,cat:nd.cat,py:genPy(nd.name),description:nd.desc||null,symptoms:nd.symptoms||null,diagnosis:nd.diagnosis||null,treatment:nd.treatment||null,is_custom:true}, '疾病', nd.name);
     }}]
