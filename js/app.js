@@ -247,6 +247,15 @@ function recordLogin(username) {
     if (!stats.find(function(s){return s.date===today && s.username===username;})) {
       stats.push({date: today, username: username});
       localStorage.setItem('login_stats', JSON.stringify(stats));
+      // 同步到 Supabase
+      if (typeof _supabase !== 'undefined' && _supabase && _online) {
+        _supabase.from('login_stats').upsert({
+          id: username + '_' + today,
+          username: username,
+          login_date: today,
+          created_at: new Date().toISOString()
+        }, { onConflict: 'id' }).catch(function(){});
+      }
     }
   } catch(e) {}
 }
@@ -262,6 +271,19 @@ function recordView(id, type) {
       views.push({id: id, type: type, name: name, count: 1});
     }
     localStorage.setItem('view_stats', JSON.stringify(views));
+    // 同步到 Supabase
+    if (typeof _supabase !== 'undefined' && _supabase && _online) {
+      var found = views.find(function(v){return v.id===id && v.type===type;});
+      if (found) {
+        _supabase.from('view_stats').upsert({
+          id: type + '_' + id,
+          content_id: id,
+          content_type: type,
+          content_name: name,
+          view_count: found.count || 1
+        }, { onConflict: 'id' }).catch(function(){});
+      }
+    }
   } catch(e) {}
 }
 // 渲染浏览统计
