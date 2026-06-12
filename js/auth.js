@@ -183,9 +183,12 @@ function getUsers() {
     var saved = localStorage.getItem('custom_users');
     if (saved) {
       var users = JSON.parse(saved);
+      // 补全新用户（已存在的用户不覆盖密码，保留找回密码等修改）
       USERS.forEach(function(su){
         var local = users.find(function(u){ return u.username === su.username; });
-        if (local) local.password = su.password;
+        if (!local) {
+          users.push(su);
+        }
       });
       return users;
     }
