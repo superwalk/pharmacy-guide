@@ -369,9 +369,11 @@ function showForgotPasswordQuestions(uname, questions){
     });
     var r = forgotPasswordReset(uname, '', answers);
     if(!r.ok){ toast(r.msg); return false; }
-    var info = '用户名：'+r.username+'\n新密码：'+r.password;
-    navigator.clipboard.writeText(info).then(function(){ toast('已复制新密码'); }).catch(function(){});
-    showModal('✅ 密码已重置', '<div style="text-align:center;line-height:2"><b>'+r.username+'</b><br>新密码：<b style="font-size:18px;letter-spacing:2px">'+r.password+'</b></div><div style="font-size:12px;color:var(--text-light);margin-top:6px">已自动复制到剪贴板</div><div style="font-size:12px;color:var(--danger);margin-top:4px">⚠️ 关闭后密码将不再显示，请立即登录</div>', [{label:'去登录',primary:true,onClick:function(){
+    showModal('✅ 密码已重置', '<div style="text-align:center;line-height:2"><b>'+r.username+'</b><br>新密码：<b style="font-size:18px;letter-spacing:2px;user-select:all">'+r.password+'</b></div><div style="font-size:12px;color:var(--danger);margin-top:4px">⚠️ 关闭后密码将不再显示，请立即登录</div>', [{label:'复制密码',primary:true,onClick:function(){
+      navigator.clipboard.writeText('用户名：'+r.username+'\n密码：'+r.password);
+      toast('已复制密码');
+      return false;
+    }},{label:'去登录',onClick:function(){
       document.getElementById('login-user').value = r.username;
       document.getElementById('login-pw').value = r.password;
       loginSubmit();
