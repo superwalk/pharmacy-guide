@@ -452,6 +452,19 @@ function initApp() {
   initProfileMenus();
   bindGuideSearch();
   checkVersion(); // 自动检查版本更新
+  // 全局手风琴委托（兼容所有动态生成的onclick）
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    while (t) {
+      if (t.dataset && t.dataset.expanded !== undefined && t.getAttribute('onclick') && t.getAttribute('onclick').indexOf('toggleGuideGroup') >= 0) {
+        toggleGuideGroup(t);
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      t = t.parentElement;
+    }
+  });
 
   // ─── 从 Supabase 加载数据（不阻塞 UI） ───
   if (typeof supabaseLoadAll === 'function') {
@@ -636,24 +649,35 @@ function renderGuidelines() {
 }
 
 function toggleGuideGroup(header) {
-  const gid=header.dataset.group;
+  if (!header) return;
   var items = null;
-  if (gid !== undefined) {
-    items = document.getElementById('guide-group-'+gid);
+  // 查找目标内容区：优先 data-target-id，其次 data-group + guide-group-，再查兄弟guide-items
+  if (header.dataset.targetId) {
+    items = document.getElementById(header.dataset.targetId);
+  } else if (header.dataset.group !== undefined) {
+    items = document.getElementById('guide-group-'+header.dataset.group);
   }
   if (!items) {
-    // 找下一个 guide-items 兄弟元素
-    var el = header.nextElementSibling;
-    while (el) {
-      if (el.classList && el.classList.contains('guide-items')) { items = el; break; }
-      el = el.nextElementSibling;
+    var parent = header.parentElement;
+    if (parent) {
+      items = parent.querySelector('.guide-items');
+    }
+    if (!items) {
+      items = header.nextElementSibling;
     }
   }
   if (!items) return;
-  const arrow=header.querySelector('.guide-arrow');
-  const expanded=header.dataset.expanded==='true';
-  if(expanded){ items.style.display='none'; if(arrow){arrow.style.transform='rotate(-90deg)';arrow.textContent='▶';} header.dataset.expanded='false'; }
-  else { items.style.display='block'; if(arrow){arrow.style.transform='rotate(0deg)';arrow.textContent='▼';} header.dataset.expanded='true'; }
+  var arrow = header.querySelector('.guide-arrow');
+  var expanded = header.dataset.expanded === 'true';
+  if (expanded) {
+    items.style.display = 'none';
+    if (arrow) { arrow.style.transform = 'rotate(-90deg)'; arrow.textContent = '▶'; }
+    header.dataset.expanded = 'false';
+  } else {
+    items.style.display = 'block';
+    if (arrow) { arrow.style.transform = 'rotate(0deg)'; arrow.textContent = '▼'; }
+    header.dataset.expanded = 'true';
+  }
 }
 // 药品/疾病分类折叠
 function toggleCatGroup(header, idx) {
