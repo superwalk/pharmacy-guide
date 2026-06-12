@@ -166,7 +166,7 @@ svg{display:block}
 
 /* ── 登录 ── */
 .login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:40px;height:100%}
-.login-logo{width:72px;height:72px;background:var(--primary);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;box-shadow:0 8px 24px rgba(8,80,36,.2)}
+.login-logo{width:72px;height:72px;background:var(--primary);border-radius:0;display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;box-shadow:0 8px 24px rgba(8,80,36,.2)}
 .login-title{font-size:24px;font-family:var(--font-heading);font-weight:800;color:var(--primary-dark)}
 .login-sub{font-size:13px;color:var(--muted-fg)}
 .login-form{width:100%;display:flex;flex-direction:column;gap:12px}
