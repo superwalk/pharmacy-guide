@@ -1335,12 +1335,12 @@ function renderProfile() {
   document.getElementById('profile-nickname').textContent=currentUser.nickname;
   const roleMap={admin:'管理员',editor:'管理员',user:'普通用户'};
   document.getElementById('profile-role').textContent=roleMap[currentUser.role]||'普通用户';
-  // 后台管理：合并内容管理+用户管理
+  // 后台管理：合并内容管理+用户管理，不改onclick（由bindAdminMenu处理）
   var adminBtn=document.getElementById('menu-edit-content');
   if(adminBtn){
     adminBtn.style.display=isEditor()?'flex':'none';
-    adminBtn.innerHTML='<span class="icon">⚙️</span><span class="label">后台管理</span><span class="arrow">›</span>';
-    adminBtn.onclick=function(){ pushScreen('admin'); };
+    adminBtn.querySelector('.label').textContent='后台管理';
+    // 不覆盖onclick，bindAdminMenu已设置 pushScreen('admin')+initAdmin()
   }
   // 浏览统计已合并到系统与帮助
   var bs=document.getElementById('menu-browse-stats');
