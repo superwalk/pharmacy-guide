@@ -658,7 +658,7 @@ function openGuide(gid) {
   addRecent(gid,'guide');
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:20px">${g.title}</div>
-    <div style="font-size:12px;color:var(--text-light);display:flex;gap:6px"><span class="badge badge-blue">${g.system||'法律法规'}</span><span>${g.year||''}</span></div>
+    <div style="font-size:12px;color:var(--text-light);display:flex;gap:6px"><span class="badge badge-blue">${g.system||'法律法规'}</span><span>${g.year||''}</span><span>${sourceBadge(g.id, allGuides())}</span></div>
     <div id="guide-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
   showEditBtn({type:'guide',id:gid});
@@ -684,6 +684,18 @@ function openGuide(gid) {
 function tagBadge(tag){
   const map={高危:'<span class="tag-high-risk">高危</span>',精二:'<span class="tag-psych">精二</span>',毒:'<span class="tag-toxic">毒</span>',麻:'<span class="tag-narc">麻</span>'};
   return tag?map[tag]||'':'';
+}
+// 信息来源标签
+function sourceBadge(id, builtinList) {
+  if (!id) return '';
+  var isCustom = id.indexOf('custom_') === 0 || id.indexOf('gl_') === 0 || id.indexOf('h_') === 0 || id.indexOf('m_') === 0 || id.indexOf('i_') === 0 || id.indexOf('ds_') === 0;
+  if (isCustom) return '<span class="badge" style="background:#FEF3C7;color:#92400E;font-size:10px">📝 用户编辑</span>';
+  // 检查是否在全局数据中
+  if (builtinList) {
+    var exists = builtinList.some(function(x){ return x.id === id; });
+    if (!exists) return '<span class="badge" style="background:#FEF3C7;color:#92400E;font-size:10px">📝 用户编辑</span>';
+  }
+  return '<span class="badge" style="background:#E0F2FE;color:#0369A1;font-size:10px">📦 系统数据</span>';
 }
 
 function hlText(t){
@@ -724,7 +736,7 @@ function renderDetail(drugId) {
   dc.innerHTML=`
     <div class="detail-hero">
       <div class="detail-name">${d.name}</div>
-      <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-green">${d.category}</span><span class="badge badge-blue">${d.type}</span>${tagBadge(d.tag)}</span>${isEditor()?`<button class="btn btn-sm btn-outline" id="edit-detail-btn">编辑</button>`:''}</div>
+      <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-green">${d.category}</span><span class="badge badge-blue">${d.type}</span>${tagBadge(d.tag)} ${sourceBadge(d.id, DRUGS)}</span>${isEditor()?`<button class="btn btn-sm btn-outline" id="edit-detail-btn">编辑</button>`:''}</div>
       <div class="detail-actions">
         <button class="btn btn-outline" id="detail-fav"><span style="color:${fav?'var(--danger)':'var(--primary)'}">${fav?'❤️':'🤍'}</span> ${fav?'已收藏':'收藏'}</button>
         <button class="btn btn-outline" id="detail-cmp">⚖️ 加入对比</button>
@@ -1432,7 +1444,7 @@ function openHealthEdu(hid) {
   pushScreen('label');
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:20px">${h.title}</div>
-    <div class="subtitle-row" style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between"><span>${h.cat}</span></div>
+    <div class="subtitle-row" style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between"><span>${h.cat} ${sourceBadge(h.id, HEALTH_EDU)}</span></div>
     <div id="healthedu-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
   showEditBtn({type:'edu',id:hid});
@@ -1514,7 +1526,7 @@ function openInfusion(iid) {
   pushScreen('label');
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:22px">${i.drug}</div>
-    <div style="font-size:13px;color:var(--text-light);margin-bottom:12px"><span class="badge badge-blue">${i.cat}</span></div>
+    <div style="font-size:13px;color:var(--text-light);margin-bottom:12px"><span class="badge badge-blue">${i.cat}</span> ${sourceBadge(i.id, INFUSION_DATA)}</div>
     <div id="infusion-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>
   `;
   showEditBtn({type:'inf',id:iid});
@@ -1554,7 +1566,7 @@ function openDisease(name) {
   pushScreen('label');
   let html='<div class="section-title" style="font-size:22px">'+name+'</div>';
   if(d) html+=`
-    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span></span>${isEditor()?'<span style="display:flex;gap:6px"><button class="btn btn-sm btn-outline" onclick="editCurrentItem()">编辑</button></span>':''}</div>
+    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span> ${sourceBadge(d.id, DISEASES)}</span>${isEditor()?'<span style="display:flex;gap:6px"><button class="btn btn-sm btn-outline" onclick="editCurrentItem()">编辑</button></span>':''}</div>
     <div id="disease-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>`;
   if(drugs.length>0) html+=`<div class="section-title" style="margin-top:8px">💊 相关药品 (${drugs.length})</div>`+drugs.slice(0,6).map(dr=>`<div class="list-card" onclick="pushScreen('detail');renderDetail('${dr.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${dr.name}</div><div class="desc">${dr.category} · ${(dr.indications||'').slice(0,30)}…</div></div></div>`).join('');
   if(guides.length>0) html+=`<div class="section-title" style="margin-top:8px">📋 相关指南</div>`+guides.slice(0,3).map(g=>`<div class="list-card" onclick="openGuide('${g.id}')"><div class="icon-box">📋</div><div class="info"><div class="name">${g.title}</div><div class="desc">${g.system} · ${g.year}</div></div></div>`).join('');
@@ -1658,7 +1670,7 @@ function renderMedEduCombined() {
 function openMedEdu(mid){
   var m=MED_EDU.find(function(x){return x.id===mid;}); if(!m) return;
   pushScreen('label');
-  document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">'+m.drug+'</div><div class="subtitle-row" style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><span class="badge badge-blue">'+m.cat+'</span></div><div id="mededu-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>';
+  document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">'+m.drug+'</div><div class="subtitle-row" style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><span class="badge badge-blue">'+m.cat+'</span> '+sourceBadge(m.id, MED_EDU)+'</div><div id="mededu-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>';
   showEditBtn({type:'med',id:mid});
   loadMedEduDetail(mid, function(full) {
     var detail = full || m;
