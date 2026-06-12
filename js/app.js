@@ -682,6 +682,27 @@ function toggleGuideGroup(header) {
     if (arrow) { arrow.style.transform = 'rotate(-90deg)'; arrow.textContent = '▶'; }
     header.setAttribute('data-expanded', 'false');
   } else {
+    // 手风琴模式：折叠同一容器内其他已展开的分类
+    var container = items.parentNode;
+    while (container && container !== document.body) {
+      var siblings = container.querySelectorAll('[data-expanded="true"]');
+      if (siblings.length > 0) {
+        siblings.forEach(function(h){
+          if (h !== header) {
+            var gi = null;
+            var g = h.getAttribute('data-group');
+            if (g !== null) gi = document.getElementById('guide-group-'+g);
+            if (!gi) { var p = h.parentNode; if (p) gi = p.querySelector('.guide-items'); }
+            if (gi) gi.style.display = 'none';
+            var ar = h.querySelector('.guide-arrow');
+            if (ar) { ar.style.transform = 'rotate(-90deg)'; ar.textContent = '▶'; }
+            h.setAttribute('data-expanded', 'false');
+          }
+        });
+        break;
+      }
+      container = container.parentNode;
+    }
     items.style.display = 'block';
     if (arrow) { arrow.style.transform = 'rotate(0deg)'; arrow.textContent = '▼'; }
     header.setAttribute('data-expanded', 'true');
