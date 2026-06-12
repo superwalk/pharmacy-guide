@@ -889,17 +889,32 @@ function showSendMsgModal(){
     sel.onchange = function(){
       if (sel.value === '__multi') {
         multiDiv.style.display = 'block';
-        var users = getUsers().filter(function(u){ return u.username !== currentUser.username; });
-        multiDiv.innerHTML = '<div style="font-size:12px;color:var(--text-light);margin:4px 0">勾选接收人：</div>';
-        users.forEach(function(u){
-          multiDiv.innerHTML += '<label style="display:flex;align-items:center;gap:4px;font-size:13px;padding:2px 0"><input type="checkbox" value="'+u.username+'"> '+u.nickname+' ('+u.username+')</label>';
-        });
+        multiDiv.innerHTML = '<div style="font-size:12px;color:var(--text-light);margin:4px 0">勾选接收人：</div>'
+          + '<input id="msg-user-search" placeholder="🔍 搜索用户名或昵称…" style="width:100%;margin-bottom:6px">'
+          + '<div id="msg-user-list"></div>';
+        renderUserCheckboxes('');
+        document.getElementById('msg-user-search').oninput = function(){
+          renderUserCheckboxes(document.getElementById('msg-user-search').value.trim().toLowerCase());
+        };
       } else {
         multiDiv.style.display = 'none';
       }
     };
     textarea.oninput = function(){ document.getElementById('msg-char-count').textContent = textarea.value.length; };
   }, 100);
+}
+function renderUserCheckboxes(kw) {
+  var list = document.getElementById('msg-user-list');
+  if (!list) return;
+  var users = getUsers().filter(function(u){
+    if (u.username === currentUser.username) return false;
+    if (kw) return u.nickname.toLowerCase().indexOf(kw)>=0 || u.username.toLowerCase().indexOf(kw)>=0;
+    return true;
+  });
+  if (users.length === 0) { list.innerHTML = '<div style="font-size:12px;color:var(--text-light);padding:8px">未找到匹配用户</div>'; return; }
+  list.innerHTML = users.map(function(u){
+    return '<label style="display:flex;align-items:center;gap:4px;font-size:13px;padding:2px 0"><input type="checkbox" value="'+u.username+'"> '+u.nickname+' ('+u.username+')</label>';
+  }).join('');
 }
 // 纠错反馈弹窗
 function showFeedbackModal(sourceName, sourceType) {
@@ -1241,15 +1256,57 @@ function checkVersion(){
 }
 function initProfileMenus() {
   document.getElementById('edit-nickname-btn').onclick=()=>{ showModal('修改昵称','<input id="new-nickname" placeholder="输入新昵称" value="'+currentUser.nickname+'">',[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const n=document.getElementById('new-nickname').value.trim(); if(n) updateNickname(n); }}]); };
-  document.getElementById('menu-change-pw').onclick=()=>{ showModal('修改密码','<div style="position:relative"><input id="old-pw" type="password" placeholder="原密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw">👁️</span></div><div style="position:relative;margin-top:8px"><input id="new-pw" type="password" placeholder="新密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw2">👁️</span></div>',[{label:'取消'},{label:'确认修改',primary:true,onClick:()=>{ const o=document.getElementById('old-pw').value; const n=document.getElementById('new-pw').value; if(!n||n.length<4){ toast('密码至少4位'); return false; } const r=changePassword(o,n); if(!r.ok){ toast(r.msg); return false; } logout(); location.reload(); }}]);
-  document.getElementById('menu-security-settings').onclick=showSecuritySettings;
+  document.getElementById('menu-change-pw').onclick=function(){
+    // 修改密码部分
+    var pwHtml = '<div style="position:relative"><input id="old-pw" type="password" placeholder="原密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw">👁️</span></div>'
+      + '<div style="position:relative;margin-top:8px"><input id="new-pw" type="password" placeholder="新密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw2">👁️</span></div>';
+    // 密保设置部分
+    var u = currentUser;
+    var qOpts = SECURITY_QUESTIONS.map(function(q, i){ return '<option value="'+i+'">'+q+'</option>'; });
+    function makeOpts(savedQ, defaultIdx) {
+      return SECURITY_QUESTIONS.map(function(q, i){
+        var sel = '';
+        if (savedQ && savedQ === q) sel = 'selected';
+        else if (!savedQ && i === defaultIdx) sel = 'selected';
+        return '<option value="'+i+'" '+sel+'>'+q+'</option>';
+      }).join('');
+    }
+    var secHtml = '<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">'
+      + '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔐 密保设置（用于找回密码）</div>'
+      + '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题1</div><div style="display:flex;gap:4px"><select id="ss-sq1" style="flex:1">'+makeOpts(u.security_q1, 0)+'</select><input id="ss-sa1" placeholder="答案1" value="'+(u.security_a1||'')+'" style="flex:1"></div></div>'
+      + '<div style="margin-top:4px"><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题2</div><div style="display:flex;gap:4px"><select id="ss-sq2" style="flex:1">'+makeOpts(u.security_q2, 1)+'</select><input id="ss-sa2" placeholder="答案2" value="'+(u.security_a2||'')+'" style="flex:1"></div></div>'
+      + '<div style="margin-top:4px"><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题3</div><div style="display:flex;gap:4px"><select id="ss-sq3" style="flex:1">'+makeOpts(u.security_q3, 2)+'</select><input id="ss-sa3" placeholder="答案3" value="'+(u.security_a3||'')+'" style="flex:1"></div></div>'
+      + '</div>';
+    showModal('🔒 密码与密保', pwHtml + secHtml, [{label:'取消'},{label:'确认修改',primary:true,onClick:function(){
+      // 修改密码
+      var o = document.getElementById('old-pw').value;
+      var n = document.getElementById('new-pw').value;
+      if (n && n.length >= 4) {
+        var r = changePassword(o, n);
+        if (!r.ok) { toast(r.msg); return false; }
+      }
+      // 保存密保
+      var sq1 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq1').value)];
+      var sq2 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq2').value)];
+      var sq3 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq3').value)];
+      var sa1 = document.getElementById('ss-sa1').value.trim();
+      var sa2 = document.getElementById('ss-sa2').value.trim();
+      var sa3 = document.getElementById('ss-sa3').value.trim();
+      var updates = {};
+      if (sa1) { updates.security_q1 = sq1; updates.security_a1 = sa1; u.security_q1 = sq1; u.security_a1 = sa1; }
+      if (sa2) { updates.security_q2 = sq2; updates.security_a2 = sa2; u.security_q2 = sq2; u.security_a2 = sa2; }
+      if (sa3) { updates.security_q3 = sq3; updates.security_a3 = sa3; u.security_q3 = sq3; u.security_a3 = sa3; }
+      if (sa1 || sa2 || sa3) updateUser(u.username, updates);
+      if (n && n.length >= 4) { logout(); location.reload(); }
+      else toast('密码与密保已保存');
+    }}]);
+    setTimeout(function(){
+      var t1=document.getElementById('toggle-pw'); var t2=document.getElementById('toggle-pw2');
+      if(t1) t1.onclick=function(e){ e.preventDefault(); var el=document.getElementById('old-pw'); var show=el.type==='password'; el.type=show?'text':'password'; t1.textContent=show?'🙈':'👁️'; el.focus(); };
+      if(t2) t2.onclick=function(e){ e.preventDefault(); var el=document.getElementById('new-pw'); var show=el.type==='password'; el.type=show?'text':'password'; t2.textContent=show?'🙈':'👁️'; el.focus(); };
+    },100);
+  };
   document.getElementById('menu-browse-stats').onclick=showBrowseStats;
-  // 绑定小眼睛切换
-  setTimeout(function(){
-    var t1=document.getElementById('toggle-pw'); var t2=document.getElementById('toggle-pw2');
-    if(t1) t1.onclick=function(e){ e.preventDefault(); var el=document.getElementById('old-pw'); var show=el.type==='password'; el.type=show?'text':'password'; t1.textContent=show?'🙈':'👁️'; el.focus(); };
-    if(t2) t2.onclick=function(e){ e.preventDefault(); var el=document.getElementById('new-pw'); var show=el.type==='password'; el.type=show?'text':'password'; t2.textContent=show?'🙈':'👁️'; el.focus(); };
-  },100); };
   document.getElementById('menu-disclaimer').onclick=()=>{ showModal('免责声明','<div style="font-size:13px;line-height:1.8;color:var(--text-body)"><p>本应用提供的药学知识内容仅供参考和学习交流之用，<span style="color:var(--danger)">不构成医疗建议、诊断或处方依据。</span></p><p style="margin-top:8px">具体用药方案请以药品说明书和临床指南为准，并遵循执业医师或药师的指导。</p><p style="margin-top:8px"><span style="color:var(--danger)">内容仅供药学专业人员学习参考，不替代专业诊断或治疗方案。</span>因参考本资料而产生的任何直接或间接后果，<span style="color:var(--danger)">作者概不负责</span>。</p><p style="margin-top:8px;color:var(--text-light)">© 2026 药学知识指南</p></div>',[{label:'我知道了',primary:true}]); };
   document.getElementById('menu-logout').onclick=()=>{ logout(); location.reload(); };
   // 更新与帮助（合并使用帮助+更新日志）
@@ -1304,9 +1361,9 @@ function initProfileMenus() {
   // 编辑记录菜单（函数在 admin.js 中定义）
   var elog=document.getElementById('menu-edit-log');
   if(elog) elog.onclick=()=>{ showEditLogs(); };
-  // 编辑审核菜单（函数在 admin.js 中定义）
+  // 编辑记录与审核（函数在 admin.js 中定义）
   var reviewMenu=document.getElementById('menu-review');
-  if(reviewMenu) reviewMenu.onclick=()=>{ showReviewPanel(); };
+  if(reviewMenu) reviewMenu.onclick=()=>{ showEditLogs(); };
   // 站内信菜单
   var msgMenu=document.getElementById('menu-messages');
   if(msgMenu) msgMenu.onclick=()=>{ showMessages(); };
