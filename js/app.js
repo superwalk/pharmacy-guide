@@ -490,6 +490,12 @@ function initApp() {
   initProfileMenus();
   bindGuideSearch();
   checkVersion(); // 自动检查版本更新
+  // 检查密保是否设置，未设置时提示
+  if (currentUser && !currentUser.security_a1 && !currentUser.security_a2 && !currentUser.security_a3) {
+    setTimeout(function(){
+      showModal('🔐 安全提示', '<p style="text-align:center;font-size:14px;line-height:1.8">您尚未设置密保问题答案。</p><p style="text-align:center;font-size:13px;color:var(--text-light)">设置密保后，忘记密码可通过密保问题自助找回。</p>', [{label:'稍后设置'},{label:'立即设置',primary:true,onClick:showSecuritySettings}]);
+    }, 800);
+  }
   // 触摸滑动检测：防止滑动时误触展开
   var _touchStartY = null;
   document.addEventListener('touchstart', function(e){
