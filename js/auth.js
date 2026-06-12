@@ -442,7 +442,15 @@ function forgotPasswordVerify(username, email) {
   var users = getUsers();
   var u = users.find(function(x){ return x.username === username });
   if (!u) return { ok:false, step:'check', msg:'用户不存在' };
-  // email参数不再需要，直接检查密保
+  // 如果本地用户没有密保，尝试从 Supabase 缓存获取
+  if (!u.security_a1 && !u.security_a2 && !u.security_a3 && typeof _sbUsers !== 'undefined' && _sbUsers.length > 0) {
+    var su = _sbUsers.find(function(x){ return x.username === username; });
+    if (su) {
+      u.security_q1 = su.security_q1; u.security_a1 = su.security_a1;
+      u.security_q2 = su.security_q2; u.security_a2 = su.security_a2;
+      u.security_q3 = su.security_q3; u.security_a3 = su.security_a3;
+    }
+  }
   if (!u.security_a1 && !u.security_a2 && !u.security_a3) return { ok:false, step:'check', msg:'该用户未设置密保问题，请联系管理员重置密码' };
   // 只返回有答案的问题
   var qs = [];
