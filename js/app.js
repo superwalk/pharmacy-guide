@@ -174,6 +174,7 @@ function genPy(s){
   });
   // 找回密码
   document.getElementById('login-forgot-link').addEventListener('click',function(){ showForgotPasswordModal(); });
+  document.getElementById('login-forgot-user').addEventListener('click',function(){ showFindUsername(); });
 })();
 
 function loginSubmit() {
@@ -381,7 +382,6 @@ function showSecuritySettings(){
   var qOpts = SECURITY_QUESTIONS.map(function(q, i){
     return '<option value="'+i+'">'+q+'</option>';
   });
-  // 三个下拉默认分别选中0,1,2（若已有保存则使用已保存值）
   function makeOpts(savedQ, defaultIdx) {
     return SECURITY_QUESTIONS.map(function(q, i){
       var sel = '';
@@ -394,14 +394,52 @@ function showSecuritySettings(){
   var q2 = makeOpts(u.security_q2, 1);
   var q3 = makeOpts(u.security_q3, 2);
   var html =
-    '<div style="display:flex;flex-direction:column;gap:6px">'+
-    '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔐 设置密保问题（用于找回密码）</div>'+
-    '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题1</div><div style="display:flex;gap:4px"><select id="ss-sq1" style="flex:1">'+q1+'</select><input id="ss-sa1" placeholder="答案" value="'+(u.security_a1||'')+'" style="flex:1"></div></div>'+
-    '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题2</div><div style="display:flex;gap:4px"><select id="ss-sq2" style="flex:1">'+q2+'</select><input id="ss-sa2" placeholder="答案" value="'+(u.security_a2||'')+'" style="flex:1"></div></div>'+
-    '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题3</div><div style="display:flex;gap:4px"><select id="ss-sq3" style="flex:1">'+q3+'</select><input id="ss-sa3" placeholder="答案" value="'+(u.security_a3||'')+'" style="flex:1"></div></div>'+
-    '<div style="font-size:11px;color:var(--text-light);text-align:center;margin-top:4px">三选一填写密保答案，任选一个回答即可找回密码</div>'+
-    '</div>';
-  showModal('🔐 密保设置', html, [{label:'取消'},{label:'保存',primary:true,onClick:function(){
+    // 修改密码
+    '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--border)">'
+    + '<div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>🔑 修改密码</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div>'
+    + '<div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">'
+    + '<div style="position:relative;margin-bottom:6px"><input id="old-pw" type="password" placeholder="原密码" style="width:100%;padding-right:36px;padding:10px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:13px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none;color:var(--text-light)" class="pw-toggle-btn" data-target="old-pw">👁️</span></div>'
+    + '<div style="position:relative;margin-bottom:6px"><input id="new-pw" type="password" placeholder="新密码" style="width:100%;padding-right:36px;padding:10px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:13px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none;color:var(--text-light)" class="pw-toggle-btn" data-target="new-pw">👁️</span></div>'
+    + '<button class="btn btn-primary" id="ss-save-pw" style="width:100%;font-size:13px;padding:8px">保存新密码</button>'
+    + '<div style="font-size:10px;color:var(--text-light);text-align:center;margin-top:4px">密码和密保问题答案后台不可查看，请妥善保管</div>'
+    + '</div></div>'
+    // 密保设置
+    + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--border)">'
+    + '<div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>🔐 密保设置</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div>'
+    + '<div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">'
+    + '<div style="position:relative;margin-bottom:6px"><input id="ss-auth-pw" type="password" placeholder="输入当前密码验证身份" style="width:100%;padding-right:36px;padding:10px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:13px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none;color:var(--text-light)" class="pw-toggle-btn" data-target="ss-auth-pw">👁️</span></div>'
+    + '<div style="display:flex;flex-direction:column;gap:6px">'
+    + '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题1</div><div style="display:flex;gap:4px"><select id="ss-sq1" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px">'+q1+'</select><input id="ss-sa1" placeholder="答案" value="'+(u.security_a1||'')+'" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px"></div></div>'
+    + '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题2</div><div style="display:flex;gap:4px"><select id="ss-sq2" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px">'+q2+'</select><input id="ss-sa2" placeholder="答案" value="'+(u.security_a2||'')+'" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px"></div></div>'
+    + '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题3</div><div style="display:flex;gap:4px"><select id="ss-sq3" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px">'+q3+'</select><input id="ss-sa3" placeholder="答案" value="'+(u.security_a3||'')+'" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px"></div></div>'
+    + '<div style="font-size:10px;color:var(--text-light);text-align:center">三选一填写密保答案，任选一个回答即可找回密码</div>'
+    + '<button class="btn btn-primary" id="ss-save-sq" style="width:100%;font-size:13px;padding:8px">保存密保设置</button>'
+    + '<div style="font-size:10px;color:var(--text-light);text-align:center;margin-top:4px">密码和密保问题答案后台不可查看，请妥善保管</div>'
+    + '</div></div></div>';
+  showModal('🔒 密码与密保', html, [{label:'关闭'}]);
+  // 绑定密码可见切换
+  document.querySelectorAll('.pw-toggle-btn').forEach(function(btn){
+    btn.onclick = function(){
+      var inp = document.getElementById(btn.getAttribute('data-target'));
+      if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+    };
+  });
+  // 修改密码
+  document.getElementById('ss-save-pw').onclick = function(){
+    var opw = document.getElementById('old-pw').value;
+    var npw = document.getElementById('new-pw').value;
+    if (!opw || !npw) { toast('请填写原密码和新密码'); return; }
+    var r = changePassword(opw, npw);
+    if (r.ok) { toast('密码已修改'); document.getElementById('old-pw').value = ''; document.getElementById('new-pw').value = ''; }
+    else toast(r.msg);
+  };
+  // 密保设置（需验证密码）
+  document.getElementById('ss-save-sq').onclick = function(){
+    var authPw = document.getElementById('ss-auth-pw').value;
+    if (!authPw) { toast('请输入当前密码验证身份'); return; }
+    var users = getUsers();
+    var user = users.find(function(x){ return x.username === currentUser.username; });
+    if (!user || user.password !== authPw) { toast('密码验证失败'); return; }
     var sq1 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq1').value)];
     var sq2 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq2').value)];
     var sq3 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq3').value)];
@@ -409,16 +447,16 @@ function showSecuritySettings(){
     var sa2 = document.getElementById('ss-sa2').value.trim();
     var sa3 = document.getElementById('ss-sa3').value.trim();
     if(!sa1 && !sa2 && !sa3){ toast('请至少填写一个密保答案'); return; }
-    // 只保存有答案的问题
     var updates = {};
-    if (sa1) { updates.security_q1 = sq1; updates.security_a1 = sa1; u.security_q1 = sq1; u.security_a1 = sa1; }
-    else { updates.security_q1 = ''; updates.security_a1 = ''; u.security_q1 = ''; u.security_a1 = ''; }
-    if (sa2) { updates.security_q2 = sq2; updates.security_a2 = sa2; u.security_q2 = sq2; u.security_a2 = sa2; }
-    else { updates.security_q2 = ''; updates.security_a2 = ''; u.security_q2 = ''; u.security_a2 = ''; }
-    if (sa3) { updates.security_q3 = sq3; updates.security_a3 = sa3; u.security_q3 = sq3; u.security_a3 = sa3; }
-    else { updates.security_q3 = ''; updates.security_a3 = ''; u.security_q3 = ''; u.security_a3 = ''; }
-    updateUser(u.username, updates);
-  }}]);
+    if (sa1) { updates.security_q1 = sq1; updates.security_a1 = sa1; currentUser.security_q1 = sq1; currentUser.security_a1 = sa1; }
+    else { updates.security_q1 = ''; updates.security_a1 = ''; currentUser.security_q1 = ''; currentUser.security_a1 = ''; }
+    if (sa2) { updates.security_q2 = sq2; updates.security_a2 = sa2; currentUser.security_q2 = sq2; currentUser.security_a2 = sa2; }
+    else { updates.security_q2 = ''; updates.security_a2 = ''; currentUser.security_q2 = ''; currentUser.security_a2 = ''; }
+    if (sa3) { updates.security_q3 = sq3; updates.security_a3 = sa3; currentUser.security_q3 = sq3; currentUser.security_a3 = sa3; }
+    else { updates.security_q3 = ''; updates.security_a3 = ''; currentUser.security_q3 = ''; currentUser.security_a3 = ''; }
+    updateUser(currentUser.username, updates);
+    toast('密保设置已保存');
+  };
 }
 
 // 处理联网登录（备用）
@@ -1288,7 +1326,13 @@ function renderProfile() {
   document.getElementById('profile-nickname').textContent=currentUser.nickname;
   const roleMap={admin:'管理员',editor:'管理员',user:'普通用户'};
   document.getElementById('profile-role').textContent=roleMap[currentUser.role]||'普通用户';
-  document.getElementById('menu-edit-content').style.display=isEditor()?'flex':'none';
+  // 后台管理：合并内容管理+用户管理
+  var adminBtn=document.getElementById('menu-edit-content');
+  if(adminBtn){
+    adminBtn.style.display=isEditor()?'flex':'none';
+    adminBtn.innerHTML='<span class="icon">⚙️</span><span class="label">后台管理</span><span class="arrow">›</span>';
+    adminBtn.onclick=function(){ pushScreen('admin'); };
+  }
   // 浏览统计已合并到系统与帮助
   var bs=document.getElementById('menu-browse-stats');
   if(bs) bs.style.display='none';
@@ -1298,17 +1342,17 @@ function renderProfile() {
   // 编辑审核仅编辑员以上可见
   var reviewMenu=document.getElementById('menu-review');
   if(reviewMenu) reviewMenu.style.display=isEditor()?'flex':'none';
-  // 用户管理仅编辑员以上可见
+  // 用户管理隐藏（已合并到后台管理）
   var um=document.getElementById('menu-user-mgmt');
-  if(um) um.style.display=isEditor()?'flex':'none';
-  // 数据导出功能已合并到更新与帮助的「数据管理」中
+  if(um) um.style.display='none';
   // 更新消息红点
   updateMsgBadge();
 }
 // ═══ 版本更新 ───
-var APP_VERSION='1.0.0';
+var APP_VERSION='1.1.0';
 var CHANGELOG_KEY='changelog_custom_v3';
 var DEFAULT_CHANGELOG=[
+  '2026-06-13  v1.1.0：后台管理合并折叠、密保与密码分栏真手风琴、昵称上传修复、找回用户名',
   '2026-06-13  系统大更新：数据概览/浏览统计合并为系统与帮助，配伍查询加入自动补全/最近搜索/拼音搜索/收藏',
   '2026-06-13  用药科普合并为双列扁平手风琴，内容管理去标签分段，编辑审核流程完善(查看/退回/忽略)',
   '2026-06-13  详情页整改：来源标记(系统数据/用户编辑)，内联编辑按钮，配伍禁忌关联，说明书弹窗化',
@@ -1390,57 +1434,9 @@ function checkVersion(){
 }
 function initProfileMenus() {
   document.getElementById('edit-nickname-btn').onclick=()=>{ showModal('修改昵称','<input id="new-nickname" placeholder="输入新昵称" value="'+currentUser.nickname+'">',[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const n=document.getElementById('new-nickname').value.trim(); if(n) updateNickname(n); }}]); };
-  document.getElementById('menu-change-pw').onclick=function(){
-    // 修改密码部分
-    var pwHtml = '<div style="position:relative"><input id="old-pw" type="password" placeholder="原密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw">👁️</span></div>'
-      + '<div style="position:relative;margin-top:8px"><input id="new-pw" type="password" placeholder="新密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw2">👁️</span></div>';
-    // 密保设置部分
-    var u = currentUser;
-    var qOpts = SECURITY_QUESTIONS.map(function(q, i){ return '<option value="'+i+'">'+q+'</option>'; });
-    function makeOpts(savedQ, defaultIdx) {
-      return SECURITY_QUESTIONS.map(function(q, i){
-        var sel = '';
-        if (savedQ && savedQ === q) sel = 'selected';
-        else if (!savedQ && i === defaultIdx) sel = 'selected';
-        return '<option value="'+i+'" '+sel+'>'+q+'</option>';
-      }).join('');
-    }
-    var secHtml = '<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">'
-      + '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔐 密保设置（用于找回密码）</div>'
-      + '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题1</div><div style="display:flex;gap:4px"><select id="ss-sq1" style="flex:1">'+makeOpts(u.security_q1, 0)+'</select><input id="ss-sa1" placeholder="答案" value="'+(u.security_a1||'')+'" style="flex:1"></div></div>'
-      + '<div style="margin-top:4px"><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题2</div><div style="display:flex;gap:4px"><select id="ss-sq2" style="flex:1">'+makeOpts(u.security_q2, 1)+'</select><input id="ss-sa2" placeholder="答案" value="'+(u.security_a2||'')+'" style="flex:1"></div></div>'
-      + '<div style="margin-top:4px"><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题3</div><div style="display:flex;gap:4px"><select id="ss-sq3" style="flex:1">'+makeOpts(u.security_q3, 2)+'</select><input id="ss-sa3" placeholder="答案" value="'+(u.security_a3||'')+'" style="flex:1"></div></div>'
-      + '<div style="font-size:11px;color:var(--text-light);text-align:center;margin-top:4px">三选一填写密保答案，任选一个回答即可找回密码</div>'
-      + '</div>';
-    showModal('🔒 密码与密保', pwHtml + secHtml, [{label:'取消'},{label:'确认修改',primary:true,onClick:function(){
-      // 修改密码
-      var o = document.getElementById('old-pw').value;
-      var n = document.getElementById('new-pw').value;
-      if (n && n.length >= 4) {
-        var r = changePassword(o, n);
-        if (!r.ok) { toast(r.msg); return false; }
-      }
-      // 保存密保
-      var sq1 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq1').value)];
-      var sq2 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq2').value)];
-      var sq3 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq3').value)];
-      var sa1 = document.getElementById('ss-sa1').value.trim();
-      var sa2 = document.getElementById('ss-sa2').value.trim();
-      var sa3 = document.getElementById('ss-sa3').value.trim();
-      var updates = {};
-      if (sa1) { updates.security_q1 = sq1; updates.security_a1 = sa1; u.security_q1 = sq1; u.security_a1 = sa1; }
-      if (sa2) { updates.security_q2 = sq2; updates.security_a2 = sa2; u.security_q2 = sq2; u.security_a2 = sa2; }
-      if (sa3) { updates.security_q3 = sq3; updates.security_a3 = sa3; u.security_q3 = sq3; u.security_a3 = sa3; }
-      if (sa1 || sa2 || sa3) updateUser(u.username, updates);
-      if (n && n.length >= 4) { logout(); location.reload(); }
-      else toast('密码与密保已保存');
-    }}]);
-    setTimeout(function(){
-      var t1=document.getElementById('toggle-pw'); var t2=document.getElementById('toggle-pw2');
-      if(t1) t1.onclick=function(e){ e.preventDefault(); var el=document.getElementById('old-pw'); var show=el.type==='password'; el.type=show?'text':'password'; t1.textContent=show?'🙈':'👁️'; el.focus(); };
-      if(t2) t2.onclick=function(e){ e.preventDefault(); var el=document.getElementById('new-pw'); var show=el.type==='password'; el.type=show?'text':'password'; t2.textContent=show?'🙈':'👁️'; el.focus(); };
-    },100);
-  };
+  // 密码与密保
+  var secMenu = document.getElementById('menu-secure');
+  if (secMenu) secMenu.onclick = showSecuritySettings;
   document.getElementById('menu-browse-stats').onclick=showBrowseStats;
   document.getElementById('menu-disclaimer').onclick=()=>{ showModal('免责声明','<div style="font-size:13px;line-height:1.8;color:var(--text-body)"><p>本应用提供的药学知识内容仅供参考和学习交流之用，<span style="color:var(--danger)">不构成医疗建议、诊断或处方依据。</span></p><p style="margin-top:8px">具体用药方案请以药品说明书和临床指南为准，并遵循执业医师或药师的指导。</p><p style="margin-top:8px"><span style="color:var(--danger)">内容仅供药学专业人员学习参考，不替代专业诊断或治疗方案。</span>因参考本资料而产生的任何直接或间接后果，<span style="color:var(--danger)">作者概不负责</span>。</p><p style="margin-top:8px;color:var(--text-light)">© 2026 药学知识指南</p></div>',[{label:'我知道了',primary:true}]); };
   document.getElementById('menu-logout').onclick=()=>{ logout(); location.reload(); };
