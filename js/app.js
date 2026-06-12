@@ -1492,7 +1492,7 @@ function renderProfile() {
   updateMsgBadge();
 }
 // ═══ 版本更新 ───
-var APP_VERSION='1.1.0';
+var APP_VERSION='1.2.0';
 var CHANGELOG_KEY='changelog_custom_v3';
 var DEFAULT_CHANGELOG=[
   '2026-06-13  v1.1.0：后台管理合并折叠、密保与密码分栏真手风琴、昵称上传修复、找回用户名',
@@ -1572,9 +1572,8 @@ function checkVersion(){
   }).then(function(data){
     if(!data||!data.version) return;
     if(data.version!==APP_VERSION){
-      toast('📦 新版本 v'+data.version+' 已发布，请下拉刷新页面以更新',function(){
-        window.location.reload();
-      });
+      // 发现新版本，自动刷新（VIA浏览器缓存问题解决方案）
+      window.location.reload(true);
     }
   }).catch(function(){ /* 离线忽略 */ });
 }
