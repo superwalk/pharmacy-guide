@@ -534,8 +534,6 @@ document.addEventListener('touchend',e=>{
 // ═══ 首页 ───
 function renderHome() {
   // 绑定首页站内信按钮
-  var msgHome = document.getElementById('msg-home-btn');
-  if (msgHome) { msgHome.onclick = function(){ showMessages(); }; updateMsgBadge(); }
   document.getElementById('home-grid').querySelectorAll('.entry-card').forEach(card=>{
     card.onclick=()=>{
       const nav=card.dataset.nav;
@@ -1528,7 +1526,9 @@ function initProfileMenus() {
   // 编辑记录与审核（函数在 admin.js 中定义）
   var reviewMenu=document.getElementById('menu-review');
   if(reviewMenu) reviewMenu.onclick=()=>{ showEditLogs(); };
-  // 站内信只在首页入口，不需要菜单绑定
+  // 站内信菜单
+  var msgMenu=document.getElementById('menu-messages');
+  if(msgMenu) msgMenu.onclick=()=>{ showMessages(); };
   // 数据导出已合并到更新与帮助
   document.querySelectorAll('.menu-item[data-nav]').forEach(m=>{ m.onclick=()=>showScreen(m.dataset.nav); });
 }
