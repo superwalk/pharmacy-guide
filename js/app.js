@@ -1185,9 +1185,7 @@ function renderProfile() {
   // 用户管理仅编辑员以上可见
   var um=document.getElementById('menu-user-mgmt');
   if(um) um.style.display=isEditor()?'flex':'none';
-  // 数据导出菜单：仅管理员可见（普通用户无此入口）
-  var exMenu=document.getElementById('menu-export');
-  if(exMenu) exMenu.style.display=isEditor()?'flex':'none';
+  // 数据导出功能已合并到更新与帮助的「数据管理」中
   // 更新消息红点
   updateMsgBadge();
 }
@@ -1364,7 +1362,9 @@ function initProfileMenus() {
       + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📖 使用帮助</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px"><div class="label-doc" id="guide-content" style="white-space:pre-wrap;font-size:13px;line-height:1.8;color:var(--text-body)">' + guide + '</div>'
       + (isAdmin ? '<button class="btn btn-outline btn-sm" id="edit-guide-btn" style="margin-top:6px">✏️ 编辑</button>' : '') + '</div></div>'
       // 数据管理卡片（仅admin）
-      + (isAdmin ? '<div style="background:var(--bg);border-radius:12px;padding:14px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>💾 数据管理</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">' + exportBtns + '</div></div>' : '');
+      + (isAdmin ? '<div style="background:var(--bg);border-radius:12px;padding:14px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>💾 数据管理</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">'
+        + '<div style="font-size:13px;line-height:1.8;color:var(--text-body)"><p><b>📤 导出</b>：下载包含所有编辑内容、收藏、日志的 JSON 备份文件。</p><p><b>📥 导入</b>：从电脑或旧手机恢复之前导出的备份数据。</p></div>'
+        + exportBtns + '</div></div>' : '');
     var editChangelogBtn = document.getElementById('edit-changelog-btn');
     if (editChangelogBtn) editChangelogBtn.onclick = function(){
       var logs = getChangelog();
@@ -1398,9 +1398,7 @@ function initProfileMenus() {
   var reviewMenu=document.getElementById('menu-review');
   if(reviewMenu) reviewMenu.onclick=()=>{ showEditLogs(); };
   // 站内信只在首页入口，不需要菜单绑定
-  // 数据导出
-  var exBtn=document.getElementById('menu-export');
-  if(exBtn) exBtn.onclick=function(){ showExportPanel(); };
+  // 数据导出已合并到更新与帮助
   document.querySelectorAll('.menu-item[data-nav]').forEach(m=>{ m.onclick=()=>showScreen(m.dataset.nav); });
 }
 
