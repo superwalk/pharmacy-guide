@@ -1439,7 +1439,7 @@ function checkVersion(){
   }).catch(function(){ /* 离线忽略 */ });
 }
 function initProfileMenus() {
-  document.getElementById('edit-nickname-btn').onclick=()=>{ showModal('修改昵称','<input id="new-nickname" placeholder="输入新昵称" value="'+currentUser.nickname+'">',[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const n=document.getElementById('new-nickname').value.trim(); if(n) updateNickname(n); }}]); };
+  document.getElementById('edit-nickname-btn').onclick=()=>{ showModal('修改昵称','<p style="font-size:11px;color:var(--text-light);margin-bottom:4px">8字以内，不含标点和特殊符号</p><input id="new-nickname" placeholder="输入新昵称" value="'+currentUser.nickname+'" maxlength="8">',[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ var n=document.getElementById('new-nickname').value.trim(); if(!n){toast('昵称不能为空');return;} if(n.length>8){toast('昵称不能超过8个字');return;} if(/[^\\u4e00-\\u9fa5\\w]/.test(n)){toast('昵称不能包含标点和特殊符号');return;} updateNickname(n); }}]); };
   // 密码与密保
   var secMenu = document.getElementById('menu-secure');
   if (secMenu) secMenu.onclick = showSecuritySettings;
