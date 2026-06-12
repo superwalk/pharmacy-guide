@@ -960,6 +960,9 @@ function renderProfile() {
   // 编辑记录仅编辑员以上可见
   var elog=document.getElementById('menu-edit-log');
   if(elog) elog.style.display=isEditor()?'flex':'none';
+  // 编辑审核仅编辑员以上可见
+  var reviewMenu=document.getElementById('menu-review');
+  if(reviewMenu) reviewMenu.style.display=isEditor()?'flex':'none';
   // 用户管理仅编辑员以上可见
   var um=document.getElementById('menu-user-mgmt');
   if(um) um.style.display=isEditor()?'flex':'none';
@@ -1112,6 +1115,9 @@ function initProfileMenus() {
   // 编辑记录菜单（函数在 admin.js 中定义）
   var elog=document.getElementById('menu-edit-log');
   if(elog) elog.onclick=()=>{ showEditLogs(); };
+  // 编辑审核菜单（函数在 admin.js 中定义）
+  var reviewMenu=document.getElementById('menu-review');
+  if(reviewMenu) reviewMenu.onclick=()=>{ showReviewPanel(); };
   // 数据导出
   var exBtn=document.getElementById('menu-export');
   if(exBtn) exBtn.onclick=function(){ showExportPanel(); };
