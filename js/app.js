@@ -654,7 +654,7 @@ function openGuide(gid) {
   addRecent(gid,'guide');
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:20px">${g.title}</div>
-    <div style="font-size:12px;color:var(--text-light);display:flex;gap:6px"><span class="badge badge-blue">${g.system||'法律法规'}</span><span>${g.year||''}</span><span>${sourceBadge(g.id, allGuides())}</span></div>
+    <div style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${g.system||'法律法规'}</span><span>${g.year||''}</span> ${sourceBadge(g.id, allGuides())}</span>${isEditor()?`<button class="btn btn-sm btn-outline" id="guide-edit-btn">编辑</button>`:''}</div>
     <div id="guide-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
   showEditBtn({type:'guide',id:gid});
@@ -662,6 +662,9 @@ function openGuide(gid) {
     var detail = full || g;
     var gb = document.getElementById('guide-body');
     if(!gb) return;
+    // 绑定内联编辑按钮
+    var geBtn = document.getElementById('guide-edit-btn');
+    if (geBtn) geBtn.onclick = function(){ editCurrentItem(); };
     var html = '<div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">'+hlText(detail.content||'')+'</p></div>';
     if(detail.sourceUrl){
       html += '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><a href="'+detail.sourceUrl+'" target="_blank" class="btn btn-outline btn-sm" style="font-size:13px;padding:6px 16px;text-decoration:none;display:inline-block">🔗 查看原文</a></div>';
@@ -1711,7 +1714,10 @@ function editCurrentItem(){
     if(full) Object.assign(d, full);
     showDrugEditor(d, allDrugs().indexOf(d));
   }); if(!_detailCache['drugs/'+id]) showDrugEditor(d, allDrugs().indexOf(d)); }}
-  else if(t==='guide'){ var g=allGuides().find(function(x){return x.id===id;})||LAWS.find(function(x){return x.id===id;}); if(g) showGuidelineEditor(g, allGuides().indexOf(g)); }
+  else if(t==='guide'){ var g=allGuides().find(function(x){return x.id===id;})||LAWS.find(function(x){return x.id===id;}); if(g){ loadGuideDetail(id, function(full){
+    if(full) Object.assign(g, full);
+    showGuidelineEditor(g, allGuides().indexOf(g));
+  }); if(!_detailCache['guide/'+id]) showGuidelineEditor(g, allGuides().indexOf(g)); }}
   else if(t==='disease'){ var ds=DISEASES.find(function(x){return x.id===id;}); if(ds){ loadDiseaseDetail(id, function(full){
     if(full) Object.assign(ds, full);
     showDiseaseEditor(ds, DISEASES.indexOf(ds));
