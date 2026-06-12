@@ -355,8 +355,8 @@ function initAdmin() {
   }
 
   var isSuper = currentUser && currentUser.username === 'walkman0097';
-  // 用户管理手风琴：仅管理员可见
-  var userCard = document.querySelector('#screen-admin .content > div:last-child');
+  // 用户管理卡片：仅超级管理员可见（其他管理员/编辑者只有内容管理）
+  var userCard = document.getElementById('admin-user-card');
   if (userCard) userCard.style.display = isSuper ? 'block' : 'none';
 
   renderAdminList('drugs');
