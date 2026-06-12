@@ -1803,8 +1803,10 @@ function renderInfusion() {
   var data = INFUSION_DATA;
   if (kw) data = data.filter(function(i){return i.drug.toLowerCase().includes(kw)||(i.note||'').toLowerCase().includes(kw)||(i.cat||'').includes(kw)||(i.interact||'').includes(kw)||(i.vehicle||'').toLowerCase().includes(kw)||(i.py||'').toLowerCase().includes(kw)||genPy(i.cat||'').toLowerCase().includes(kw);});
   // 配伍查询面板
+  var qfid = 'calc-infquery';
+  var qfFaved = isFav(qfid);
   var queryHtml = '<div class="cat-card" style="margin-bottom:8px;background:linear-gradient(135deg,#F3E8FF,#E9D5FF)">'
-    + '<div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">🔍 配伍禁忌查询</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></div>'
+    + '<div class="cat-header" style="cursor:pointer;display:flex;align-items:center" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name" style="flex:1">🔍 配伍禁忌查询</span><span class="inf-tool-fav" style="cursor:pointer;font-size:14px;user-select:none;padding:0 6px" title="收藏此工具">'+(qfFaved?'⭐':'☆')+'</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></div>'
     + '<div class="guide-items" style="display:none">'
     + '<div style="font-size:12px;color:var(--text-light);margin-bottom:6px">输入药品名称，多个药品用逗号或空格分隔</div>'
     + '<div id="inf-recent" style="margin-bottom:6px"></div>'
@@ -1958,6 +1960,14 @@ function doInfusionQuery() {
       doInfusionQuery();
     };
   });
+  // 绑定配伍查询工具收藏
+  container.querySelectorAll('.inf-tool-fav').forEach(function(btn){
+    btn.onclick = function(e){
+      e.stopPropagation();
+      toggleCalcFav('infquery');
+      btn.textContent = isFav('calc-infquery') ? '⭐' : '☆';
+    };
+  });
   // 保存到最近查询
   var input = document.getElementById('inf-query-input');
   if (input) {
@@ -2046,13 +2056,16 @@ function openDisease(name) {
   document.getElementById('label-content').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:12px">正在加载… (DISEASES: '+DISEASES.length+')</div>';
   let html='<div class="section-title" style="font-size:22px">'+name+'</div>';
   if(d) html+=`
-    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span> ${sourceBadge(d.id, DISEASES)}</span>${isEditor()?'<span onclick="editCurrentItem()" style="color:var(--primary);cursor:pointer;font-size:12px;flex-shrink:0">编辑</span>':''}</div>
+    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span> ${sourceBadge(d.id, DISEASES)}</span><span style="display:flex;align-items:center;gap:4px"><span id="ds-fav-star" style="cursor:pointer;font-size:14px;user-select:none" title="收藏此疾病">${isFav(d.id)?'⭐':'☆'}</span>${isEditor()?'<span onclick="editCurrentItem()" style="color:var(--primary);cursor:pointer;font-size:12px;flex-shrink:0">编辑</span>':''}</span></div>
     <div id="disease-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>`;
   if(drugs.length>0) html+=`<div class="section-title" style="margin-top:8px">💊 相关药品 (${drugs.length})</div>`+drugs.slice(0,6).map(dr=>`<div class="list-card" onclick="pushScreen('detail');renderDetail('${dr.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${dr.name}</div><div class="desc">${dr.category} · ${(dr.indications||'').slice(0,30)}…</div></div></div>`).join('');
   if(guides.length>0) html+=`<div class="section-title" style="margin-top:8px">📋 相关指南</div>`+guides.slice(0,3).map(g=>`<div class="list-card" onclick="openGuide('${g.id}')"><div class="icon-box">📋</div><div class="info"><div class="name">${g.title}</div><div class="desc">${g.system} · ${g.year}</div></div></div>`).join('');
   if(!d && drugs.length===0) html+='<div style="text-align:center;padding:40px;color:var(--text-light)">该疾病暂未收录详细信息</div>';
   document.getElementById('label-content').innerHTML=html;
   addRecent(d?d.id:name,'disease');
+  // 绑定疾病收藏按钮
+  var dsFav = document.getElementById('ds-fav-star');
+  if (dsFav) dsFav.onclick = function(e){ e.stopPropagation(); toggleFav(d.id); dsFav.textContent = isFav(d.id)?'⭐':'☆'; };
   if(d) {
     loadDiseaseDetail(d.id, function(full) {
       var detail = full || d;
