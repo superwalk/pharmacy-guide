@@ -214,6 +214,8 @@ function initApp() {
   if (typeof supabaseLoadAll === 'function') {
     supabaseLoadAll(function(loaded){
       if (loaded && _online) {
+        // 同步用户数据
+        if (typeof loadUsersFromSupabase === 'function') loadUsersFromSupabase();
         // 数据已刷新，重新渲染当前页面
         var active = document.querySelector('.screen.active');
         if (active) {
