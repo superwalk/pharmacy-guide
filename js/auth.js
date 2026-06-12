@@ -221,6 +221,10 @@ function updateUser(username, updates) {
   Object.assign(users[idx], updates);
   saveUsers(users);
   syncUserToSupabase(username, users[idx]);
+  // 同时保存到 user_<username>（确保下次登录安全数据不受Supabase覆盖影响）
+  var saved = JSON.parse(localStorage.getItem('user_' + username) || '{}');
+  Object.assign(saved, updates);
+  localStorage.setItem('user_' + username, JSON.stringify(saved));
   return { ok: true };
 }
 
@@ -240,6 +244,13 @@ function login(username, password) {
   clearFails(username);
   const saved = JSON.parse(localStorage.getItem('user_' + u.username) || '{}');
   if (saved.nickname) u.nickname = saved.nickname;
+  // 恢复密保等数据（避免被Supabase旧数据覆盖）
+  if (saved.security_a1) u.security_a1 = saved.security_a1;
+  if (saved.security_a2) u.security_a2 = saved.security_a2;
+  if (saved.security_a3) u.security_a3 = saved.security_a3;
+  if (saved.security_q1) u.security_q1 = saved.security_q1;
+  if (saved.security_q2) u.security_q2 = saved.security_q2;
+  if (saved.security_q3) u.security_q3 = saved.security_q3;
   currentUser = u;
   localStorage.setItem('currentUser', u.username);
   return { ok:true, user:u };
