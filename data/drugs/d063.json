@@ -1,0 +1,15 @@
+{
+  "id": "d063",
+  "name": "叶酸片",
+  "py": "YSP",
+  "en": "Folic Acid",
+  "category": "血液系统用药",
+  "subcategory": "抗贫血药",
+  "type": "OTC",
+  "indications": "巨幼细胞性贫血、妊娠期叶酸缺乏的预防（0.4mg qd）。MTX治疗时的补充。",
+  "contraindications": "对本品过敏者。",
+  "adverse": "罕见过敏反应。",
+  "dosage": "治疗量：5-10mg tid。预防量：0.4mg qd。",
+  "storage": "遮光密封。",
+  "interactions": "与苯妥英钠合用可能降低后者血药浓度。大剂量叶酸可掩盖B12缺乏。"
+}

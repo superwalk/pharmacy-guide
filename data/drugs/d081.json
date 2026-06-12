@@ -1,0 +1,15 @@
+{
+  "id": "d081",
+  "name": "阿托品眼用凝胶",
+  "py": "ATPYYNJ",
+  "en": "Atropine Eye Gel",
+  "category": "五官科用药",
+  "subcategory": "眼科用药",
+  "type": "处方药",
+  "indications": "散瞳验光、虹膜睫状体炎。",
+  "contraindications": "闭角型青光眼。",
+  "adverse": "视物模糊、畏光、口干。",
+  "dosage": "遵医嘱使用。",
+  "storage": "遮光密封。",
+  "interactions": "与其他抗胆碱能药物合用增强作用。"
+}

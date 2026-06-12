@@ -1,0 +1,15 @@
+{
+  "id": "d039",
+  "name": "厄贝沙坦片",
+  "py": "EBSTP",
+  "en": "Irbesartan",
+  "category": "心血管系统用药",
+  "subcategory": "降压药",
+  "type": "处方药",
+  "indications": "原发性高血压。合并高血压的2型糖尿病肾病。",
+  "contraindications": "妊娠中晚期禁用。",
+  "adverse": "偶见头晕、高钾血症。",
+  "dosage": "150mg qd，可增至300mg qd。",
+  "storage": "密封保存。",
+  "interactions": "与保钾利尿药或补钾制剂合用增加高钾风险。"
+}

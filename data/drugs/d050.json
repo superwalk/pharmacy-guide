@@ -1,0 +1,15 @@
+{
+  "id": "d050",
+  "name": "阿卡波糖片",
+  "py": "AKBTP",
+  "en": "Acarbose",
+  "category": "内分泌系统用药",
+  "subcategory": "降糖药",
+  "type": "处方药",
+  "indications": "用于2型糖尿病（降低餐后血糖）。",
+  "contraindications": "肠梗阻、严重肾功能不全。",
+  "adverse": "常见腹胀、排气增多。",
+  "dosage": "起始50mg tid，与第一口饭同嚼服。最大200mg tid。",
+  "storage": "密封保存。",
+  "interactions": "与磺脲类/胰岛素合用增加低血糖风险（低血糖时需用葡萄糖纠正，蔗糖无效）。"
+}

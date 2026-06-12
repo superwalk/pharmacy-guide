@@ -1,0 +1,15 @@
+{
+  "id": "d037",
+  "name": "奥司他韦胶囊",
+  "py": "ASTWJN",
+  "en": "Oseltamivir",
+  "category": "抗微生物药",
+  "subcategory": "抗病毒药",
+  "type": "处方药",
+  "indications": "用于成人和1岁以上儿童的甲型和乙型流感治疗及预防。症状出现48h内开始。",
+  "contraindications": "对本药过敏者。",
+  "adverse": "常见恶心、呕吐（与食物同服可减轻）。",
+  "dosage": "治疗：75mg bid×5天。预防：75mg qd。",
+  "storage": "密封保存。",
+  "interactions": "与丙磺舒合用可增加奥司他韦血药浓度。"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "d053",
+  "name": "来氟米特片",
+  "py": "LFMTP",
+  "en": "Leflunomide",
+  "category": "抗肿瘤药",
+  "subcategory": "免疫治疗药",
+  "type": "处方药",
+  "indications": "类风湿关节炎、狼疮性肾炎。",
+  "contraindications": "严重肝功能损害、妊娠期。",
+  "adverse": "腹泻、肝酶升高、脱发。",
+  "dosage": "负荷量50mg qd×3天，维持量20mg qd。",
+  "storage": "密封保存。",
+  "interactions": "与其他肝毒性药物合用增加肝损伤风险。与华法林合用增强抗凝。"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "d016",
+  "name": "氨氯地平片",
+  "py": "ALDPP",
+  "en": "Amlodipine Tablets",
+  "category": "心血管系统用药",
+  "subcategory": "降压药",
+  "type": "处方药",
+  "indications": "用于治疗高血压和稳定性心绞痛。",
+  "contraindications": "重度主动脉瓣狭窄、不稳定心绞痛急性期。",
+  "adverse": "常见踝部水肿、头痛、面部潮红；偶见心悸、牙龈增生。",
+  "dosage": "起始剂量5mg，一日1次。最大10mg qd。",
+  "storage": "遮光，密封保存。",
+  "interactions": "与CYP3A4强抑制剂合用可能升高血药浓度。与β受体阻滞剂合用注意心衰风险。"
+}

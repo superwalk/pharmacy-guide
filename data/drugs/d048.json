@@ -1,0 +1,15 @@
+{
+  "id": "d048",
+  "name": "瑞舒伐他汀钙片",
+  "py": "RSFTTGP",
+  "en": "Rosuvastatin Calcium",
+  "category": "心血管系统用药",
+  "subcategory": "调脂药",
+  "type": "处方药",
+  "indications": "高胆固醇血症和混合型高脂血症。",
+  "contraindications": "活动性肝病、妊娠哺乳期。",
+  "adverse": "肌痛、肝酶升高；偶见蛋白尿。",
+  "dosage": "起始5-10mg qd，最大20mg qd。",
+  "storage": "密封保存。",
+  "interactions": "与吉非罗齐合用增加肌病风险。与环孢素、抗病毒药合用需减量。"
+}

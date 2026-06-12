@@ -1,0 +1,15 @@
+{
+  "id": "d040",
+  "name": "比索洛尔片",
+  "py": "BSLEP",
+  "en": "Bisoprolol",
+  "category": "心血管系统用药",
+  "subcategory": "降压药",
+  "type": "处方药",
+  "indications": "高血压、冠心病、慢性心力衰竭。",
+  "contraindications": "严重心动过缓、Ⅱ度以上房室传导阻滞。",
+  "adverse": "常见心动过缓、乏力、肢端发冷。",
+  "dosage": "起始2.5-5mg qd，心衰最大10mg qd。",
+  "storage": "遮光密封。",
+  "interactions": "与维拉帕米合用禁。与地高辛合用增加心动过缓风险。"
+}

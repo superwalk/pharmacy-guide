@@ -1,0 +1,15 @@
+{
+  "id": "d041",
+  "name": "硝苯地平片",
+  "py": "XBDPP",
+  "en": "Nifedipine",
+  "category": "心血管系统用药",
+  "subcategory": "降压药",
+  "type": "处方药",
+  "indications": "高血压、心绞痛。",
+  "contraindications": "心源性休克、严重主动脉瓣狭窄。",
+  "adverse": "头痛、面部潮红、踝部水肿、反射性心悸（短效剂型）。",
+  "dosage": "控释片30mg qd；普通片10mg tid。",
+  "storage": "遮光密封。",
+  "interactions": "与CYP3A4抑制剂（葡萄柚汁）合用可能升高血药浓度。"
+}

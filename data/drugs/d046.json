@@ -1,0 +1,15 @@
+{
+  "id": "d046",
+  "name": "多潘立酮片",
+  "py": "DPLTP",
+  "en": "Domperidone",
+  "category": "消化系统用药",
+  "subcategory": "止吐药",
+  "type": "处方药",
+  "indications": "胃排空延缓、胃食管反流引起的恶心呕吐。",
+  "contraindications": "消化道出血、穿孔者禁用。",
+  "adverse": "偶见口干、头痛；罕见QT延长。",
+  "dosage": "10mg tid，餐前15-30min。",
+  "storage": "遮光密封。",
+  "interactions": "与酮康唑等CYP3A4抑制剂合用增加QT延长风险。"
+}

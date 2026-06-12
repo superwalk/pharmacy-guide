@@ -1,0 +1,16 @@
+{
+  "id": "d044",
+  "name": "华法林钠片",
+  "py": "HFLNP",
+  "en": "Warfarin Sodium",
+  "category": "血液系统用药",
+  "subcategory": "抗凝药",
+  "type": "处方药",
+  "indications": "房颤卒中预防、DVT/PE治疗和预防、心脏瓣膜置换术后。",
+  "contraindications": "活动性出血、妊娠期。",
+  "adverse": "出血（需监测INR）。",
+  "dosage": "初始2.5-3mg qd，根据INR调整（目标2.0-3.0）。",
+  "storage": "遮光密封。",
+  "interactions": "与多种药物（抗生素、NSAIDs、胺碘酮等）和食物（VK含量）相互作用。",
+  "tag": "高危"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "d075",
+  "name": "乳果糖口服液",
+  "py": "RGTKFY",
+  "en": "Lactulose Oral Solution",
+  "category": "消化系统用药",
+  "subcategory": "止泻药",
+  "type": "OTC",
+  "indications": "慢性功能性便秘。肝性脑病的辅助治疗。",
+  "contraindications": "半乳糖血症。",
+  "adverse": "初始腹胀，继续使用后缓解。",
+  "dosage": "15-30mL qd-bid。",
+  "storage": "密封保存。",
+  "interactions": "与其他泻药合用可能增加腹泻风险。"
+}

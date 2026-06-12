@@ -1,0 +1,16 @@
+{
+  "id": "d052",
+  "name": "甲氨蝶呤片",
+  "py": "JADLP",
+  "en": "Methotrexate",
+  "category": "抗肿瘤药",
+  "subcategory": "化疗药",
+  "type": "处方药",
+  "indications": "类风湿关节炎、银屑病、滋养细胞肿瘤、急性白血病。",
+  "contraindications": "严重肝肾功能不全、妊娠哺乳期。",
+  "adverse": "骨髓抑制、肝毒性、口腔炎、间质性肺炎。",
+  "dosage": "RA：7.5-15mg qw。补充叶酸5mg qw（MTX后24h）。",
+  "storage": "遮光密封。",
+  "interactions": "与NSAIDs合用减少MTX排泄增加毒性。与磺胺类合用增加骨髓抑制。",
+  "tag": "毒"
+}

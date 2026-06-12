@@ -1,0 +1,15 @@
+{
+  "id": "d023",
+  "name": "利伐沙班片",
+  "py": "LFSBP",
+  "en": "Rivaroxaban",
+  "category": "血液系统用药",
+  "subcategory": "抗凝药",
+  "type": "处方药",
+  "indications": "用于非瓣膜性房颤卒中预防、DVT/PE治疗和预防。",
+  "contraindications": "活动性出血、严重肝功能损害合并凝血障碍。",
+  "adverse": "常见出血；偶见肝功能异常、血小板减少。",
+  "dosage": "房颤：20mg qd（CrCl 15-49者15mg qd）。DVT/PE：15mg bid×21天，然后20mg qd。",
+  "storage": "密封，不超过30℃。",
+  "interactions": "与其他抗凝药、抗血小板药合用增加出血风险。与CYP3A4/P-gp强抑制剂合用增加血药浓度。"
+}

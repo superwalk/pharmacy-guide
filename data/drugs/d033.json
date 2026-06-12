@@ -1,0 +1,16 @@
+{
+  "id": "d033",
+  "name": "美罗培南",
+  "py": "MLPN",
+  "en": "Meropenem",
+  "category": "抗微生物药",
+  "subcategory": "碳青霉烯类",
+  "type": "处方药（特殊使用级）",
+  "indications": "多重耐药菌所致重症感染：腹腔感染、脑膜炎、败血症等。",
+  "contraindications": "碳青霉烯类过敏者禁用。",
+  "adverse": "常见腹泻、转氨酶升高；偶见癫痫。",
+  "dosage": "0.5-1g q8h 静脉滴注。",
+  "storage": "密封保存。",
+  "interactions": "与丙戊酸钠合用显著降低后者血药浓度（禁忌联用）。",
+  "tag": "高危"
+}

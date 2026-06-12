@@ -1,0 +1,15 @@
+{
+  "id": "d015",
+  "name": "氯沙坦钾片",
+  "py": "LSTJP",
+  "en": "Losartan Potassium",
+  "category": "心血管系统用药",
+  "subcategory": "降压药",
+  "type": "处方药",
+  "indications": "用于治疗原发性高血压。尤其适用于合并糖尿病肾病的高血压患者。",
+  "contraindications": "妊娠中晚期禁用。双侧肾动脉狭窄者禁用。",
+  "adverse": "偶见头晕、高钾血症、肾功能损害。干咳发生率低于ACEI。",
+  "dosage": "起始剂量50mg，一日1次。可增至100mg qd。",
+  "storage": "遮光，密封保存。",
+  "interactions": "与保钾利尿药合用可能增加高钾血症风险。与NSAIDs合用可能减弱降压效果。"
+}

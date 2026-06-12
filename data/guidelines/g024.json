@@ -1,0 +1,8 @@
+{
+  "id": "g024",
+  "system": "心血管系统",
+  "title": "中国心力衰竭诊断和治疗指南",
+  "py": "ZGXLSJZDHZLZN",
+  "year": "2024",
+  "content": "一、分类与诊断\nHFrEF（射血分数降低）：LVEF≤40%\nHFimpEF（改善）：曾LVEF<40%→现在>40%\nHFmrEF（轻度降低）：LVEF 41-49%\nHFpEF（保留）：LVEF≥50% + NT-proBNP升高+结构/功能异常\n\n二、HFrEF药物治疗（新四联）\n• ARNI（沙库巴曲缬沙坦）：起始100mg bid，靶量200mg bid\n• β受体阻滞剂：比索洛尔靶量10mg qd / 美托洛尔缓释片190mg qd\n• MRA（螺内酯/依普利酮）：靶量50mg qd\n• SGLT2i（达格列净/恩格列净）：10mg qd\n\n三、启动与滴定\n同时启动四联，每2周逐步增加剂量。每次增量前评估：血压、心率、肾功能、血钾。达靶量后至少维持3个月评估效果。\n\n四、HFpEF治疗\n• SGLT2i：已证实获益\n• 利尿剂：控制液体潴留\n• 合并疾病治疗：降压（目标<130/80）、控糖、减重\n\n五、器械治疗\n• ICD：LVEF≤35%+预期生存>1年\n• CRT：LBBB QRS≥150ms + LVEF≤35%"
+}

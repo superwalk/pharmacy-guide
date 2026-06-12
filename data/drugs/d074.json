@@ -1,0 +1,15 @@
+{
+  "id": "d074",
+  "name": "异丙托溴铵吸入剂",
+  "py": "YBTXAXRJ",
+  "en": "Ipratropium Bromide",
+  "category": "呼吸系统用药",
+  "subcategory": "平喘药",
+  "type": "处方药",
+  "indications": "COPD的支气管扩张治疗。",
+  "contraindications": "对阿托品类过敏者。",
+  "adverse": "口干、咳嗽。",
+  "dosage": "2-4喷 tid-qid。",
+  "storage": "遮光密封。",
+  "interactions": "与其他抗胆碱能药物合用增强作用。"
+}

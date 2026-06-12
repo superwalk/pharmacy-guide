@@ -1,0 +1,15 @@
+{
+  "id": "d003",
+  "name": "左氧氟沙星片",
+  "py": "ZYFSXP",
+  "en": "Levofloxacin Tablets",
+  "category": "抗微生物药",
+  "subcategory": "喹诺酮类",
+  "type": "处方药",
+  "indications": "适用于敏感菌所致的社区获得性肺炎、复杂性尿路感染、慢性支气管炎急性发作等。",
+  "contraindications": "对喹诺酮类药物过敏者、癫痫患者、18岁以下禁用。",
+  "adverse": "常见恶心、腹泻、头晕、失眠；偶见肌腱炎、QT间期延长。",
+  "dosage": "成人一次0.5g，一日1次。",
+  "storage": "遮光，密封，阴凉处保存。",
+  "interactions": "与含金属离子药物（铁剂、铝剂）合用影响吸收，需间隔2小时以上。"
+}

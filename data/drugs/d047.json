@@ -1,0 +1,15 @@
+{
+  "id": "d047",
+  "name": "蒙脱石散",
+  "py": "MTSS",
+  "en": "Montmorillonite Powder",
+  "category": "消化系统用药",
+  "subcategory": "止泻药",
+  "type": "OTC",
+  "indications": "成人及儿童急慢性腹泻。",
+  "contraindications": "对本品过敏者。",
+  "adverse": "偶见便秘。",
+  "dosage": "1袋（3g）tid，两餐之间服用。",
+  "storage": "密封保存。",
+  "interactions": "与其他药物间隔至少2小时服用，以免影响吸收。"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "g033",
+  "system": "内分泌系统",
+  "title": "口服降糖药物临床应用专家共识",
+  "py": "KFJTYWLCYYZJGS",
+  "year": "2024",
+  "content": "一、药物分类\n双胍类：二甲双胍（一线基石）500mg bid-2000mg/d\n磺脲类：格列美脲1-6mg qd、格列齐特30-120mg qd（低血糖、增重）\n格列奈类：瑞格列奈0.5-4mg tid（餐前10-15min，短效）\nTZD：吡格列酮15-45mg qd（增重、水肿、骨折风险）\nα-糖苷酶抑制剂：阿卡波糖50-100mg tid（与第一口饭同服，降低餐后血糖）\nDPP-4i：西格列汀100mg qd、利格列汀5mg qd（CKD无需调量）\nSGLT2i：达格列净/恩格列净10mg qd（心衰/CKD获益）\nGLP-1RA：利拉鲁肽0.6-1.8mg/d、司美格鲁肽0.25-1mg qw（减重、心血管获益）\n\n二、治疗路径\n起始：二甲双胍（禁忌或不耐受→SGLT2i/GLP-1RA/DPP-4i）\n联合：二甲双胍+SGLT2i（ASCVD/心衰/CKD优选）\n三联：二甲双胍+SGLT2i+GLP-1RA或DPP-4i\n胰岛素启动：三联口服药HbA1c仍不达标\n\n三、合并症指导\nASCVD/心衰：优先SGLT2i、GLP-1RA\nCKD：优先SGLT2i（eGFR≥20）、GLP-1RA（eGFR≥15）\n老年人/衰弱：避免磺脲类（低血糖），选用低血糖风险低的药物\n\n四、CKD剂量调整\n二甲双胍：eGFR 30-45减量至1000mg/d，eGFR<30禁用\nSGLT2i：达格列净可降至eGFR 20\nDPP-4i：利格列汀无需调整（胆汁排泄）\n磺脲类：格列喹酮可用于CKD（几乎不肾排泄）"
+}

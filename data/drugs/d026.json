@@ -1,0 +1,15 @@
+{
+  "id": "d026",
+  "name": "甲钴胺片",
+  "py": "JGAP",
+  "en": "Mecobalamin",
+  "category": "营养支持药",
+  "subcategory": "维生素类",
+  "type": "OTC",
+  "indications": "用于周围神经病变、巨幼细胞性贫血。",
+  "contraindications": "对本药过敏者禁用。",
+  "adverse": "偶见食欲不振、恶心、腹泻；罕见皮疹。",
+  "dosage": "一次0.5mg，一日3次。",
+  "storage": "遮光，密封保存。",
+  "interactions": "与氯霉素合用可能影响造血系统。"
+}

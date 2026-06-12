@@ -1,0 +1,15 @@
+{
+  "id": "d036",
+  "name": "氟康唑胶囊",
+  "py": "FKZJN",
+  "en": "Fluconazole",
+  "category": "抗微生物药",
+  "subcategory": "抗真菌药",
+  "type": "处方药",
+  "indications": "念珠菌感染、隐球菌性脑膜炎。",
+  "contraindications": "对本药过敏者。",
+  "adverse": "常见恶心；偶见肝毒性。",
+  "dosage": "首剂0.4g，之后0.2g qd。",
+  "storage": "密封保存。",
+  "interactions": "与华法林合用增强抗凝。与磺脲类降糖药合用增加低血糖风险。"
+}

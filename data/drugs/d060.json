@@ -1,0 +1,15 @@
+{
+  "id": "d060",
+  "name": "舍曲林片",
+  "py": "SQLP",
+  "en": "Sertraline",
+  "category": "神经系统用药",
+  "subcategory": "抗抑郁药",
+  "type": "处方药",
+  "indications": "抑郁症、强迫症、社交焦虑障碍、创伤后应激障碍。",
+  "contraindications": "与MAOIs合用禁。",
+  "adverse": "恶心、腹泻、失眠、性功能障碍。",
+  "dosage": "起始50mg qd，晨或晚服用。最大200mg qd。",
+  "storage": "密封保存。",
+  "interactions": "禁与MAOIs合用（间隔至少14天）。与NSAIDs/抗凝药合用增加出血风险。"
+}

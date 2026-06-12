@@ -1,0 +1,15 @@
+{
+  "id": "d088",
+  "name": "乙酰半胱氨酸泡腾片",
+  "py": "YXBGASPT",
+  "en": "Acetylcysteine Effervescent",
+  "category": "呼吸系统用药",
+  "subcategory": "祛痰药",
+  "type": "OTC",
+  "indications": "痰液黏稠引起的咳痰困难。",
+  "contraindications": "对本品过敏者、苯丙酮尿症患者。",
+  "adverse": "偶有恶心、呕吐、罕见支气管痉挛。",
+  "dosage": "成人600mg qd 泡腾后口服。",
+  "storage": "密封避潮。",
+  "interactions": "与硝酸甘油合用可能增强血管扩张和抗血小板作用。"
+}

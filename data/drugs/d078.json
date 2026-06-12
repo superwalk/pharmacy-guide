@@ -1,0 +1,15 @@
+{
+  "id": "d078",
+  "name": "西地那非片",
+  "py": "XDNFP",
+  "en": "Sildenafil",
+  "category": "男科/泌尿科用药",
+  "subcategory": "勃起功能障碍药",
+  "type": "处方药",
+  "indications": "勃起功能障碍、肺动脉高压。",
+  "contraindications": "与硝酸酯类药物合用禁。",
+  "adverse": "头痛、面部潮红、消化不良、视觉异常。",
+  "dosage": "ED：50mg 性活动前1h服用。",
+  "storage": "密封保存。",
+  "interactions": "禁与任何形式的硝酸酯类药物合用（严重低血压）。与α受体阻滞剂合用注意血压。"
+}

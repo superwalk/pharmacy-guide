@@ -1,0 +1,15 @@
+{
+  "id": "d019",
+  "name": "非布司他片",
+  "py": "FBSTP",
+  "en": "Febuxostat Tablets",
+  "category": "解热镇痛药",
+  "subcategory": "抗痛风药",
+  "type": "处方药",
+  "indications": "用于痛风患者高尿酸血症的长期治疗（不推荐用于无临床症状的高尿酸血症）。",
+  "contraindications": "正在使用硫唑嘌呤或巯嘌呤者禁用。",
+  "adverse": "常见肝功能异常、关节痛；偶见心血管事件增加风险。",
+  "dosage": "起始剂量40mg，一日1次。2周后SUA不达标可增至80mg qd。",
+  "storage": "遮光，密封保存。",
+  "interactions": "与硫唑嘌呤、巯嘌呤合用可显著增加后者毒性。"
+}

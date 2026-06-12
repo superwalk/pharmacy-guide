@@ -1,0 +1,15 @@
+{
+  "id": "d062",
+  "name": "琥珀酸亚铁片",
+  "py": "HPSYTP",
+  "en": "Ferrous Succinate",
+  "category": "血液系统用药",
+  "subcategory": "抗贫血药",
+  "type": "OTC",
+  "indications": "缺铁性贫血的预防和治疗。",
+  "contraindications": "血色病、含铁血黄素沉着症。",
+  "adverse": "黑便（正常现象）、胃肠道不适、便秘。",
+  "dosage": "一次1-2片，一日1-3次。餐后服。",
+  "storage": "密封保存。",
+  "interactions": "与四环素类、喹诺酮类、抗酸药同服间隔2小时以上。VC同服可增加吸收。"
+}

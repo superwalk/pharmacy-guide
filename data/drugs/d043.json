@@ -1,0 +1,15 @@
+{
+  "id": "d043",
+  "name": "呋塞米片",
+  "py": "FSMP",
+  "en": "Furosemide",
+  "category": "心血管系统用药",
+  "subcategory": "利尿剂",
+  "type": "处方药",
+  "indications": "水肿性疾病（心衰、肾衰、肝硬化）、高血压。",
+  "contraindications": "无尿者、严重电解质紊乱者。",
+  "adverse": "低钾、低钠、低氯性碱中毒、高尿酸血症、耳毒性。",
+  "dosage": "起始20-40mg qd-bid。",
+  "storage": "遮光密封。",
+  "interactions": "与氨基糖苷类合用增加耳毒性。与NSAIDs合用减弱利尿效果。"
+}

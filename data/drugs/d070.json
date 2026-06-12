@@ -1,0 +1,15 @@
+{
+  "id": "d070",
+  "name": "黄体酮胶囊",
+  "py": "HTTJN",
+  "en": "Progesterone",
+  "category": "妇产科用药",
+  "subcategory": "激素类",
+  "type": "处方药",
+  "indications": "先兆流产、习惯性流产、月经失调。",
+  "contraindications": "严重肝病、血栓性疾病。",
+  "adverse": "头晕、嗜睡、乳房胀痛。",
+  "dosage": "先兆流产：0.2-0.3g/d分次服。",
+  "storage": "遮光密封。",
+  "interactions": "与CYP3A4诱导剂合用可能降低药效。"
+}

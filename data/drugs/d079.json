@@ -1,0 +1,16 @@
+{
+  "id": "d079",
+  "name": "曲马多缓释片",
+  "py": "QMDHSP",
+  "en": "Tramadol SR",
+  "category": "解热镇痛药",
+  "subcategory": "阿片类",
+  "type": "处方药（精二）",
+  "indications": "中度至重度疼痛。",
+  "contraindications": "严重呼吸抑制、急性酒精中毒。",
+  "adverse": "恶心、头晕、便秘、出汗。",
+  "dosage": "50-100mg q12h。",
+  "storage": "密封保存。",
+  "interactions": "与SSRI类抗抑郁药合用可能增加5-HT综合征风险。与其他中枢抑制剂合用增强呼吸抑制。",
+  "tag": "精二"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "d089",
+  "name": "氟替卡松吸入气雾剂",
+  "py": "FTKSXRQWJ",
+  "en": "Fluticasone Inhaler",
+  "category": "呼吸系统用药",
+  "subcategory": "COPD用药",
+  "type": "处方药",
+  "indications": "哮喘和COPD的抗炎维持治疗。",
+  "contraindications": "活动性肺结核、口咽部真菌感染。",
+  "adverse": "声音嘶哑、口腔念珠菌病、生长抑制（儿童）。",
+  "dosage": "COPD 500μg bid 吸入。",
+  "storage": "密封保存。",
+  "interactions": "与CYP3A4抑制剂合用需谨慎（利托那韦禁忌合用）。"
+}

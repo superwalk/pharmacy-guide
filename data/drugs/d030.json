@@ -1,0 +1,15 @@
+{
+  "id": "d030",
+  "name": "氨溴索片",
+  "py": "AXSP",
+  "en": "Ambroxol",
+  "category": "呼吸系统用药",
+  "subcategory": "祛痰药",
+  "type": "OTC",
+  "indications": "用于急慢性呼吸道疾病引起的痰液黏稠、咳痰困难。",
+  "contraindications": "对本品过敏者。",
+  "adverse": "偶见恶心、胃部不适。",
+  "dosage": "成人一次30mg，一日3次。长期服用减为bid。",
+  "storage": "遮光，密封保存。",
+  "interactions": "与抗生素（阿莫西林、头孢呋辛等）合用可增加其在肺组织的浓度。"
+}

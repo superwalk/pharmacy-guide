@@ -1,0 +1,15 @@
+{
+  "id": "d009",
+  "name": "阿托伐他汀钙片",
+  "py": "ATFTTGP",
+  "en": "Atorvastatin Calcium",
+  "category": "心血管系统用药",
+  "subcategory": "调脂药",
+  "type": "处方药",
+  "indications": "用于高胆固醇血症和混合型高脂血症，降低心血管事件风险。",
+  "contraindications": "活动性肝病、不明原因转氨酶持续升高、妊娠及哺乳期。",
+  "adverse": "常见肌痛、腹泻；偶见肝功能异常、肌酸激酶升高。",
+  "dosage": "起始剂量10-20mg，一日1次，晚餐后服用。",
+  "storage": "遮光，密封保存。",
+  "interactions": "与吉非罗齐合用增加肌病风险。与环孢素、克拉霉素合用需调整剂量。"
+}

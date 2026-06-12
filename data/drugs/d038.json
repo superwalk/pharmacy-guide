@@ -1,0 +1,15 @@
+{
+  "id": "d038",
+  "name": "恩替卡韦片",
+  "py": "ETKWP",
+  "en": "Entecavir",
+  "category": "抗微生物药",
+  "subcategory": "抗病毒药",
+  "type": "处方药",
+  "indications": "慢性乙型肝炎。",
+  "contraindications": "对本药过敏者。",
+  "adverse": "偶见头痛、疲劳；罕见乳酸酸中毒。",
+  "dosage": "0.5mg qd，空腹服用（餐前/后≥2h）。",
+  "storage": "密封保存。",
+  "interactions": "与食物同服可显著降低吸收。"
+}

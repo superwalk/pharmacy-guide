@@ -1,0 +1,15 @@
+{
+  "id": "d064",
+  "name": "左甲状腺素钠片",
+  "py": "ZJZXSNP",
+  "en": "Levothyroxine Sodium",
+  "category": "内分泌系统用药",
+  "subcategory": "甲状腺用药",
+  "type": "处方药",
+  "indications": "甲减的替代治疗。TSH抑制治疗（甲状腺癌术后）。",
+  "contraindications": "未纠正的肾上腺皮质功能不全。",
+  "adverse": "过量时出现甲亢症状。",
+  "dosage": "起始25-50μg qd，根据TSH每4-6周调整。清晨空腹，至少30min后进食。",
+  "storage": "遮光密封，<25℃。",
+  "interactions": "与钙剂、铁剂、含铝药物间隔≥4h服用。与含大豆制品间隔服用。"
+}

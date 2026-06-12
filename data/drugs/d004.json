@@ -1,0 +1,15 @@
+{
+  "id": "d004",
+  "name": "硝苯地平控释片",
+  "py": "XBDPKSP",
+  "en": "Nifedipine Controlled-release",
+  "category": "心血管系统用药",
+  "subcategory": "降压药",
+  "type": "处方药",
+  "indications": "用于治疗高血压、心绞痛（慢性稳定性心绞痛及变异型心绞痛）。",
+  "contraindications": "心源性休克、严重主动脉瓣狭窄、不稳定心绞痛急性发作期。",
+  "adverse": "常见头痛、面部潮红、踝部水肿、心悸。",
+  "dosage": "一次30mg，一日1次。整片吞服，不可掰开。",
+  "storage": "遮光，密封，不超过25℃保存。",
+  "interactions": "与CYP3A4抑制剂（如葡萄柚汁）合用可能升高血药浓度。与β受体阻滞剂合用可能加重心衰。"
+}

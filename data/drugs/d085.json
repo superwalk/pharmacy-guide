@@ -1,0 +1,15 @@
+{
+  "id": "d085",
+  "name": "噻托溴铵粉吸入剂",
+  "py": "STXAFXRJ",
+  "en": "Tiotropium Inhaler",
+  "category": "呼吸系统用药",
+  "subcategory": "COPD用药",
+  "type": "处方药",
+  "indications": "COPD的维持治疗。",
+  "contraindications": "对噻托溴铵或阿托品类过敏者。",
+  "adverse": "口干、便秘、尿潴留、视物模糊（窄角型青光眼慎用）。",
+  "dosage": "18μg qd 吸入。",
+  "storage": "密封干燥保存。",
+  "interactions": "与其他抗胆碱能药物合用可能增强抗胆碱能效应。"
+}

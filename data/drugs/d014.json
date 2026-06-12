@@ -1,0 +1,15 @@
+{
+  "id": "d014",
+  "name": "布洛芬缓释胶囊",
+  "py": "BLFHSJN",
+  "en": "Ibuprofen SR Capsules",
+  "category": "解热镇痛药",
+  "subcategory": "非甾体抗炎药",
+  "type": "OTC",
+  "indications": "用于缓解轻中度疼痛、关节痛、头痛、牙痛、痛经；也用于退热。",
+  "contraindications": "活动性消化性溃疡、严重肾功能不全、妊娠晚期禁用。",
+  "adverse": "常见胃肠道反应；偶见头晕、皮疹、肾功能损害。",
+  "dosage": "一次0.3g，一日2次。饭后服用减轻胃肠刺激。",
+  "storage": "密封保存。",
+  "interactions": "与抗凝药合用增加出血风险。与其他NSAIDs合用增加胃溃疡风险。"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "d025",
+  "name": "甲泼尼龙片",
+  "py": "JPNLP",
+  "en": "Methylprednisolone",
+  "category": "内分泌系统用药",
+  "subcategory": "激素类",
+  "type": "处方药",
+  "indications": "用于过敏性疾病、自身免疫性疾病、炎症性疾病、器官移植排斥反应等。",
+  "contraindications": "全身性真菌感染、对本品过敏者。",
+  "adverse": "长期使用：库欣综合征、骨质疏松、高血糖、感染风险增加、消化道溃疡。",
+  "dosage": "起始剂量4-48mg/d，根据疾病和反应调整。需逐步减量停药。",
+  "storage": "遮光，密封保存。",
+  "interactions": "与NSAIDs合用增加消化道溃疡风险。与利福平合用加速代谢。"
+}

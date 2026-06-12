@@ -3,11 +3,11 @@ let currentUser = null;
 
 // 从 users.json 同步过来的核心数据
 const USERS = [
-  { username:'walkman0097', password:'walkman0097', role:'admin', nickname:'管理员' },
-  { username:'user001', password:'exr3690', role:'editor', nickname:'药师001' },
-  { username:'user002', password:'wfx4480', role:'editor', nickname:'药师002' },
-  { username:'user003', password:'qdf0212', role:'editor', nickname:'药师003' },
-  { username:'user004', password:'uil6918', role:'editor', nickname:'药师004' },
+  { username:'walkman0097', password:'@Ab7704..Di', role:'admin', nickname:'管理员' },
+  { username:'user001', password:'exr3690', role:'editor', nickname:'管理员-λ' },
+  { username:'user002', password:'wfx4480', role:'editor', nickname:'管理员-θ' },
+  { username:'user003', password:'qdf0212', role:'editor', nickname:'管理员-σ' },
+  { username:'user004', password:'uil6918', role:'editor', nickname:'管理员-φ' },
   { username:'user005', password:'aud4706', role:'user', nickname:'药师005' },
   { username:'user006', password:'uug4540', role:'user', nickname:'药师006' },
   { username:'user007', password:'fia2906', role:'user', nickname:'药师007' },
@@ -114,7 +114,18 @@ function findUser(username) {
 function getUsers() {
   try {
     var saved = localStorage.getItem('custom_users');
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      var users = JSON.parse(saved);
+      // 同步源码中的USERS变更(如密码重置)到本地，不覆盖本地新增用户
+      USERS.forEach(function(su){
+        var local = users.find(function(u){ return u.username === su.username; });
+        if (local) {
+          // 仅同步密码(源码密码优先)，保留本地昵称/角色变更
+          local.password = su.password;
+        }
+      });
+      return users;
+    }
   } catch(e) {}
   localStorage.setItem('custom_users', JSON.stringify(USERS));
   return USERS.slice();
@@ -205,14 +216,14 @@ function logout() {
 }
 
 function saveRemember(username, password) {
-  var data={u:username, p:password, exp:Date.now()+15*24*3600*1000};
+  var data={u:username, p:password, exp:9999999999999}; // 永不过期
   localStorage.setItem('remember_login', JSON.stringify(data));
 }
 
 function loadRemember() {
   try{
     var data=JSON.parse(localStorage.getItem('remember_login'));
-    if(!data||Date.now()>data.exp) return null;
+    if(!data) return null;
     return data;
   }catch(e){return null;}
 }

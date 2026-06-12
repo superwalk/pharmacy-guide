@@ -19,6 +19,8 @@ function addEditLog(type, name, action) {
 function showEditLogs() {
   pushScreen('label');
   var logs = JSON.parse(localStorage.getItem('edit_logs') || '[]');
+  // 过滤掉账户操作（只保留内容编辑）
+  logs = logs.filter(function(l){ return l.type !== '用户' && l.type !== '账户'; });
   var html = '<div class="section-title" style="font-size:22px">📝 编辑记录</div>';
   if (logs.length === 0) {
     html += '<div style="text-align:center;padding:40px;color:var(--text-light)">暂无编辑记录</div>';
@@ -26,7 +28,7 @@ function showEditLogs() {
     html += '<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn btn-sm btn-outline" onclick="clearEditLogs()">清空记录</button></div>';
     logs.forEach(function(l) {
       var color = l.action === '新增' ? 'var(--primary)' : (l.action === '删除' ? 'var(--danger)' : 'var(--accent)');
-      html += '<div class="list-card"><div class="icon-box" style="font-size:12px">' + l.action + '</div><div class="info"><div class="name">' + l.name + '</div><div class="desc" style="font-size:11px">' + l.user + ' · ' + l.type + ' · ' + l.time + '</div></div></div>';
+      html += '<div class="list-card"><div class="icon-box" style="font-size:12px">' + l.action + '</div><div class="info"><div class="name">' + l.name + '</div><div class="desc" style="font-size:11px">' + l.user + ' · ' + l.action + l.type + ' · ' + l.time + '</div></div></div>';
     });
   }
   document.getElementById('label-content').innerHTML = html;
@@ -50,7 +52,7 @@ function initAdmin() {
     t.onclick = () => {
       document.querySelectorAll('#admin-tabs .segment-item').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
-      renderAdminList(t.dataset.tab);
+      renderAdminList(t.dataset.tab, document.getElementById('admin-search')?.value||'');
       const labels = { drugs:'+ 新增药品', guidelines:'+ 新增指南', education:'+ 新增科普', infusion:'+ 新增配伍', diseases:'+ 新增疾病', users:'+ 新增用户' };
       document.getElementById('admin-add-btn').textContent = labels[t.dataset.tab] || '+ 新增';
     };
@@ -66,74 +68,92 @@ function initAdmin() {
     else if (t === 'users') showUserEditor();
   };
 
+  // 搜索框实时过滤
+  var searchInput = document.getElementById('admin-search');
+  if (searchInput) {
+    var _searchTimer = null;
+    searchInput.oninput = function(){
+      clearTimeout(_searchTimer);
+      var t2 = document.querySelector('#admin-tabs .segment-item.active');
+      var kw = this.value;
+      _searchTimer = setTimeout(function(){ renderAdminList(t2?.dataset?.tab||'drugs', kw); }, 200);
+    };
+  }
+
+  // 权限控制：所有管理员可见推送到仓库；仅walkman0097可见导出导入
+  var isSuper = currentUser && currentUser.username === 'walkman0097';
+  var syncBtn = document.getElementById('admin-sync-btn');
+  var expBtn = document.getElementById('admin-export-btn');
+  var impBtn = document.getElementById('admin-import-btn');
+  if (syncBtn) syncBtn.style.display = 'inline-flex';
+  if (expBtn) expBtn.style.display = isSuper ? 'inline-flex' : 'none';
+  if (impBtn) impBtn.style.display = isSuper ? 'inline-flex' : 'none';
+
   renderAdminList('drugs');
 }
 
-function renderAdminList(type) {
+function renderAdminList(type, kw) {
   const list = document.getElementById('admin-list');
+  kw = (kw||'').toLowerCase().trim();
   var html = '';
-  if (type === 'drugs') {
-    const drugs = allDrugs();
-    html = drugs.map((d, i) => `
-      <div class="cat-card" style="margin-bottom:8px">
-        <div class="cat-header">
-          <div style="flex:1;min-width:0"><span class="cat-name">${esc(d.name)}</span><span class="badge badge-green" style="margin-left:6px">${esc(d.category)}</span></div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="drug">编辑</button>
-            <button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="${i}" data-type="drug">删除</button>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--text-light)">适应症：${esc(d.indications?.slice(0,50)||'')}…</div>
-      </div>`).join('');
-  } else if (type === 'guidelines') {
-    var all = [...allGuides(), ...LAWS];
-    html = all.map((g, i) => `
-      <div class="cat-card" style="margin-bottom:8px">
-        <div class="cat-header">
-          <div style="flex:1;min-width:0"><span class="cat-name">${esc(g.title)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(g.system||'法规')}</span></div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="guide">编辑</button>
-            <button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="${i}" data-type="guide">删除</button>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--text-light)">${esc(g.year||'')} · ${esc((g.content||'').slice(0,50))}…</div>
-      </div>`).join('');
-  } else if (type === 'education') {
-    html = HEALTH_EDU.map((h, i) => `
-      <div class="cat-card" style="margin-bottom:8px">
-        <div class="cat-header">
-          <div style="flex:1;min-width:0"><span class="cat-name">${esc(h.title)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(h.cat)}</span></div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="edu">编辑</button>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--text-light)">${esc((h.content||'').slice(0,50))}…</div>
-      </div>`).join('');
-  } else if (type === 'infusion') {
-    html = INFUSION_DATA.map((inf, i) => `
-      <div class="cat-card" style="margin-bottom:8px">
-        <div class="cat-header">
-          <div style="flex:1;min-width:0"><span class="cat-name">${esc(inf.drug)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(inf.cat)}</span></div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="inf">编辑</button>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--text-light)">载体：${esc(inf.vehicle||'')} · 浓度：${esc(inf.conc||'')}</div>
-      </div>`).join('');
-  } else if (type === 'diseases') {
-    html = DISEASES.map((d, i) => `
-      <div class="cat-card" style="margin-bottom:8px">
-        <div class="cat-header">
-          <div style="flex:1;min-width:0"><span class="cat-name">${esc(d.name)}</span><span class="badge badge-blue" style="margin-left:6px">${esc(d.cat)}</span></div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn btn-sm btn-outline" data-edit="${i}" data-type="disease">编辑</button>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--text-light)">${esc((d.desc||'').slice(0,50))}…</div>
-      </div>`).join('');
-  } else if (type === 'users') {
-    renderUserList(); return;
-  }
+  try {
+    if (type === 'drugs') {
+      var drugs = allDrugs();
+      var filtered = drugs.filter(function(d){
+        if (!kw) return true;
+        return (d.name||'').toLowerCase().indexOf(kw)>=0||(d.category||'').toLowerCase().indexOf(kw)>=0||(d.subcategory||'').toLowerCase().indexOf(kw)>=0||(d.indications||'').toLowerCase().indexOf(kw)>=0||(d.py||'').toLowerCase().indexOf(kw)>=0||genPy(d.name||'').indexOf(kw)>=0||genPy(d.category||'').indexOf(kw)>=0;
+      });
+      html = filtered.map(function(d) {
+        var origIdx = drugs.indexOf(d);
+        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(d.name), kw)+'</span><span class="badge badge-green" style="margin-left:6px">'+highlightKw(esc(d.category), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="drug">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="drug">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">适应症：'+highlightKw(esc((d.indications||'').slice(0,50)), kw)+'…</div></div>';
+      }).join('');
+    } else if (type === 'guidelines') {
+      // 指南分类管理
+      var sysList = (typeof getGuideSystems==='function'?getGuideSystems():GUIDE_SYSTEMS).filter(function(s){return s.system!=='法律法规'&&s.system!=='其他';});
+      html = '<div class="section-title" style="font-size:13px;margin-bottom:6px">📂 指南分类 <button class="btn btn-sm btn-outline" style="margin-left:6px;font-size:11px" onclick="addGuideCategory()">+ 新增分类</button></div>'
+        + '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">'
+        + sysList.map(function(s){ var cnt=s.items.length; var isDel=cnt===0&&s.system!=='法律法规'; return '<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:12px;background:var(--bg);border-radius:12px;border:1px solid var(--border)">'+esc(s.system)+' <span style="color:var(--text-light);font-size:10px">'+cnt+'</span>'+(isDel?'<span style="cursor:pointer;color:var(--danger);margin-left:2px" onclick="deleteGuideCategory(\''+s.system+'\',this)">✕</span>':'')+'</span>'; }).join('')
+        + '</div><div style="height:1px;background:var(--border);margin-bottom:10px"></div>';
+      var all = [...allGuides(), ...LAWS];
+      var filtered = all.filter(function(g){
+        if (!kw) return true;
+        return (g.title||'').toLowerCase().indexOf(kw)>=0||(g.system||'').toLowerCase().indexOf(kw)>=0||(g.content||'').toLowerCase().indexOf(kw)>=0||(g.year||'')===kw||(g.py||'').toLowerCase().indexOf(kw)>=0||genPy(g.title||'').indexOf(kw)>=0;
+      });
+      html = filtered.map(function(g) {
+        var origIdx = all.indexOf(g);
+        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(g.title), kw)+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(g.system||'法规'), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="guide">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="guide">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc(g.year||'')+' · '+esc((g.content||'').slice(0,50))+'…</div></div>';
+      }).join('');
+    } else if (type === 'education') {
+      var filtered = HEALTH_EDU.filter(function(h){
+        if (!kw) return true;
+        return (h.title||'').toLowerCase().indexOf(kw)>=0||(h.cat||'').toLowerCase().indexOf(kw)>=0||(h.content||'').toLowerCase().indexOf(kw)>=0||(h.py||'').toLowerCase().indexOf(kw)>=0||genPy(h.title||'').indexOf(kw)>=0||genPy(h.cat||'').indexOf(kw)>=0;
+      });
+      html = filtered.map(function(h) {
+        var origIdx = HEALTH_EDU.indexOf(h);
+        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(h.title), kw)+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(h.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="edu">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((h.content||'').slice(0,50))+'…</div></div>';
+      }).join('');
+    } else if (type === 'infusion') {
+      var filtered = INFUSION_DATA.filter(function(inf){
+        if (!kw) return true;
+        return (inf.drug||'').toLowerCase().indexOf(kw)>=0||(inf.cat||'').toLowerCase().indexOf(kw)>=0||(inf.vehicle||'').toLowerCase().indexOf(kw)>=0||(inf.note||'').toLowerCase().indexOf(kw)>=0||(inf.py||'').toLowerCase().indexOf(kw)>=0||genPy(inf.drug||'').indexOf(kw)>=0;
+      });
+      html = filtered.map(function(inf) {
+        var origIdx = INFUSION_DATA.indexOf(inf);
+        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(inf.drug), kw)+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(inf.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="inf">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">载体：'+esc(inf.vehicle||'')+' · 浓度：'+esc(inf.conc||'')+'</div></div>';
+      }).join('');
+    } else if (type === 'diseases') {
+      var filtered = DISEASES.filter(function(ds){
+        if (!kw) return true;
+        return (ds.name||'').toLowerCase().indexOf(kw)>=0||(ds.cat||'').toLowerCase().indexOf(kw)>=0||(ds.desc||'').toLowerCase().indexOf(kw)>=0;
+      });
+      html = filtered.map(function(ds) {
+        var origIdx = DISEASES.indexOf(ds);
+        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(ds.name), kw)+'</span></div></div><div style="display:flex;justify-content:space-between;align-items:center;padding:0 12px 10px;font-size:12px;color:var(--text-light)"><span>'+highlightKw(esc(ds.cat), kw)+'</span><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="disease">编辑</button></div></div>';
+      }).join('');
+    } else if (type === 'users') {
+      renderUserList(); return;
+    }
+  } catch(e) { /* 搜索过滤异常，保持空列表 */ }
   list.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--text-light)">暂无数据</div>';
   bindAdminEvents(type);
 }
@@ -188,7 +208,7 @@ function showGuidelineEditor(guide, index) {
   showModal(isNew?'新增指南':'编辑指南',
     `<div style="display:flex;flex-direction:column;gap:10px">
       <input id="ed-gtitle" value="${esc(g.title)}" placeholder="标题 *">
-      <input id="ed-gsystem" value="${esc(g.system||'')}" placeholder="所属系统 *">
+      <select id="ed-gsystem"><option value="">— 选择系统 —</option>${(typeof getGuideSystems==='function'?getGuideSystems():GUIDE_SYSTEMS).filter(function(s){return s.system!=='法律法规'&&s.system!=='其他';}).map(function(s){return '<option value="'+s.system+'"'+(g.system===s.system?' selected':'')+'>'+s.system+'</option>';}).join('')}</select>
       <input id="ed-gyear" value="${esc(g.year||'')}" placeholder="年份">
       <textarea id="ed-gcontent" style="min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical" placeholder="内容">${esc(g.content||'')}</textarea>
     </div>`,
@@ -251,7 +271,7 @@ function showDiseaseEditor(item, index) {
   showModal(isNew?'新增疾病':'编辑疾病',
     `<div style="display:flex;flex-direction:column;gap:10px">
       <input id="ed-dname" value="${esc(d.name)}" placeholder="名称 *">
-      <input id="ed-dcat" value="${esc(d.cat)}" placeholder="分类 *">
+      <select id="ed-dcat">${DISEASE_CATEGORIES.map(function(c){return '<option value="'+c.name+'"'+(d.cat===c.name?' selected':'')+'>'+c.name+'</option>';}).join('')}</select>
       <input id="ed-ddesc" value="${esc(d.desc||'')}" placeholder="定义">
       <input id="ed-dsympt" value="${esc(d.symptoms||'')}" placeholder="症状">
       <input id="ed-ddiag" value="${esc(d.diagnosis||'')}" placeholder="诊断">
@@ -291,19 +311,30 @@ function renderUserList(){
   var users=getUsers();
   list.innerHTML='';
   if(users.length===0){ list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">暂无用户</div>'; return; }
-  var roleLabel={admin:'管理员',editor:'编辑',user:'普通用户'};
+  var roleLabel={admin:'管理员',editor:'管理员',user:'普通用户'};
+  // 获取内置用户名列表
+  var builtinUsernames = (typeof USERS !== 'undefined') ? USERS.map(function(u){return u.username;}) : [];
   users.forEach(function(u){
+    var isBuiltin = builtinUsernames.indexOf(u.username) !== -1;
     var row=document.createElement('div');
     row.className='list-card';
     row.style.cssText='display:flex;align-items:center;gap:8px';
-    row.innerHTML='<div class="icon-box">👤</div><div class="info" style="flex:1"><div class="name">'+u.username+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+u.nickname+'</div></div><button class="btn btn-sm btn-outline" style="margin-right:4px">编辑</button><button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)">删除</button>';
-    row.querySelectorAll('button')[0].onclick=function(){ showUserEditor(u); };
-    row.querySelectorAll('button')[1].onclick=function(){
+    row.innerHTML='<div class="icon-box">👤</div><div class="info" style="flex:1"><div class="name">'+u.username+(isBuiltin?'':' <span style="font-size:10px;color:var(--accent)">手机端</span>')+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+u.nickname+'</div></div>'
+      + (isBuiltin ? '' : '<button class="btn btn-sm btn-outline" style="margin-right:2px;font-size:11px">☁️导出</button>')
+      + '<button class="btn btn-sm btn-outline" style="margin-right:4px">编辑</button>'
+      + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)">删除</button>';
+    var btns = row.querySelectorAll('button');
+    var btnIdx = 0;
+    if (!isBuiltin) {
+      btns[btnIdx].onclick=function(){ syncOneUserToGitHub(u); };
+      btnIdx++;
+    }
+    btns[btnIdx].onclick=function(){ showUserEditor(u); };
+    btns[btnIdx+1].onclick=function(){
       if(u.username===currentUser.username){ toast('不能删除自己'); return; }
       if(u.username==='walkman0097'){ toast('不能删除管理员账户'); return; }
       showModal('确认删除','<p>确定删除用户 <b>'+u.username+'</b>？</p>',[{label:'取消'},{label:'删除',primary:true,style:'background:var(--danger)',onClick:function(){
         removeUser(u.username); renderUserList();
-        addEditLog('用户',u.username,'删除');
         toast('已删除');
       }}]);
     };
@@ -325,20 +356,24 @@ function showUserEditor(user){
     u.password=genRandPw();
     u.nickname=u.username;
   }
-  showModal(isNew?'新增用户':'编辑用户',
-    '<div style="display:flex;flex-direction:column;gap:8px">'+
+  var isAdmin=u.username==='walkman0097';
+  var body='<div style="display:flex;flex-direction:column;gap:8px">'+
     '<input id="ed-uname" placeholder="用户名" value="'+esc(u.username||'')+'" '+(isNew?'':'disabled')+'>'+
     '<div style="display:flex;gap:6px"><input id="ed-upass" placeholder="密码" value="'+esc(u.password||'')+'" style="flex:1"><button class="btn btn-sm btn-outline" id="ed-genpw" style="white-space:nowrap">🎲 随机</button></div>'+
-    '<input id="ed-unick" placeholder="昵称" value="'+esc(u.nickname||'')+'">'+
-    '<select id="ed-urole" '+(u.username==='walkman0097'?'disabled':'')+'><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>编辑</option></select>'+
-    '</div>',
+    '<input id="ed-unick" placeholder="昵称" value="'+esc(u.nickname||'')+'">';
+  if(isAdmin){
+    body+='<div style="padding:8px 0;font-size:13px;color:var(--primary);font-weight:600">🔒 管理员 · 拥有全部权限</div>';
+  } else {
+    body+='<select id="ed-urole"><option value="user" '+((u.role||'user')==='user'?'selected':'')+'>普通用户</option><option value="editor" '+(u.role==='editor'?'selected':'')+'>管理员</option></select>';
+  }
+  body+='</div>';
+  showModal(isNew?'新增用户':'编辑用户', body,
     [{label:'取消'},{label:isNew?'新增并复制':'保存',primary:true,onClick:function(){
       var uname=peg('ed-uname'); var upass=peg('ed-upass'); var unick=peg('ed-unick'); var urole=peg('ed-urole');
       if(!uname||!upass){ toast('用户名和密码不能为空'); return; }
       if(isNew){
         var r=addUser({username:uname,password:upass,nickname:unick||uname,role:urole||'user'});
         if(!r.ok){ toast(r.msg); return; }
-        addEditLog('用户',uname,'新增');
         var info='用户名：'+uname+'\n密码：'+upass;
         navigator.clipboard.writeText(info).then(function(){
           toast('已复制账号信息');
@@ -347,8 +382,9 @@ function showUserEditor(user){
           '<div style="text-align:center;line-height:2"><b>'+uname+'</b><br>密码：<b>'+upass+'</b></div><div style="font-size:12px;color:var(--text-light);margin-top:6px">已自动复制到剪贴板</div>',
           [{label:'确定',primary:true}]);
       } else {
-        updateUser(u.username,{password:upass,nickname:unick||u.nickname,role:urole||'user'});
-        addEditLog('用户',u.username,'编辑');
+        var upData={password:upass,nickname:unick||u.nickname};
+        if(!isAdmin) upData.role=urole||'user';
+        updateUser(u.username, upData);
       }
       renderUserList();
       if(!isNew) toast('保存成功');
@@ -365,3 +401,379 @@ function showUserEditor(user){
   if(!m){setTimeout(bindAdminMenu,200);return;}
   m.onclick=()=>{pushScreen('admin');initAdmin();};
 })();
+
+// ═══ 数据导出 ═══
+function exportAllData() {
+  try {
+    var exportData = {
+      exportTime: new Date().toISOString(),
+      appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.0',
+      custom_data: JSON.parse(localStorage.getItem('custom_data') || '{"drugs":[],"guidelines":[],"education":[],"infusion":[],"diseases":[]}'),
+      edit_logs: JSON.parse(localStorage.getItem('edit_logs') || '[]'),
+      favorites: JSON.parse(localStorage.getItem('favorites') || '[]'),
+      changelog: JSON.parse(localStorage.getItem('changelog_custom_v3') || '[]'),
+      rememberedUser: (function(){
+        try { var s=localStorage.getItem('remembered_user'); return s ? JSON.parse(s) : null; } catch(e) { return null; }
+      })()
+    };
+    // 脱敏：不导出密码
+    if (exportData.rememberedUser) delete exportData.rememberedUser.password;
+
+    var blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var now = new Date();
+    var ts = now.getFullYear()+'-'+
+      String(now.getMonth()+1).padStart(2,'0')+'-'+
+      String(now.getDate()).padStart(2,'0')+'_'+
+      String(now.getHours()).padStart(2,'0')+'-'+
+      String(now.getMinutes()).padStart(2,'0');
+    a.href = url;
+    a.download = 'pharmacy-guide-backup_'+ts+'.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('✅ 数据已导出，请保存到电脑');
+  } catch(e) {
+    toast('❌ 导出失败：'+e.message);
+  }
+}
+
+function importAllData() {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = function() {
+    var file = input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function() {
+      try {
+        var data = JSON.parse(reader.result);
+        var imported = 0;
+        if (data.custom_data) {
+          localStorage.setItem('custom_data', JSON.stringify(data.custom_data));
+          imported++;
+        }
+        if (data.edit_logs) {
+          // 合并编辑日志（新在前）
+          var existing = JSON.parse(localStorage.getItem('edit_logs') || '[]');
+          var merged = data.edit_logs.concat(existing);
+          if (merged.length > 500) merged = merged.slice(0, 500);
+          localStorage.setItem('edit_logs', JSON.stringify(merged));
+          imported++;
+        }
+        if (data.favorites) {
+          localStorage.setItem('favorites', JSON.stringify(data.favorites));
+          imported++;
+        }
+        if (data.changelog) {
+          localStorage.setItem('changelog_custom_v3', JSON.stringify(data.changelog));
+          imported++;
+        }
+        toast('✅ 已导入 ' + imported + ' 项数据，刷新后生效');
+      } catch(e) {
+        toast('❌ 文件格式错误：' + e.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// ═══ GitHub同步 ═══
+const GITHUB_REPO = 'superwalk/pharmacy-guide';
+const GITHUB_BRANCH = 'main';
+const GITHUB_TOKEN_KEY = 'github_pat_v2';
+
+function syncToGitHub() {
+  var token = localStorage.getItem(GITHUB_TOKEN_KEY);
+  if (!token) {
+    showModal('GitHub 令牌', 
+      '<p style="font-size:12px;color:var(--text-light);margin-bottom:8px">需要 GitHub Personal Access Token 才能将数据同步到仓库。</p>'
+      +'<p style="font-size:12px;color:var(--text-light);margin-bottom:12px">🔑 前往 <a href="https://github.com/settings/tokens" target="_blank" style="color:var(--primary)">github.com/settings/tokens</a> 创建一个，权限勾选 <b>repo</b>。</p>'
+      +'<input id="github-token-input" type="password" placeholder="输入 GitHub Token" style="width:100%">'
+      +'<label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--text-light)"><input type="checkbox" id="save-token-cb" checked> 记住此令牌</label>',
+      [{label:'取消'},{label:'确认同步',primary:true,onClick:function(){
+        var tk = document.getElementById('github-token-input').value.trim();
+        if (!tk) { toast('请输入令牌'); return; }
+        if (document.getElementById('save-token-cb').checked) {
+          localStorage.setItem(GITHUB_TOKEN_KEY, tk);
+        }
+        doSyncToGitHub(tk);
+      }}]
+    );
+    return;
+  }
+  doSyncToGitHub(token);
+}
+
+function doSyncToGitHub(token) {
+  var data = buildExportData();
+  if (!data) return;
+  
+  var now = new Date();
+  var ts = now.getFullYear()+'-'+
+    String(now.getMonth()+1).padStart(2,'0')+'-'+
+    String(now.getDate()).padStart(2,'0')+'_'+
+    String(now.getHours()).padStart(2,'0')+'-'+
+    String(now.getMinutes()).padStart(2,'0');
+  var filename = 'data/exports/phone-backup_'+ts+'.json';
+  var content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+  
+  toast('⏳ 正在上传到 GitHub…');
+  
+  // 先检查文件是否存在
+  fetch('https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+filename+'?ref='+GITHUB_BRANCH, {
+    headers: { 'Authorization': 'Bearer '+token, 'Accept': 'application/vnd.github.v3+json' }
+  }).then(function(r){
+    return r.json().then(function(body){
+      return {status: r.status, sha: body.sha};
+    });
+  }).then(function(result){
+    // 构建请求体
+    var body = {
+      message: '📱 手机端数据同步 - '+ts,
+      content: content,
+      branch: GITHUB_BRANCH
+    };
+    if (result.sha) body.sha = result.sha; // 覆盖已有文件
+    
+    return fetch('https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+filename, {
+      method: 'PUT',
+      headers: { 'Authorization': 'Bearer '+token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+      body: JSON.stringify(body)
+    });
+  }).then(function(r){
+    if (r.status === 201 || r.status === 200) {
+      toast('✅ 已同步到仓库，电脑端可以开始合并');
+    } else {
+      return r.json().then(function(e){ throw new Error(e.message || '同步失败'); });
+    }
+  }).catch(function(e){
+    toast('❌ 同步失败：'+e.message);
+  });
+}
+
+// ═══ 单独导出单个用户到GitHub ═══
+function syncOneUserToGitHub(user) {
+  var token = localStorage.getItem(GITHUB_TOKEN_KEY);
+  if (!token) {
+    showModal('GitHub 令牌',
+      '<p style="font-size:12px;color:var(--text-light);margin-bottom:8px">需要先设置 GitHub Token 才能同步。</p>'
+      +'<input id="github-token-input" type="password" placeholder="输入 GitHub Token" style="width:100%">'
+      +'<label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--text-light)"><input type="checkbox" id="save-token-cb" checked> 记住此令牌</label>',
+      [{label:'取消'},{label:'确认同步',primary:true,onClick:function(){
+        var tk = document.getElementById('github-token-input').value.trim();
+        if (!tk) { toast('请输入令牌'); return; }
+        if (document.getElementById('save-token-cb').checked) {
+          localStorage.setItem(GITHUB_TOKEN_KEY, tk);
+        }
+        doSyncOneUser(user, tk);
+      }}]
+    );
+    return;
+  }
+  doSyncOneUser(user, token);
+}
+
+function doSyncOneUser(user, token) {
+  // 只导出这一个用户
+  var exportData = {
+    exportTime: new Date().toISOString(),
+    appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.0',
+    new_users: [{
+      username: user.username,
+      password: user.password,
+      role: user.role || 'user',
+      nickname: user.nickname || user.username
+    }]
+  };
+  
+  var now = new Date();
+  var ts = now.getFullYear()+'-'+
+    String(now.getMonth()+1).padStart(2,'0')+'-'+
+    String(now.getDate()).padStart(2,'0')+'_'+
+    String(now.getHours()).padStart(2,'0')+'-'+
+    String(now.getMinutes()).padStart(2,'0');
+  var filename = 'data/exports/new-user_'+user.username+'_'+ts+'.json';
+  var content = btoa(unescape(encodeURIComponent(JSON.stringify(exportData, null, 2))));
+  
+  toast('⏳ 正在导出用户 '+user.username+' 到仓库…');
+  
+  fetch('https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+filename+'?ref='+GITHUB_BRANCH, {
+    headers: { 'Authorization': 'Bearer '+token, 'Accept': 'application/vnd.github.v3+json' }
+  }).then(function(r){
+    return r.json().then(function(body){
+      return {status: r.status, sha: body.sha};
+    });
+  }).then(function(result){
+    var body = {
+      message: '📱 新增用户：'+user.username+' ('+(user.nickname||user.username)+')',
+      content: content,
+      branch: GITHUB_BRANCH
+    };
+    if (result.sha) body.sha = result.sha;
+    
+    return fetch('https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+filename, {
+      method: 'PUT',
+      headers: { 'Authorization': 'Bearer '+token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+      body: JSON.stringify(body)
+    });
+  }).then(function(r){
+    if (r.status === 201 || r.status === 200) {
+      toast('✅ 用户 '+user.username+' 已导出到仓库，告诉我一声即可合并进源码');
+    } else {
+      return r.json().then(function(e){ throw new Error(e.message || '同步失败'); });
+    }
+  }).catch(function(e){
+    toast('❌ 同步失败：'+e.message);
+  });
+}
+
+// ═══ 单独导出药品/疾病到GitHub ═══
+function syncItemToGitHub(item) {
+  var token = localStorage.getItem(GITHUB_TOKEN_KEY);
+  if (!token) {
+    showModal('GitHub 令牌',
+      '<p style="font-size:12px;color:var(--text-light);margin-bottom:8px">需要先设置 GitHub Token 才能同步。</p>'
+      +'<input id="github-token-input" type="password" placeholder="输入 GitHub Token" style="width:100%">'
+      +'<label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--text-light)"><input type="checkbox" id="save-token-cb" checked> 记住此令牌</label>',
+      [{label:'取消'},{label:'确认同步',primary:true,onClick:function(){
+        var tk = document.getElementById('github-token-input').value.trim();
+        if (!tk) { toast('请输入令牌'); return; }
+        if (document.getElementById('save-token-cb').checked) {
+          localStorage.setItem(GITHUB_TOKEN_KEY, tk);
+        }
+        doSyncItem(item, tk);
+      }}]
+    );
+    return;
+  }
+  doSyncItem(item, token);
+}
+
+function doSyncItem(item, token) {
+  var ctName = '';
+  var ctData = null;
+  if (item.type === 'drug') {
+    var d = allDrugs().find(function(x){return x.id===item.id;});
+    if (!d) { toast('药品不存在'); return; }
+    ctName = d.name;
+    ctData = {name:d.name, category:d.category, subcategory:d.subcategory||'', type:d.type, indications:d.indications||'', contraindications:d.contraindications||'', adverse:d.adverse||'', dosage:d.dosage||'', storage:d.storage||'', interactions:d.interactions||''};
+  } else if (item.type === 'disease') {
+    var ds = DISEASES.find(function(x){return x.id===item.id;});
+    if (!ds) { toast('疾病不存在'); return; }
+    ctName = ds.name;
+    ctData = {name:ds.name, cat:ds.cat, desc:ds.desc||'', symptoms:ds.symptoms||'', diagnosis:ds.diagnosis||'', treatment:ds.treatment||''};
+  } else {
+    toast('不支持的类型'); return;
+  }
+
+  var exp = {
+    exportTime: new Date().toISOString(),
+    appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.0',
+    item_type: item.type,
+    item: ctData
+  };
+
+  var now = new Date();
+  var ts = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+'-'+String(now.getMinutes()).padStart(2,'0');
+  var filename = 'data/exports/'+item.type+'_'+ctName.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g,'_')+'_'+ts+'.json';
+  var content = btoa(unescape(encodeURIComponent(JSON.stringify(exp, null, 2))));
+
+  toast('⏳ 正在导出 '+ctName+' 到仓库…');
+
+  fetch('https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+filename+'?ref='+GITHUB_BRANCH, {
+    headers: { 'Authorization': 'Bearer '+token, 'Accept': 'application/vnd.github.v3+json' }
+  }).then(function(r){
+    return r.json().then(function(body){ return {status: r.status, sha: body.sha}; });
+  }).then(function(result){
+    var body = {
+      message: '📱 导出'+(item.type==='drug'?'药品':'疾病')+'：'+ctName,
+      content: content,
+      branch: GITHUB_BRANCH
+    };
+    if (result.sha) body.sha = result.sha;
+    return fetch('https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+filename, {
+      method: 'PUT',
+      headers: { 'Authorization': 'Bearer '+token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+      body: JSON.stringify(body)
+    });
+  }).then(function(r){
+    if (r.status === 201 || r.status === 200) {
+      toast('✅ '+ctName+' 已导出到仓库');
+    } else {
+      return r.json().then(function(e){ throw new Error(e.message || '同步失败'); });
+    }
+  }).catch(function(e){
+    toast('❌ 同步失败：'+e.message);
+  });
+}
+
+function buildExportData() {
+  try {
+    var users = [];
+    try {
+      var raw = localStorage.getItem('custom_users');
+      if (raw) {
+        var all = JSON.parse(raw);
+        // 只提取不在内置USERS中的用户（手机新增的）
+        var builtin = typeof USERS !== 'undefined' ? USERS.map(function(u){return u.username;}) : [];
+        users = all.filter(function(u){ return builtin.indexOf(u.username) === -1; });
+      }
+    } catch(e) {}
+    
+    var data = {
+      exportTime: new Date().toISOString(),
+      appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.0',
+      custom_data: JSON.parse(localStorage.getItem('custom_data') || '{"drugs":[],"guidelines":[],"education":[],"infusion":[],"diseases":[]}'),
+      edit_logs: JSON.parse(localStorage.getItem('edit_logs') || '[]'),
+      favorites: JSON.parse(localStorage.getItem('favorites') || '[]'),
+      changelog: JSON.parse(localStorage.getItem('changelog_custom_v3') || '[]')
+    };
+    if (users.length > 0) data.new_users = users; // 仅手机新增用户
+    return data;
+  } catch(e) {
+    toast('❌ 打包数据失败：'+e.message);
+    return null;
+  }
+}
+
+// ═══ 指南分类管理 ═══
+function addGuideCategory(){
+  showModal('新增指南分类', '<input id="ed-new-cat" placeholder="输入分类名称（如：呼吸）" style="width:100%">', [
+    {label:'取消'},
+    {label:'新增',primary:true,onClick:function(){
+      var name=peg('ed-new-cat').trim();
+      if(!name){toast('请输入分类名称');return;}
+      var cats=JSON.parse(localStorage.getItem('custom_guide_cats')||'[]');
+      if(cats.indexOf(name)>=0||(typeof getGuideSystems==='function'?getGuideSystems():GUIDE_SYSTEMS).some(function(s){return s.system===name;})){toast('分类已存在');return;}
+      cats.push(name);
+      localStorage.setItem('custom_guide_cats',JSON.stringify(cats));
+      renderAdminList('guidelines', document.getElementById('admin-search')?.value||'');
+      toast('已新增分类：'+name);
+    }}
+  ]);
+  setTimeout(function(){ var inp=document.getElementById('ed-new-cat'); if(inp) inp.focus(); }, 100);
+}
+function deleteGuideCategory(name, el){
+  showModal('删除分类', '<p style="text-align:center">确定删除分类 <b>'+esc(name)+'</b>？<br><span style="font-size:12px;color:var(--text-light)">仅删除分类标签，不影响该分类下的指南条目</span></p>', [
+    {label:'取消'},
+    {label:'删除',primary:true,onClick:function(){
+      var cats=JSON.parse(localStorage.getItem('custom_guide_cats')||'[]');
+      var idx=cats.indexOf(name);
+      if(idx>=0){
+        cats.splice(idx,1);
+        localStorage.setItem('custom_guide_cats',JSON.stringify(cats));
+      } else {
+        var del=JSON.parse(localStorage.getItem('deleted_guide_cats')||'[]');
+        if(del.indexOf(name)<0) del.push(name);
+        localStorage.setItem('deleted_guide_cats',JSON.stringify(del));
+      }
+      renderAdminList('guidelines', document.getElementById('admin-search')?.value||'');
+      toast('已删除分类：'+name);
+    }}
+  ]);
+}

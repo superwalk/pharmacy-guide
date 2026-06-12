@@ -1,0 +1,15 @@
+{
+  "id": "d035",
+  "name": "甲硝唑片",
+  "py": "JXZP",
+  "en": "Metronidazole",
+  "category": "抗微生物药",
+  "subcategory": "硝基咪唑类",
+  "type": "处方药",
+  "indications": "厌氧菌感染、滴虫病、阿米巴病。Hp根除方案组分。",
+  "contraindications": "妊娠早期禁用。",
+  "adverse": "金属味、恶心；服药期间尿液呈红棕色（正常现象）。",
+  "dosage": "0.4-0.5g bid-tid。",
+  "storage": "遮光密封。",
+  "interactions": "服药期间及停药7天内禁酒（双硫仑样反应）。与华法林合用增强抗凝作用。"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "d010",
+  "name": "氢氯噻嗪片",
+  "py": "QLSQP",
+  "en": "Hydrochlorothiazide",
+  "category": "心血管系统用药",
+  "subcategory": "利尿剂",
+  "type": "处方药",
+  "indications": "用于水肿性疾病、高血压、尿崩症。",
+  "contraindications": "无尿者、磺胺过敏者。",
+  "adverse": "电解质紊乱（低钾、低钠）、高尿酸血症、血糖升高。",
+  "dosage": "降压：一次12.5-25mg，一日1次。",
+  "storage": "遮光，密封保存。",
+  "interactions": "与洋地黄类合用注意低钾风险；与降糖药合用可能影响降糖效果。"
+}

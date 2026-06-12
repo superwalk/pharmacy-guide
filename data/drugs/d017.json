@@ -1,0 +1,15 @@
+{
+  "id": "d017",
+  "name": "美托洛尔缓释片",
+  "py": "MTLEHSP",
+  "en": "Metoprolol SR",
+  "category": "心血管系统用药",
+  "subcategory": "降压药",
+  "type": "处方药",
+  "indications": "用于高血压、心绞痛、慢性心力衰竭（NYHA Ⅱ-Ⅲ级）。",
+  "contraindications": "心源性休克、病态窦房结综合征、严重心动过缓。",
+  "adverse": "常见疲劳、头晕、心动过缓；偶见肢端发冷、支气管痉挛。",
+  "dosage": "心衰：起始23.75mg qd，逐步滴定至190mg qd。降压：47.5-95mg qd。",
+  "storage": "遮光，密封保存。",
+  "interactions": "与维拉帕米合用禁。与地高辛合用可能增加心动过缓风险。"
+}

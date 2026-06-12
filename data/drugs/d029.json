@@ -1,0 +1,16 @@
+{
+  "id": "d029",
+  "name": "氯硝西泮片",
+  "py": "LXXPP",
+  "en": "Clonazepam",
+  "category": "神经系统用药",
+  "subcategory": "镇静催眠药",
+  "type": "处方药（精二）",
+  "indications": "用于癫痫和惊恐障碍。",
+  "contraindications": "重症肌无力、闭角型青光眼、严重呼吸功能不全。",
+  "adverse": "常见嗜睡、乏力、共济失调；长期使用可产生依赖性。",
+  "dosage": "癫痫：起始0.5mg tid，每3天增量0.5-1mg。成人最大量20mg/d。",
+  "storage": "遮光，密封保存。",
+  "interactions": "与酒精及其他中枢抑制剂合用增强镇静作用。与丙戊酸合用可能诱发失神发作。",
+  "tag": "精二"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "d087",
+  "name": "沙丁胺醇气雾剂",
+  "py": "SDACQWJ",
+  "en": "Salbutamol Inhaler",
+  "category": "呼吸系统用药",
+  "subcategory": "COPD用药",
+  "type": "处方药",
+  "indications": "支气管哮喘、COPD急性症状缓解。",
+  "contraindications": "对本品过敏者。",
+  "adverse": "心悸、心动过速、肌肉震颤、头痛。",
+  "dosage": "急性发作1-2吸，必要时每4-6h重复。",
+  "storage": "避光密封。",
+  "interactions": "与β阻滞剂合用可能相互拮抗。与茶碱合用可能增加低钾风险。"
+}

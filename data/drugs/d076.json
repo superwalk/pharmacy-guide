@@ -1,0 +1,15 @@
+{
+  "id": "d076",
+  "name": "柳氮磺吡啶肠溶片",
+  "py": "LDHBDCRP",
+  "en": "Sulfasalazine",
+  "category": "消化系统用药",
+  "subcategory": "止泻药",
+  "type": "处方药",
+  "indications": "溃疡性结肠炎、克罗恩病、类风湿关节炎。",
+  "contraindications": "磺胺类过敏、肠梗阻。",
+  "adverse": "恶心、头痛、皮疹、男性不育（可逆）。",
+  "dosage": "起始0.5g bid，渐增至1g tid-qid。",
+  "storage": "密封保存。",
+  "interactions": "与叶酸合用可能影响叶酸吸收。与抗凝药合用增强抗凝。"
+}

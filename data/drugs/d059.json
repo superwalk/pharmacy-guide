@@ -1,0 +1,15 @@
+{
+  "id": "d059",
+  "name": "左乙拉西坦片",
+  "py": "ZYLXTP",
+  "en": "Levetiracetam",
+  "category": "神经系统用药",
+  "subcategory": "抗癫痫药",
+  "type": "处方药",
+  "indications": "部分性发作的添加治疗。",
+  "contraindications": "对本品过敏者。",
+  "adverse": "嗜睡、乏力、头晕。",
+  "dosage": "起始500mg bid，可增至1500mg bid。",
+  "storage": "密封保存。",
+  "interactions": "与其他抗癫痫药相比，药物相互作用少。"
+}

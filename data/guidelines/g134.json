@@ -1,0 +1,8 @@
+{
+  "id": "g134",
+  "title": "FUTURE-AI医疗保健可信赖可部署AI国际共识指南",
+  "system": "其他",
+  "year": "2026",
+  "sourceUrl": "https://future-ai.eu/",
+  "content": "【概述】FUTURE-AI项目发布的医疗保健领域AI国际共识指南\n【六大原则】\n· Fair（公平）：\n  - 避免算法偏见\n  - 多样化训练数据\n  - 不同人群性能一致\n· Universal（普适）：\n  - 跨机构、跨人群适用\n  - 标准化接口\n  - 互操作性\n· Transferable（可迁移）：\n  - 跨域泛化能力\n  - 持续学习\n  - 知识迁移\n· Understandable（可理解）：\n  - 可解释AI\n  - 临床决策透明\n  - 医生可理解输出\n· Robust（稳健）：\n  - 对抗攻击鲁棒性\n  - 分布外数据检测\n  - 不确定性量化\n· Explainable（可解释）：\n  - 模型决策依据\n  - 特征重要性\n  - 可视化解释\n【部署流程】\n· 开发→验证→注册→临床评估→监测\n· 全生命周期管理\n【监管建议】\n· 建立AI医疗器械审批框架\n· 上市后监测\n· 不良事件报告"
+}

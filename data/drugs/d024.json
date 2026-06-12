@@ -1,0 +1,15 @@
+{
+  "id": "d024",
+  "name": "孟鲁司特钠片",
+  "py": "MLSTNP",
+  "en": "Montelukast Sodium",
+  "category": "呼吸系统用药",
+  "subcategory": "平喘药",
+  "type": "处方药",
+  "indications": "用于哮喘的预防和长期治疗（包括阿司匹林敏感性哮喘）、过敏性鼻炎。",
+  "contraindications": "对本药过敏者禁用。",
+  "adverse": "罕见头痛、腹痛；极罕见精神神经事件。",
+  "dosage": "成人10mg qd，睡前服用。",
+  "storage": "遮光，密封，室温保存。",
+  "interactions": "与苯妥英钠、利福平合用可能降低血药浓度。"
+}

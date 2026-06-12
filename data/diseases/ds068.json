@@ -1,0 +1,10 @@
+{
+  "id": "ds068",
+  "cat": "风湿免疫疾病",
+  "name": "强直性脊柱炎",
+  "py": "QZ",
+  "desc": "以骶髂关节和脊柱附着点炎为主的慢性炎症。",
+  "symptoms": "炎性腰痛（休息加重、活动减轻）。",
+  "diagnosis": "骶髂关节MRI/CT+HLA-B27。",
+  "treatment": "NSAIDs+TNFi/IL-17i+康复锻炼。"
+}
