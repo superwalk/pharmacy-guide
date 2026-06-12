@@ -5,6 +5,17 @@ function renderCalc() {
     <div class="section-title" style="font-size:26px">计算工具</div>
     <div class="search-bar search-sm" style="margin-bottom:16px"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#94A3B8" stroke-width="2"/></svg><input id="calc-filter" placeholder="搜索工具…" oninput="filterCalcTools()"></div>
     <div id="calc-tools">
+      ${calcCard('🩸 化验指标参考值','lab','血常规/肝功/肾功/凝血/电解质/血糖/血脂/甲状腺/心肌/感染/尿常规',`
+        <div class="search-bar search-sm" style="margin-bottom:8px"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#94A3B8" stroke-width="2"/></svg><input id="lab-filter" placeholder="搜索化验项目…" oninput="filterLabTable()"></div>
+        <div id="lab-content">${LAB_DATA.map((cat,i)=>`
+          <div class="lab-cat" style="margin-top:10px">
+            <div style="font-size:13px;font-family:var(--font-heading);font-weight:700;color:var(--primary);cursor:pointer;padding:6px 0;border-bottom:1px solid var(--border)" onclick="toggleLabCat(${i})" data-expanded="false">${cat.cat} (${cat.items.length}项) <span class="lab-cat-arrow" style="float:right">▶</span></div>
+            <div class="lab-cat-items" id="lab-cat-${i}" style="display:none">${cat.items.map(item=>`<div class="lab-item" style="display:flex;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px;gap:4px">
+              <div style="flex:1.2;font-weight:600;color:var(--primary-dark)">${item.name}</div><div style="flex:2;color:var(--text-body);text-align:center"><b>${item.ref}</b></div><div style="flex:1.5;font-size:10px;color:var(--text-light)">${item.note||''}</div>
+            </div>`).join('')}</div>
+          </div>`).join('')}</div>
+        <div style="font-size:10px;color:var(--text-light);margin-top:10px;text-align:center">参考值来源于国内通用标准，具体以本院检验科范围为准</div>
+      `)}
       ${calcCard('🫘 肌酐清除率 CrCl','crcl','Cockcroft-Gault 公式 — 调整肾排泄药物剂量的基石',`
         <div style="display:flex;gap:8px;margin-bottom:8px">
           <select id="crcl-sex" style="flex:1;height:44px;background:var(--bg);border-radius:10px;padding:0 14px;font-size:15px;border:1px solid var(--border)"><option value="male">男</option><option value="female">女</option></select>
@@ -304,17 +315,6 @@ function renderCalc() {
       ${calcCard('💉 破伤风脱敏注射','tat-desense','TAT皮试阳性时的脱敏注射方案',`
         <button class="btn btn-primary btn-full" onclick="showTatDesense()">查看脱敏方案</button>
         <div id="tat-desense-result" style="padding:10px;font-size:13px;color:var(--text-body);line-height:1.6;display:none"></div>
-      `)}
-      ${calcCard('🩸 化验指标参考值','lab','血常规/肝功/肾功/凝血/电解质/血糖/血脂/甲状腺/心肌/感染/尿常规',`
-        <div class="search-bar search-sm" style="margin-bottom:8px"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#94A3B8" stroke-width="2"/></svg><input id="lab-filter" placeholder="搜索化验项目…" oninput="filterLabTable()"></div>
-        <div id="lab-content">${LAB_DATA.map((cat,i)=>`
-          <div class="lab-cat" style="margin-top:10px">
-            <div style="font-size:13px;font-family:var(--font-heading);font-weight:700;color:var(--primary);cursor:pointer;padding:6px 0;border-bottom:1px solid var(--border)" onclick="toggleLabCat(${i})" data-expanded="true">${cat.cat} (${cat.items.length}项) <span class="lab-cat-arrow" style="float:right">▼</span></div>
-            <div class="lab-cat-items" id="lab-cat-${i}">${cat.items.map(item=>`<div class="lab-item" style="display:flex;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px;gap:4px">
-              <div style="flex:1.2;font-weight:600;color:var(--primary-dark)">${item.name}</div><div style="flex:2;color:var(--text-body);text-align:center"><b>${item.ref}</b></div><div style="flex:1.5;font-size:10px;color:var(--text-light)">${item.note||''}</div>
-            </div>`).join('')}</div>
-          </div>`).join('')}</div>
-        <div style="font-size:10px;color:var(--text-light);margin-top:10px;text-align:center">参考值来源于国内通用标准，具体以本院检验科范围为准</div>
       `)}
     </div>
   `;
