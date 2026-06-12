@@ -952,7 +952,11 @@ function getGuideSystems() {
 }
 
 function renderDetail(drugId) {
-  const d=findDrug(drugId); if(!d) return;
+  const d=findDrug(drugId);
+  if(!d){
+    document.getElementById('detail-content').innerHTML='<div style="text-align:center;padding:40px;color:var(--danger)">❌ 未找到药品（id: '+drugId+'），试试刷新页面</div><div style="text-align:center;font-size:12px;color:var(--text-light)">DRUGS 长度: '+(typeof DRUGS!=='undefined'?DRUGS.length:'undefined')+'</div>';
+    return;
+  }
   addRecent(drugId);
   _currentEditItem = {type:'drug', id:drugId};
   const fav=isFav(drugId);
@@ -1937,8 +1941,10 @@ function openDisease(name) {
   if(d) _currentEditItem = {type:'disease', id:d.id};
   const drugs=allDrugs().filter(dr=>dr.indications.toLowerCase().includes(name.slice(0,3).toLowerCase())||dr.category.toLowerCase().includes(name.slice(0,3)));
   const guides=allGuides().filter(g=>g.title.includes(name)||(g.content&&g.content.includes(name)));
-  if(!d && drugs.length===0 && guides.length===0){ toast('暂无数据'); return; }
+    if(!d && drugs.length===0 && guides.length===0){ toast('暂无数据'); return; }
   pushScreen('label');
+  // 诊断：检查 DISEASES 长度
+  document.getElementById('label-content').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:12px">正在加载… (DISEASES: '+DISEASES.length+')</div>';
   let html='<div class="section-title" style="font-size:22px">'+name+'</div>';
   if(d) html+=`
     <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span> ${sourceBadge(d.id, DISEASES)}</span>${isEditor()?'<span style="display:flex;gap:6px"><button class="btn btn-sm btn-outline" onclick="editCurrentItem()">编辑</button></span>':''}</div>
