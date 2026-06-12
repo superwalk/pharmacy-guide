@@ -1489,6 +1489,7 @@ function renderInfusion() {
     + '<div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">🔍 配伍禁忌查询</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></div>'
     + '<div class="guide-items" style="display:none">'
     + '<div style="font-size:12px;color:var(--text-light);margin-bottom:6px">输入药品名称，多个药品用逗号或空格分隔</div>'
+    + '<div id="inf-recent" style="margin-bottom:6px"></div>'
     + '<div style="display:flex;gap:4px"><input id="inf-query-input" placeholder="如：头孢曲松, 氨溴索" style="flex:1"><button class="btn btn-sm btn-primary" id="inf-query-btn">查询</button></div>'
     + '<div id="inf-query-results" style="margin-top:8px"></div>'
     + '<div style="font-size:11px;color:var(--text-light);margin-top:8px;padding:8px;border-top:1px solid var(--border)">⚠️ 内容不保证涵盖所有配伍禁忌，结果仅供参考，请以药品说明书和临床指南为准。</div>'
@@ -1502,6 +1503,26 @@ function renderInfusion() {
   container.innerHTML = queryHtml + listHtml;
   // 绑定点击
   container.querySelectorAll('.guide-item').forEach(function(item){ item.onclick=function(){openInfusion(item.dataset.iid);}; });
+  // 渲染最近查询
+  var recentEl = document.getElementById('inf-recent');
+  if (recentEl) {
+    var recents = JSON.parse(localStorage.getItem('inf_recents') || '[]');
+    if (recents.length > 0) {
+      recentEl.innerHTML = '<div style="font-size:11px;color:var(--text-light);margin-bottom:3px">最近搜索：</div>'
+        + recents.slice(0, 5).map(function(q){
+          return '<span style="display:inline-block;padding:2px 8px;margin:2px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:11px;cursor:pointer" data-recent="'+q+'">'+q+'</span>';
+        }).join('')
+        + '<span style="display:inline-block;padding:2px 8px;margin:2px;font-size:10px;color:var(--text-light);cursor:pointer" id="inf-clear-recent">清空</span>';
+      recentEl.querySelectorAll('[data-recent]').forEach(function(el){
+        el.onclick = function(){
+          var qi = document.getElementById('inf-query-input');
+          if (qi) { qi.value = el.dataset.recent; doInfusionQuery(); }
+        };
+      });
+      var clearBtn = document.getElementById('inf-clear-recent');
+      if (clearBtn) clearBtn.onclick = function(){ localStorage.removeItem('inf_recents'); renderInfusion(); };
+    }
+  }
   // 查询功能
   var queryBtn = document.getElementById('inf-query-btn');
   if (queryBtn) queryBtn.onclick = function(){ doInfusionQuery(); };
@@ -1590,6 +1611,18 @@ function doInfusionQuery() {
       doInfusionQuery(); // 刷新结果
     };
   });
+  // 保存到最近查询
+  var input = document.getElementById('inf-query-input');
+  if (input) {
+    var q = input.value.trim();
+    if (q) {
+      var recents = JSON.parse(localStorage.getItem('inf_recents') || '[]');
+      recents = recents.filter(function(r){ return r !== q; });
+      recents.unshift(q);
+      if (recents.length > 10) recents = recents.slice(0, 10);
+      localStorage.setItem('inf_recents', JSON.stringify(recents));
+    }
+  }
 }
 
 function openInfusion(iid) {
