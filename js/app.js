@@ -337,11 +337,11 @@ function renderGuidelines() {
   }
   gl.innerHTML=systems.map((s,i)=>`
     <div class="cat-card" style="margin-bottom:8px">
-      <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-group="${i}" data-expanded="false">
-        <span class="cat-name">${s.icon} ${s.system}</span>
-        <span style="font-size:12px;color:var(--text-light)">${s.items.length} 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></span>
+      <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-group="${i}" data-expanded="${kw?'true':'false'}">
+        <span class="cat-name">${s.icon} ${highlightKw(s.system, kw)}</span>
+        <span style="font-size:12px;color:var(--text-light)">${s.items.length} 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">${kw?'▼':'▶'}</span></span>
       </div>
-      <div class="guide-items" id="guide-group-${i}" style="display:none;flex-wrap:wrap;gap:6px">${s.items.map(g=>`<span class="guide-item" data-gid="${g.id}" style="display:inline-block;padding:4px 10px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;white-space:nowrap">${highlightKw(g.title, kw)} <span style="color:var(--text-light)">${g.year||''}</span></span>`).join('')}</div>
+      <div class="guide-items" id="guide-group-${i}" style="display:${kw?'flex':'none'};flex-wrap:wrap;gap:6px">${s.items.map(g=>`<span class="guide-item" data-gid="${g.id}" style="display:inline-block;padding:4px 10px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;white-space:nowrap">${highlightKw(g.title, kw)} <span style="color:var(--text-light)">${g.year||''}</span></span>`).join('')}</div>
     </div>
   `).join('');
   if(systems.length===0&&kw) gl.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">未找到匹配的指南或法规</div>';
@@ -560,7 +560,7 @@ function initCompare() {
     const kw=this.value.toLowerCase();
     const res=document.getElementById('cmp-search-results');
     if(kw.length<1){ res.style.display='none'; return; }
-    const matches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw)||d.category.includes(kw)).slice(0,5);
+    const matches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw)||d.category.includes(kw)||(d.py||'').toLowerCase().includes(kw)||genPy(d.name).toLowerCase().includes(kw)||genPy(d.category).toLowerCase().includes(kw)).slice(0,5);
     res.style.display='block';
     res.innerHTML=matches.map(d=>`<div class="result-item" data-id="${d.id}">${highlightKw(d.name, kw)} <span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('');
     res.querySelectorAll('.result-item').forEach(r=>r.onclick=()=>{ addToCompare(r.dataset.id); document.getElementById('cmp-search').value=''; res.style.display='none'; });
@@ -781,7 +781,7 @@ function openHealthEdu(hid) {
   pushScreen('label');
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:20px">${h.title}</div>
-    <div style="font-size:12px;color:var(--text-light)">${h.cat}</div>
+    <div class="subtitle-row" style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between"><span>${h.cat}</span></div>
     <div id="healthedu-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
   showEditBtn({type:'edu',id:hid});
@@ -899,7 +899,7 @@ function renderMedEdu(){
 function openMedEdu(mid){
   var m=MED_EDU.find(function(x){return x.id===mid;}); if(!m) return;
   pushScreen('label');
-  document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">'+m.drug+'</div><div style="font-size:12px;color:var(--text-light);margin-bottom:12px"><span class="badge badge-blue">'+m.cat+'</span></div><div id="mededu-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>';
+  document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">'+m.drug+'</div><div class="subtitle-row" style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><span class="badge badge-blue">'+m.cat+'</span></div><div id="mededu-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>';
   showEditBtn({type:'med',id:mid});
   loadMedEduDetail(mid, function(full) {
     var detail = full || m;
@@ -917,6 +917,20 @@ function showEditBtn(item){
   if(btn&&isEditor()){
     btn.style.display='inline';
     btn.onclick=editCurrentItem;
+  }
+  // 对于科普教育/用药教育，在副标题行嵌入编辑按钮
+  if((item.type==='edu'||item.type==='med') && isEditor()){
+    var el=document.getElementById('label-content');
+    if(!el) return;
+    var sub=el.querySelector('.subtitle-row');
+    if(sub && !sub.querySelector('.inline-edit-btn')){
+      var eb=document.createElement('span');
+      eb.className='inline-edit-btn';
+      eb.style.cssText='font-size:12px;color:var(--accent);cursor:pointer;font-weight:600;border:1px solid var(--accent);border-radius:6px;padding:1px 8px';
+      eb.textContent='编辑';
+      eb.onclick=editCurrentItem;
+      sub.appendChild(eb);
+    }
   }
 }
 function editCurrentItem(){

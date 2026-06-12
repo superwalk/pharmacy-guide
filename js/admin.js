@@ -179,16 +179,18 @@ function bindAdminEvents(type) {
 function showDrugEditor(drug, index) {
   var isNew = !drug;
   var d = drug || { name:'', category:'', subcategory:'', type:'处方药', indications:'', contraindications:'', adverse:'', dosage:'', storage:'', interactions:'', label:'' };
+  // 生成分类下拉选项
+  var catOpts = DRUG_CATEGORIES.map(function(c){return '<option value="'+c.name+'"'+(d.category===c.name?' selected':'')+'>'+c.name+'</option>';}).join('');
   showModal(isNew?'新增药品':'编辑药品',
     `<div style="display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow-y:auto">
       <input id="ed-name" value="${esc(d.name)}" placeholder="药品名称 *">
-      <input id="ed-cat" value="${esc(d.category)}" placeholder="分类 *">
-      <input id="ed-subcat" value="${esc(d.subcategory||'')}" placeholder="子分类">
+      <select id="ed-cat" onchange="updateSubcatOptions()"><option value="">— 选择分类 —</option>${catOpts}</select>
+      <select id="ed-subcat"><option value="">— 选择子分类 —</option></select>
       <input id="ed-ind" value="${esc(d.indications)}" placeholder="适应症 *">
-      <input id="ed-contra" value="${esc(d.contraindications)}" placeholder="禁忌症">
-      <input id="ed-adverse" value="${esc(d.adverse)}" placeholder="不良反应">
-      <input id="ed-dosage" value="${esc(d.dosage)}" placeholder="用法用量">
-      <input id="ed-storage" value="${esc(d.storage)}" placeholder="储存条件">
+      <input id="ed-contra" value="${esc(d.contraindications||'')}" placeholder="禁忌症">
+      <input id="ed-adverse" value="${esc(d.adverse||'')}" placeholder="不良反应">
+      <input id="ed-dosage" value="${esc(d.dosage||'')}" placeholder="用法用量">
+      <input id="ed-storage" value="${esc(d.storage||'')}" placeholder="储存条件">
       <input id="ed-inter" value="${esc(d.interactions||'')}" placeholder="药物相互作用">
     </div>`,
     [{label:'取消'},{label:isNew?'新增':'保存',primary:true,onClick:()=>{
@@ -199,6 +201,28 @@ function showDrugEditor(drug, index) {
       saveCust(cd); renderAdminList('drugs'); addEditLog('药品',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
     }}]
   );
+  // 初始化子分类下拉（编辑时预选子分类）
+  setTimeout(function(){
+    var catEl = document.getElementById('ed-cat');
+    if(catEl && d.subcategory) updateSubcatOptions(d.subcategory);
+    else if(catEl) updateSubcatOptions();
+  }, 100);
+}
+
+// 根据选择的主分类更新子分类下拉（药品编辑使用）
+function updateSubcatOptions(selectedSub) {
+  var catEl = document.getElementById('ed-cat');
+  var subEl = document.getElementById('ed-subcat');
+  if(!catEl||!subEl) return;
+  var catName = catEl.value;
+  var cat = DRUG_CATEGORIES.find(function(c){return c.name===catName;});
+  subEl.innerHTML = '<option value="">— 选择子分类 —</option>';
+  if(cat && cat.subs){
+    cat.subs.forEach(function(s){
+      var sel = s===selectedSub ? ' selected' : '';
+      subEl.innerHTML += '<option value="'+s+'"'+sel+'>'+s+'</option>';
+    });
+  }
 }
 
 function showGuidelineEditor(guide, index) {
