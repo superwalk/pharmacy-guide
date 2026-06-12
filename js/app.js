@@ -382,6 +382,7 @@ function showForgotPasswordQuestions(uname, questions){
 // ═══ 密保设置（我的页面）═══
 function showSecuritySettings(){
   var u = currentUser;
+  var hasSQ = !!(u.security_a1 || u.security_a2 || u.security_a3);
   var qOpts = SECURITY_QUESTIONS.map(function(q, i){
     return '<option value="'+i+'">'+q+'</option>';
   });
@@ -396,6 +397,29 @@ function showSecuritySettings(){
   var q1 = makeOpts(u.security_q1, 0);
   var q2 = makeOpts(u.security_q2, 1);
   var q3 = makeOpts(u.security_q3, 2);
+  // 密保内容
+  var sqHtml;
+  if (hasSQ) {
+    // 已设置 → 输入密码查看，不可修改
+    sqHtml = '<div style="position:relative;margin-bottom:6px"><input id="ss-view-pw" type="password" placeholder="输入密码查看密保问题" style="width:100%;padding-right:36px;padding:10px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:13px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none;color:var(--text-light)" class="pw-toggle-btn" data-target="ss-view-pw">👁️</span></div>'
+      + '<button class="btn btn-outline" id="ss-view-btn" style="width:100%;font-size:13px;padding:8px">🔍 查看已保存的密保</button>'
+      + '<div id="ss-view-result" style="margin-top:6px;display:none">'
+      + '<div style="font-size:12px;color:var(--text-light);margin-bottom:4px">问题1：<b>' + (u.security_q1||'') + '</b></div><div style="font-size:12px;color:var(--text-light);margin-bottom:4px">答案1：<b>' + (u.security_a1||'') + '</b></div>'
+      + '<div style="font-size:12px;color:var(--text-light);margin-bottom:4px">问题2：<b>' + (u.security_q2||'') + '</b></div><div style="font-size:12px;color:var(--text-light);margin-bottom:4px">答案2：<b>' + (u.security_a2||'') + '</b></div>'
+      + '<div style="font-size:12px;color:var(--text-light);margin-bottom:4px">问题3：<b>' + (u.security_q3||'') + '</b></div><div style="font-size:12px;color:var(--text-light);margin-bottom:4px">答案3：<b>' + (u.security_a3||'') + '</b></div>'
+      + '<div style="font-size:10px;color:var(--danger);text-align:center;margin-top:4px">⚠️ 密保已设置，终生不可修改，请勿遗忘</div></div>'
+      + '<div style="font-size:10px;color:var(--text-light);text-align:center;margin-top:4px">密码和密保问题答案后台不可查看，请妥善保管</div>';
+  } else {
+    // 未设置 → 显示设置表单
+    sqHtml = '<div style="position:relative;margin-bottom:6px"><input id="ss-auth-pw" type="password" placeholder="输入当前密码验证身份" style="width:100%;padding-right:36px;padding:10px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:13px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none;color:var(--text-light)" class="pw-toggle-btn" data-target="ss-auth-pw">👁️</span></div>'
+      + '<div style="display:flex;flex-direction:column;gap:6px">'
+      + '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题1</div><select id="ss-sq1" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px;margin-bottom:4px">'+q1+'</select><div style="position:relative"><input id="ss-sa1" type="password" placeholder="答案" value="'+(u.security_a1||'')+'" style="width:100%;padding-right:36px;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px"><span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px;user-select:none;color:var(--text-light)" class="sq-toggle" data-target="ss-sa1">👁️</span></div></div>'
+      + '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题2</div><select id="ss-sq2" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px;margin-bottom:4px">'+q2+'</select><div style="position:relative"><input id="ss-sa2" type="password" placeholder="答案" value="'+(u.security_a2||'')+'" style="width:100%;padding-right:36px;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px"><span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px;user-select:none;color:var(--text-light)" class="sq-toggle" data-target="ss-sa2">👁️</span></div></div>'
+      + '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题3</div><select id="ss-sq3" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px;margin-bottom:4px">'+q3+'</select><div style="position:relative"><input id="ss-sa3" type="password" placeholder="答案" value="'+(u.security_a3||'')+'" style="width:100%;padding-right:36px;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px"><span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px;user-select:none;color:var(--text-light)" class="sq-toggle" data-target="ss-sa3">👁️</span></div></div>'
+      + '<div style="font-size:10px;color:var(--text-light);text-align:center;margin:4px 0">⚠️ 密保设置后终生不可修改，请牢记答案</div>'
+      + '<button class="btn btn-primary" id="ss-save-sq" style="width:100%;font-size:13px;padding:8px;margin-bottom:2px">保存密保设置</button>'
+      + '<div style="font-size:10px;color:var(--text-light);text-align:center">密码和密保问题答案后台不可查看，请妥善保管</div>';
+  }
   var html =
     // 修改密码
     '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--border)">'
@@ -410,15 +434,8 @@ function showSecuritySettings(){
     + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--border)">'
     + '<div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>🔐 密保设置</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div>'
     + '<div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">'
-    + '<div style="position:relative;margin-bottom:6px"><input id="ss-auth-pw" type="password" placeholder="输入当前密码验证身份" style="width:100%;padding-right:36px;padding:10px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:13px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none;color:var(--text-light)" class="pw-toggle-btn" data-target="ss-auth-pw">👁️</span></div>'
-    + '<div style="display:flex;flex-direction:column;gap:6px">'
-    + '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题1</div><select id="ss-sq1" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px;margin-bottom:4px">'+q1+'</select><div style="position:relative"><input id="ss-sa1" type="password" placeholder="答案" value="'+(u.security_a1||'')+'" style="width:100%;padding-right:36px;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px"><span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px;user-select:none;color:var(--text-light)" class="sq-toggle" data-target="ss-sa1">👁️</span></div></div>'
-    + '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题2</div><select id="ss-sq2" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px;margin-bottom:4px">'+q2+'</select><div style="position:relative"><input id="ss-sa2" type="password" placeholder="答案" value="'+(u.security_a2||'')+'" style="width:100%;padding-right:36px;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px"><span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px;user-select:none;color:var(--text-light)" class="sq-toggle" data-target="ss-sa2">👁️</span></div></div>'
-    + '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题3</div><select id="ss-sq3" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px;margin-bottom:4px">'+q3+'</select><div style="position:relative"><input id="ss-sa3" type="password" placeholder="答案" value="'+(u.security_a3||'')+'" style="width:100%;padding-right:36px;padding:8px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:12px"><span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px;user-select:none;color:var(--text-light)" class="sq-toggle" data-target="ss-sa3">👁️</span></div></div>'
-    + '<div style="font-size:10px;color:var(--text-light);text-align:center;margin:4px 0">三选一填写密保答案，任选一个回答即可找回密码</div>'
-    + '<button class="btn btn-primary" id="ss-save-sq" style="width:100%;font-size:13px;padding:8px;margin-bottom:2px">保存密保设置</button>'
-    + '<div style="font-size:10px;color:var(--text-light);text-align:center">密码和密保问题答案后台不可查看，请妥善保管</div>'
-    + '</div></div></div>';
+    + sqHtml
+    + '</div></div>';
   showModal('🔒 密码与密保', html, [{label:'关闭'}]);
   // 绑定密码可见切换
   document.querySelectorAll('.pw-toggle-btn, .sq-toggle').forEach(function(btn){
@@ -428,7 +445,8 @@ function showSecuritySettings(){
     };
   });
   // 修改密码
-  document.getElementById('ss-save-pw').onclick = function(){
+  var pwBtn = document.getElementById('ss-save-pw');
+  if (pwBtn) pwBtn.onclick = function(){
     var opw = document.getElementById('old-pw').value;
     var npw = document.getElementById('new-pw').value;
     if (!opw || !npw) { toast('请填写原密码和新密码'); return; }
@@ -436,8 +454,9 @@ function showSecuritySettings(){
     if (r.ok) { toast('密码已修改'); document.getElementById('old-pw').value = ''; document.getElementById('new-pw').value = ''; }
     else toast(r.msg);
   };
-  // 密保设置（需验证密码）
-  document.getElementById('ss-save-sq').onclick = function(){
+  // 密保设置（未设置时保存）
+  var sqBtn = document.getElementById('ss-save-sq');
+  if (sqBtn) sqBtn.onclick = function(){
     var authPw = document.getElementById('ss-auth-pw').value;
     if (!authPw) { toast('请输入当前密码验证身份'); return; }
     var users = getUsers();
@@ -452,13 +471,21 @@ function showSecuritySettings(){
     if(!sa1 && !sa2 && !sa3){ toast('请至少填写一个密保答案'); return; }
     var updates = {};
     if (sa1) { updates.security_q1 = sq1; updates.security_a1 = sa1; currentUser.security_q1 = sq1; currentUser.security_a1 = sa1; }
-    else { updates.security_q1 = ''; updates.security_a1 = ''; currentUser.security_q1 = ''; currentUser.security_a1 = ''; }
     if (sa2) { updates.security_q2 = sq2; updates.security_a2 = sa2; currentUser.security_q2 = sq2; currentUser.security_a2 = sa2; }
-    else { updates.security_q2 = ''; updates.security_a2 = ''; currentUser.security_q2 = ''; currentUser.security_a2 = ''; }
     if (sa3) { updates.security_q3 = sq3; updates.security_a3 = sa3; currentUser.security_q3 = sq3; currentUser.security_a3 = sa3; }
-    else { updates.security_q3 = ''; updates.security_a3 = ''; currentUser.security_q3 = ''; currentUser.security_a3 = ''; }
     updateUser(currentUser.username, updates);
     toast('密保设置已保存');
+  };
+  // 查看已设置的密保（需验证密码）
+  var viewBtn = document.getElementById('ss-view-btn');
+  if (viewBtn) viewBtn.onclick = function(){
+    var vpw = document.getElementById('ss-view-pw').value;
+    if (!vpw) { toast('请输入密码'); return; }
+    var users = getUsers();
+    var user = users.find(function(x){ return x.username === currentUser.username; });
+    if (!user || user.password !== vpw) { toast('密码验证失败'); return; }
+    var el = document.getElementById('ss-view-result');
+    if (el) el.style.display = 'block';
   };
 }
 
