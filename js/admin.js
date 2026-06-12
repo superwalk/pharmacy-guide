@@ -304,6 +304,9 @@ function initAdmin() {
   var isSuper = currentUser && currentUser.username === 'walkman0097';
 
   renderAdminList('drugs');
+  // 渲染用户管理手风琴内容
+  var userListEl = document.getElementById('admin-user-list');
+  if (userListEl) renderUserList(userListEl);
 }
 
 function renderAdminList(type, kw) {
@@ -636,8 +639,8 @@ function peg(id){ return (document.getElementById(id)?.value||'').trim(); }
 function genRandPw(){ var c='abcdefghjkmnpqrstuvwxyz23456789'; var p=''; for(var i=0;i<8;i++) p+=c[Math.floor(Math.random()*c.length)]; return p; }
 
 // ═══ 用户管理 ═══
-function renderUserList(){
-  var list=document.getElementById('admin-list');
+function renderUserList(container){
+  var list=container || document.getElementById('admin-list');
   var users=getUsers();
   list.innerHTML='';
   if(users.length===0){ list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">暂无用户</div>'; return; }
