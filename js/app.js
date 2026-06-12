@@ -266,7 +266,7 @@ function renderKnowledge() {
     if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw))||genPy(c.name).toLowerCase().includes(kw)||c.subs.some(s=>genPy(s).toLowerCase().includes(kw)));
     kb.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+cats.map((c,i)=>`
       <div class="cat-card" style="padding:12px;min-height:0">
-        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${i})" data-cat-expanded="false">
+        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${i})" data-cat-group-idx="${i}" data-cat-expanded="false">
           <span class="cat-name" style="font-size:14px">${kw ? highlightKw(c.name, kw) : c.name}</span>
           <span class="cat-subs-count" style="font-size:11px;color:var(--text-light);margin-left:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▶</span></span>
         </div>
@@ -281,7 +281,7 @@ function renderKnowledge() {
   } else {
     let cats= DISEASE_CATEGORIES;
     if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw))||genPy(c.name).toLowerCase().includes(kw)||c.subs.some(s=>genPy(s).toLowerCase().includes(kw)));
-    kb.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+cats.map((c,i)=>`\n      <div class="cat-card" style="padding:12px;min-height:0">\n        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${100+i})" data-cat-expanded="false">\n          <span class="cat-name" style="font-size:14px">${kw ? highlightKw(c.name, kw) : c.name}</span>\n          <span style="font-size:11px;color:var(--text-light);margin-left:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▶</span></span>\n        </div>\n        <div class="cat-items" id="cat-group-${100+i}" style="display:none;padding:6px 0 0;gap:4px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();openDisease('${s}')">${kw ? highlightKw(s, kw) : s}</span>`).join('')}</div>\n      </div>\n    `).join('')+'</div>';
+    kb.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+cats.map((c,i)=>`\n      <div class="cat-card" style="padding:12px;min-height:0">\n        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${100+i})" data-cat-group-idx="${100+i}" data-cat-expanded="false">\n          <span class="cat-name" style="font-size:14px">${kw ? highlightKw(c.name, kw) : c.name}</span>\n          <span style="font-size:11px;color:var(--text-light);margin-left:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▶</span></span>\n        </div>\n        <div class="cat-items" id="cat-group-${100+i}" style="display:none;padding:6px 0 0;gap:4px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();openDisease('${s}')">${kw ? highlightKw(s, kw) : s}</span>`).join('')}</div>\n      </div>\n    `).join('')+'</div>';
     if(kw){
       const matches=DISEASES.filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase().includes(kw)||genPy(d.name).toLowerCase().includes(kw));
       if(matches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配疾病</div>`+matches.map(d=>`<div class="list-card" onclick="openDisease('${d.name}')"><div class="icon-box">🦠</div><div class="info"><div class="name">${highlightKw(d.name, kw)}</div><div class="desc">${(d.desc||'').slice(0,40)}…</div></div></div>`).join('');
@@ -362,8 +362,25 @@ function toggleCatGroup(header, idx) {
   const arrow=header.querySelector('.cat-arrow');
   if(!items||!arrow) return;
   const expanded=header.dataset.catExpanded==='true';
-  if(expanded){ items.style.display='none'; arrow.style.transform='rotate(-90deg)'; arrow.textContent='▶'; header.dataset.catExpanded='false'; }
-  else { items.style.display='grid'; arrow.style.transform='rotate(0deg)'; arrow.textContent='▼'; header.dataset.catExpanded='true'; }
+  if(expanded){
+    items.style.display='none'; arrow.style.transform='rotate(-90deg)'; arrow.textContent='▶'; header.dataset.catExpanded='false';
+  } else {
+    // 手风琴：折叠同一容器内其他已展开的分类
+    var parent=items.closest('#kb-list') || items.parentElement;
+    if(parent){
+      parent.querySelectorAll('[data-cat-expanded="true"]').forEach(function(h){
+        var gid=h.dataset.catGroupIdx;
+        if(gid && h!==header){
+          var gi=document.getElementById('cat-group-'+gid);
+          if(gi){ gi.style.display='none'; }
+          var ar=h.querySelector('.cat-arrow');
+          if(ar){ ar.style.transform='rotate(-90deg)'; ar.textContent='▶'; }
+          h.dataset.catExpanded='false';
+        }
+      });
+    }
+    items.style.display='grid'; arrow.style.transform='rotate(0deg)'; arrow.textContent='▼'; header.dataset.catExpanded='true';
+  }
 }
 
 function openGuide(gid) {
