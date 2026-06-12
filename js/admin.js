@@ -238,6 +238,8 @@ function showDrugEditor(drug, index) {
       var cd=getCust();
       if(isNew){cd.drugs.unshift(nd);}else if(index>=DRUGS.length){cd.drugs[index-DRUGS.length]=nd;}else{cd.drugOverlay=cd.drugOverlay||{};cd.drugOverlay[d.id]=nd;}
       saveCust(cd); renderAdminList('drugs'); addEditLog('药品',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      // 同步到 Supabase
+      trySupabaseUpsert('drugs', {id:nd.id,name:nd.name,py:genPy(nd.name),category:nd.category,subcategory:nd.subcategory,type:nd.type,indications:nd.indications,contraindications:nd.contraindications||null,adverse:nd.adverse||null, dosage:nd.dosage||null, storage:nd.storage||null, interactions:nd.interactions||null, label:nd.label|| null, is_custom:true});
     }}]
   );
   // 初始化子分类下拉（编辑时预选子分类）
@@ -282,6 +284,8 @@ function showGuidelineEditor(guide, index) {
       var cd=getCust();
       if(isNew){cd.guidelines.unshift(ng);}else if(index>=GUIDELINES.length){cd.guidelines[index-GUIDELINES.length]=ng;}else{cd.glOverlay=cd.glOverlay||{};cd.glOverlay[g.id]=ng;}
       saveCust(cd); renderAdminList('guidelines'); addEditLog('指南',ng.title,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      // 同步到 Supabase
+      trySupabaseUpsert('guidelines', {id:ng.id,title:ng.title,system:ng.system,year:ng.year||null,content:ng.content||null,source_url:ng.sourceUrl||null,py:genPy(ng.title),is_custom:true});
     }}]
   );
 }
@@ -302,6 +306,8 @@ function showEduEditor(item, index) {
       cd.education=cd.education||[];
       if(isNew){cd.education.unshift(ne);}else{var idx=cd.education.findIndex(x=>x.id===h.id);if(idx>=0)cd.education[idx]=ne;else{cd.eduOverlay=cd.eduOverlay||{};cd.eduOverlay[h.id]=ne;}}
       saveCust(cd); renderAdminList('education'); addEditLog('科普',ne.title,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      // 同步到 Supabase
+      trySupabaseUpsert('health_edu', {id:ne.id,cat:ne.cat,title:ne.title,py:genPy(ne.title),content:ne.content||null,is_custom:true});
     }}]
   );
 }
@@ -323,6 +329,8 @@ function showMedEduEditor(item, index) {
       cd.mededu=cd.mededu||[];
       if(isNew){cd.mededu.unshift(nm);}else{var idx=cd.mededu.findIndex(x=>x.id===m.id);if(idx>=0)cd.mededu[idx]=nm;else{cd.medOverlay=cd.medOverlay||{};cd.medOverlay[m.id]=nm;}}
       saveCust(cd); renderAdminList('mededu'); addEditLog('用药教育',nm.drug,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      // 同步到 Supabase（注意字段映射：key→key_point）
+      trySupabaseUpsert('med_edu', {id:nm.id,cat:nm.cat||null,drug:nm.drug,py:genPy(nm.drug),key_point:nm.key,detail:nm.detail||null,is_custom:true});
     }}]
   );
 }
@@ -346,6 +354,8 @@ function showInfEditor(item, index) {
       cd.infusion=cd.infusion||[];
       if(isNew){cd.infusion.unshift(ni);}else{var idx=cd.infusion.findIndex(x=>x.id===inf.id);if(idx>=0)cd.infusion[idx]=ni;else{cd.infOverlay=cd.infOverlay||{};cd.infOverlay[inf.id]=ni;}}
       saveCust(cd); renderAdminList('infusion'); addEditLog('配伍',ni.drug,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      // 同步到 Supabase
+      trySupabaseUpsert('infusion_data', {id:ni.id,cat:ni.cat||null,drug:ni.drug,py:genPy(ni.drug),vehicle:ni.vehicle||null,conc:ni.conc||null,speed:ni.speed||null,note:ni.note||null,is_custom:true});
     }}]
   );
 }
@@ -369,6 +379,8 @@ function showDiseaseEditor(item, index) {
       cd.diseases=cd.diseases||[];
       if(isNew){cd.diseases.unshift(nd);}else{var idx=cd.diseases.findIndex(x=>x.id===d.id);if(idx>=0)cd.diseases[idx]=nd;else{cd.disOverlay=cd.disOverlay||{};cd.disOverlay[d.id]=nd;}}
       saveCust(cd); renderAdminList('diseases'); addEditLog('疾病',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+      // 同步到 Supabase（注意字段映射：desc→description）
+      trySupabaseUpsert('diseases', {id:nd.id,name:nd.name,cat:nd.cat,py:genPy(nd.name),description:nd.desc||null,symptoms:nd.symptoms||null,diagnosis:nd.diagnosis||null,treatment:nd.treatment||null,is_custom:true});
     }}]
   );
 }
@@ -377,9 +389,15 @@ function deleteItem(type, index) {
   showModal('确认删除','<p style="text-align:center;font-size:14px">此操作不可恢复，确认删除？</p>',[
     {label:'取消'},{label:'删除',primary:true,onClick:()=>{
       var cd=getCust();
-      if(type==='drug'){if(index<DRUGS.length){toast('内置药品请在data.js中删除');return;}cd.drugs.splice(index-DRUGS.length,1);}
-      else if(type==='guide'){if(index<GUIDELINES.length){toast('内置指南请在data.js中删除');return;}cd.guidelines.splice(index-GUIDELINES.length,1);}
+      var deletedId = null;
+      if(type==='drug'){if(index<DRUGS.length){toast('内置药品请在data.js中删除');return;}deletedId = cd.drugs[index-DRUGS.length].id; cd.drugs.splice(index-DRUGS.length,1);}
+      else if(type==='guide'){if(index<GUIDELINES.length){toast('内置指南请在data.js中删除');return;}deletedId = cd.guidelines[index-GUIDELINES.length].id; cd.guidelines.splice(index-GUIDELINES.length,1);}
       saveCust(cd); renderAdminList(type==='drug'?'drugs':'guidelines'); toast('已删除');
+      // 同步删除到 Supabase
+      if (deletedId) {
+        var table = type==='drug' ? 'drugs' : 'guidelines';
+        trySupabaseDelete(table, deletedId);
+      }
     }}
   ]);
 }

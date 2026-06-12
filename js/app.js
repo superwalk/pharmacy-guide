@@ -7,6 +7,29 @@ function findDrug(id) { return allDrugs().find(d=>d.id===id); }
 var _detailCache = {};
 function _loadDetail(type, id, cb) {
   if (_detailCache[type + '/' + id]) { if(cb) cb(_detailCache[type + '/' + id]); return; }
+
+  // 优先从 Supabase 查询
+  if (typeof supabaseLoadDetail === 'function' && _online) {
+    var tableMap = { drugs:'drugs', diseases:'diseases', guidelines:'guidelines', mededu:'med_edu', healthedu:'health_edu', infusion:'infusion_data' };
+    var table = tableMap[type];
+    if (table) {
+      supabaseLoadDetail(table, id).then(function(data){
+        if (data) {
+          _detailCache[type + '/' + id] = data;
+          if(cb) cb(data);
+        } else {
+          fallbackLoadDetail(type, id, cb);
+        }
+      }).catch(function(){
+        fallbackLoadDetail(type, id, cb);
+      });
+      return;
+    }
+  }
+  fallbackLoadDetail(type, id, cb);
+}
+
+function fallbackLoadDetail(type, id, cb) {
   var base = location.pathname.replace(/\/[^\/]*$/, '/');
   if (!base || base === '/') base = '/pharmacy-guide/';
   fetch(base + 'data/' + type + '/' + id + '.json').then(function(r) {
@@ -186,7 +209,25 @@ function initApp() {
   initProfileMenus();
   bindGuideSearch();
   checkVersion(); // 自动检查版本更新
+
+  // ─── 从 Supabase 加载数据（不阻塞 UI） ───
+  if (typeof supabaseLoadAll === 'function') {
+    supabaseLoadAll(function(loaded){
+      if (loaded && _online) {
+        // 数据已刷新，重新渲染当前页面
+        var active = document.querySelector('.screen.active');
+        if (active) {
+          var id = active.id;
+          if (id === 'screen-home') renderHome();
+          else if (id === 'screen-knowledge') renderKnowledge();
+          else if (id === 'screen-guidelines') renderGuidelines();
+        }
+      }
+    });
+  }
+
   // 置顶按钮——监听各屏幕容器的滚动
+  function onScreenScroll(){
   function onScreenScroll(){
     var btn=document.getElementById('back-to-top');
     if(!btn) return;

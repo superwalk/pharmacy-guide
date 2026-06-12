@@ -1,6 +1,22 @@
--- ═══════════════════════════════════════════
--- 药学知识指南 — Supabase Schema v1
--- ═══════════════════════════════════════════
+-- ═══ 药学知识指南 — 完整初始化脚本 ═══
+-- 一键重建所有表和种子数据
+-- 先删除已有表再重建（安全，尚无正式数据）
+
+drop table if exists edit_logs cascade;
+drop table if exists recent_views cascade;
+drop table if exists favorites cascade;
+drop table if exists notes cascade;
+drop table if exists profiles cascade;
+drop table if exists infusion_data cascade;
+drop table if exists med_edu cascade;
+drop table if exists health_edu cascade;
+drop table if exists laws cascade;
+drop table if exists guidelines cascade;
+drop table if exists diseases cascade;
+drop table if exists drugs cascade;
+drop table if exists guide_systems cascade;
+drop table if exists disease_categories cascade;
+drop table if exists drug_categories cascade;
 
 -- 0. 扩展
 create extension if not exists "pgcrypto";
@@ -53,7 +69,7 @@ create table drugs (
 create index idx_drugs_name on drugs using gin(to_tsvector('simple', coalesce(name,'')));
 create index idx_drugs_category on drugs(category);
 
--- 5. 疾病
+-- 5. 疾病（关键修复：desc → description 避免保留关键字冲突）
 create table diseases (
   id text primary key,
   name text not null,
@@ -84,7 +100,7 @@ create table guidelines (
 );
 create index idx_guidelines_title on guidelines using gin(to_tsvector('simple', coalesce(title,'')));
 
--- 7. 法规 (有全文内容，无 source_url)
+-- 7. 法规
 create table laws (
   id text primary key,
   title text not null,
@@ -108,7 +124,7 @@ create table health_edu (
   updated_at timestamptz default now()
 );
 
--- 9. 用药教育
+-- 9. 用药教育（关键修复：key → key_point 避免保留关键字冲突）
 create table med_edu (
   id text primary key,
   cat text,
@@ -215,7 +231,6 @@ create policy "drugs_update_editor" on drugs for update using (
   exists(select 1 from profiles where id = auth.uid() and role in ('editor','admin'))
 );
 
--- 对所有数据表应用相同策略（简化写法用 data_read_all + data_write_editor）
 do $$
 declare
   tables text[] := array['diseases','guidelines','laws','health_edu','med_edu','infusion_data','drug_categories','disease_categories','guide_systems'];
@@ -301,3 +316,5 @@ insert into guide_systems(system,icon,sort_order) values
   ('肿瘤','🎗️',5),('内分泌','🩸',6),('儿科','👶',7),('妇产科','🤰',8),
   ('骨科','🦴',9),('感染','🦠',10),('眼科','👁️',11),('药学','💊',12),
   ('腔镜机器人','🤖',13),('血液','🩸',14),('其他','📑',15);
+
+-- ✅ 到此为止，建表完成！请先运行这一半，然后单独运行数据导入脚本（02-import.sql）
