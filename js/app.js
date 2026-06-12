@@ -599,7 +599,7 @@ function renderGuidelines() {
     // 搜索框清空后恢复默认全部展开(折叠)状态
   }
   gl.innerHTML=systems.map((s,i)=>`
-    <div class="cat-card" style="margin-bottom:8px;padding:12px">
+    <div class="cat-card" style="margin-bottom:6px">
       <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-group="${i}" data-expanded="${kw?'true':'false'}">
         <span class="cat-name" style="font-size:14px">${s.icon} ${highlightKw(s.system, kw)}</span>
         <span style="font-size:11px;color:var(--text-light)">${s.items.length} 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">${kw?'▼':'▶'}</span></span>
