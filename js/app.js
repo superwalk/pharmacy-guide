@@ -1572,8 +1572,8 @@ function checkVersion(){
   }).then(function(data){
     if(!data||!data.version) return;
     if(data.version!==APP_VERSION){
-      // 发现新版本，自动刷新（VIA浏览器缓存问题解决方案）
-      window.location.reload(true);
+      // 发现新版本，强制刷新（带缓存清除参数，解决VIA浏览器缓存问题）
+      window.location.href = window.location.href.split('?')[0].split('#')[0] + '?v=' + data.version + '&t=' + Date.now();
     }
   }).catch(function(){ /* 离线忽略 */ });
 }
