@@ -262,7 +262,7 @@ function showRegisterModal(){
   var step1HTML =
     '<div style="display:flex;flex-direction:column;gap:8px">'+
     '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">📝 填写注册信息</div>'+
-    '<input id="reg-username" placeholder="用户名（至少3个字符）" style="width:100%">'+
+    '<input id="reg-username" placeholder="用户名（至少5个字符）" style="width:100%">'+
     '<input id="reg-email" placeholder="邮箱地址" type="email" style="width:100%">'+
     '<div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;font-size:13px;color:var(--text-light)">🔐 设置密保问题（用于找回密码，至少填写一个）</div>'+
     '<div style="display:flex;gap:4px"><select id="reg-sq1" style="flex:1">'+qOpts+'</select><input id="reg-sa1" placeholder="答案1（选填）" style="width:40%"></div>'+
@@ -298,7 +298,7 @@ function showForgotPasswordModal(){
     '<input id="fp-username" placeholder="用户名" style="width:100%">'+
     '<input id="fp-email" placeholder="邮箱地址" type="email" style="width:100%">'+
     '</div>';
-  showModal('🔑 找回密码 · 验证身份', html, [{label:'取消'},{label:'下一步',primary:true,onClick:function(){
+  showModal('🔑 找回密码', html, [{label:'取消'},{label:'下一步',primary:true,onClick:function(){
     var uname = document.getElementById('fp-username').value.trim();
     var email = document.getElementById('fp-email').value.trim();
     if(!uname || !email){ toast('请填写用户名和邮箱'); return; }
@@ -317,7 +317,7 @@ function showForgotPasswordQuestions(uname, email, questions){
       '<input id="fp-a'+q.idx+'" placeholder="你的答案" style="width:100%">';
   });
   html += '</div>';
-  showModal('🔑 找回密码 · 密保验证', html, [{label:'取消'},{label:'重置密码',primary:true,onClick:function(){
+  showModal('🔑 找回密码', html, [{label:'取消'},{label:'重置密码',primary:true,onClick:function(){
     var answers = {};
     questions.forEach(function(q){
       var val = document.getElementById('fp-a'+q.idx).value.trim();
@@ -1012,18 +1012,42 @@ function initProfileMenus() {
   },100); };
   document.getElementById('menu-disclaimer').onclick=()=>{ showModal('免责声明','<div style="font-size:13px;line-height:1.8;color:var(--text-body)"><p>本应用提供的药学知识内容仅供参考和学习交流之用，<span style="color:var(--danger)">不构成医疗建议、诊断或处方依据。</span></p><p style="margin-top:8px">具体用药方案请以药品说明书和临床指南为准，并遵循执业医师或药师的指导。</p><p style="margin-top:8px"><span style="color:var(--danger)">内容仅供药学专业人员学习参考，不替代专业诊断或治疗方案。</span>因参考本资料而产生的任何直接或间接后果，<span style="color:var(--danger)">作者概不负责</span>。</p><p style="margin-top:8px;color:var(--text-light)">© 2026 药学知识指南</p></div>',[{label:'我知道了',primary:true}]); };
   document.getElementById('menu-logout').onclick=()=>{ logout(); location.reload(); };
-  // 使用帮助
-  document.getElementById('menu-guide').onclick=function(){
+  // 更新与帮助（合并使用帮助+更新日志）
+  document.getElementById('menu-update-help').onclick=function(){
     pushScreen('label');
     var isAdmin = currentUser.username === 'walkman0097';
+    // 使用帮助内容
     var defaultGuide = isEditor() ? ADMIN_GUIDE : USER_GUIDE;
     var saved = (function(){
       try { var s = localStorage.getItem('custom_guide'); return s ? JSON.parse(s) : null; } catch(e){ return null; }
     })();
     var guide = saved ? saved.content : defaultGuide;
     var roleLabel = saved && saved.role === 'admin' ? '（管理员版）' : isEditor() ? '（管理员版）' : '';
-    document.getElementById('label-content').innerHTML = '<div class="section-title" style="font-size:22px">📖 使用帮助' + roleLabel + '</div><div class="label-doc" id="guide-content" style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">' + guide + '</div>'
+    // 更新日志内容
+    var logs = getChangelog();
+    var logHtml = logs.map(function(l){
+      var m = l.match(/^(\d{4}-\d{2}-\d{2})\s+(.+)/);
+      if(m) return '<div style="margin:8px 0;display:flex;gap:8px;align-items:flex-start"><span style="font-size:11px;color:var(--text-light);white-space:nowrap;margin-top:2px">'+m[1]+'</span><span style="font-size:13px;line-height:1.6;color:var(--text-body)">'+m[2]+'</span></div>';
+      return '<div style="margin:4px 0 4px 48px;font-size:13px;color:var(--text-body)">'+l+'</div>';
+    }).join('');
+    document.getElementById('label-content').innerHTML = '<div class="section-title" style="font-size:22px">📖 更新与帮助</div>'
+      + '<div style="margin-bottom:16px"><div class="info-card" style="margin:0"><div class="info-label">📋 更新日志</div><div class="info-value" style="padding:8px 0">' + logHtml + '</div></div></div>'
+      + (isAdmin ? '<button class="btn btn-outline btn-sm" id="edit-changelog-btn" style="margin-bottom:16px">✏️ 编辑更新日志</button>' : '')
+      + '<div class="section-title" style="font-size:18px;margin-top:4px">📖 使用帮助' + roleLabel + '</div>'
+      + '<div class="label-doc" id="guide-content" style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">' + guide + '</div>'
       + (isAdmin ? '<button class="btn btn-outline btn-full" id="edit-guide-btn" style="margin-top:20px">✏️ 编辑使用帮助</button>' : '');
+    var editChangelogBtn = document.getElementById('edit-changelog-btn');
+    if (editChangelogBtn) editChangelogBtn.onclick = function(){
+      var logs = getChangelog();
+      showModal('编辑更新日志', '<p style="font-size:12px;color:var(--text-light);margin-bottom:8px">每行一条，日期格式：YYYY-MM-DD 内容</p><textarea id="changelog-editor" style="width:100%;min-height:200px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:13px;resize:vertical">' + escHTML(logs.join('\n')) + '</textarea>',
+        [{label:'取消'},{label:'保存',primary:true,onClick:function(){
+          var val = document.getElementById('changelog-editor').value;
+          var arr = val.split('\n').filter(function(l){return l.trim();});
+          try { localStorage.setItem('changelog_custom_v3', JSON.stringify(arr)); } catch(e) {}
+          toast('更新日志已保存');
+          document.getElementById('menu-update-help').onclick();
+        }}]);
+    };
     var editBtn = document.getElementById('edit-guide-btn');
     if (editBtn) editBtn.onclick = function(){
       var currentGuide = document.getElementById('guide-content').textContent;
@@ -1031,8 +1055,8 @@ function initProfileMenus() {
         [{label:'取消'},{label:'保存',primary:true,onClick:function(){
           var newGuide = document.getElementById('guide-editor').value;
           try { localStorage.setItem('custom_guide', JSON.stringify({content: newGuide, role: currentUser.role, updated: new Date().toISOString()})); } catch(e) {}
-          document.getElementById('guide-content').textContent = newGuide;
           toast('使用帮助已更新');
+          document.getElementById('menu-update-help').onclick();
         }}]);
     };
   };
@@ -1041,9 +1065,6 @@ function initProfileMenus() {
   // 编辑记录菜单（函数在 admin.js 中定义）
   var elog=document.getElementById('menu-edit-log');
   if(elog) elog.onclick=()=>{ showEditLogs(); };
-  // 更新日志
-  var clBtn=document.getElementById('menu-changelog');
-  if(clBtn) clBtn.addEventListener('click',showChangelog);
   // 数据导出
   var exBtn=document.getElementById('menu-export');
   if(exBtn) exBtn.onclick=function(){ showExportPanel(); };
