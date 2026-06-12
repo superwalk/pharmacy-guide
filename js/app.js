@@ -452,19 +452,21 @@ function initApp() {
   initProfileMenus();
   bindGuideSearch();
   checkVersion(); // 自动检查版本更新
-  // 全局手风琴委托（兼容所有动态生成的onclick）
-  document.addEventListener('click', function(e){
-    var t = e.target;
-    while (t) {
-      if (t.dataset && t.dataset.expanded !== undefined && t.getAttribute('onclick') && t.getAttribute('onclick').indexOf('toggleGuideGroup') >= 0) {
-        toggleGuideGroup(t);
-        e.preventDefault();
-        e.stopPropagation();
-        return;
+  // 手风琴绑定：用 MutationObserver 自动绑定新生成的 accordion 头
+  function bindAccordions() {
+    document.querySelectorAll('[data-expanded]').forEach(function(el){
+      if (el.onclick) return; // 已绑定则跳过
+      if (el.getAttribute('onclick') && el.getAttribute('onclick').indexOf('toggleGuideGroup') >= 0) {
+        el.onclick = function(e){
+          toggleGuideGroup(this);
+          e.preventDefault();
+        };
       }
-      t = t.parentElement;
-    }
-  });
+    });
+  }
+  bindAccordions();
+  var _obs = new MutationObserver(function(){ bindAccordions(); });
+  _obs.observe(document.getElementById('app'), { childList: true, subtree: true });
 
   // ─── 从 Supabase 加载数据（不阻塞 UI） ───
   if (typeof supabaseLoadAll === 'function') {
@@ -650,22 +652,14 @@ function renderGuidelines() {
 
 function toggleGuideGroup(header) {
   if (!header) return;
+  // 优先 data-target, 其次 data-group, 最后 data-idx
   var items = null;
-  // 查找目标内容区：优先 data-target-id，其次 data-group + guide-group-，再查兄弟guide-items
-  if (header.dataset.targetId) {
-    items = document.getElementById(header.dataset.targetId);
-  } else if (header.dataset.group !== undefined) {
-    items = document.getElementById('guide-group-'+header.dataset.group);
-  }
-  if (!items) {
-    var parent = header.parentElement;
-    if (parent) {
-      items = parent.querySelector('.guide-items');
-    }
-    if (!items) {
-      items = header.nextElementSibling;
-    }
-  }
+  var tid = header.dataset.target;
+  if (tid) { items = document.getElementById(tid); }
+  if (!items && header.dataset.group !== undefined) { items = document.getElementById('guide-group-'+header.dataset.group); }
+  if (!items && header.dataset.idx !== undefined) { items = document.getElementById('gi-'+header.dataset.idx); }
+  if (!items) { items = header.nextElementSibling; }
+  if (!items) { var p = header.parentElement; if (p) items = p.querySelector('.guide-items'); }
   if (!items) return;
   var arrow = header.querySelector('.guide-arrow');
   var expanded = header.dataset.expanded === 'true';
