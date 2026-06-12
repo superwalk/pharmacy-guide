@@ -103,6 +103,16 @@ function toggleFav(id) {
   var uname = currentUser ? currentUser.username : '';
   if (uname) trySync('favorites', { username: uname, content_id: id, list: JSON.stringify(f) });
 }
+// 页面收藏工具函数
+function isPageFav(id) { return getFavs().indexOf(id) >= 0; }
+function togglePageFav(id) {
+  var f = getFavs();
+  if (f.indexOf(id) >= 0) { f = f.filter(function(x){return x!==id;}); }
+  else { f.push(id); }
+  localStorage.setItem(favKey(), JSON.stringify(f));
+  var uname = currentUser ? currentUser.username : '';
+  if (uname) trySync('favorites', { username: uname, content_id: id, list: JSON.stringify(f) });
+}
 function getNotes() { return JSON.parse(localStorage.getItem(noteKey())||'{}'); }
 function saveNote(id, text) {
   if (text && text.length > 200) { toast('备注不能超过200字'); return false; }
@@ -132,6 +142,14 @@ function findContentById(id) {
   var i = INFUSION_DATA.find(function(x){return x.id===id;}); if (i) return { name: i.drug, type: 'infusion', icon: '💉' };
   // 输液配伍查询收藏
   if (id && id.indexOf('inf_q_') === 0) return { name: '🔍 输液查询：' + id.slice(6).replace(/_/g, ', '), type: 'infquery', icon: '💉' };
+  // 页面收藏（后台管理/使用帮助/更新日志等）
+  var pageNames = {
+    page_admin: '⚙️ 后台管理',
+    page_users: '👥 用户管理',
+    page_help: '📖 使用帮助',
+    page_changelog: '📋 更新日志'
+  };
+  if (id && pageNames[id]) return { name: pageNames[id], type: 'page', icon: '🔗' };
   var m = MED_EDU.find(function(x){return x.id===id;}); if (m) return { name: m.drug, type: 'med', icon: '🗣️' };
   return null;
 }
@@ -1291,6 +1309,14 @@ function renderFavorites() {
       if (ct) favItems.push({id:id, type:'calc', name:ct.name, cat:'🧮 '+ct.cat});
       return;
     }
+    // 页面收藏
+    var pageNames = {
+      page_admin: {name:'⚙️ 后台管理', cat:'功能页面'},
+      page_users: {name:'👥 用户管理', cat:'功能页面'},
+      page_help: {name:'📖 使用帮助', cat:'功能页面'},
+      page_changelog: {name:'📋 更新日志', cat:'功能页面'}
+    };
+    if (pageNames[id]) { favItems.push({id:id, type:'page', name:pageNames[id].name, cat:pageNames[id].cat}); return; }
   });
   favItems = favItems.reverse();
   if (kw) favItems = favItems.filter(function(i){return i.name.toLowerCase().includes(kw)||i.cat.includes(kw)||genPy(i.name).toLowerCase().includes(kw)||genPy(i.cat).toLowerCase().includes(kw);});
@@ -1299,7 +1325,7 @@ function renderFavorites() {
     : favItems.map(function(i){
       var isPy = kw && genPy(i.name).toLowerCase().includes(kw) && !i.name.toLowerCase().includes(kw);
       var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
-      return '<div class="list-card" data-id="'+i.id+'" data-type="'+i.type+'"><div class="icon-box">'+(i.type==='drug'?'💊':i.type==='guide'?'📋':i.type==='infquery'?'💉':'🧮')+'</div><div class="info"><div class="name">'+highlightKw(i.name, kw)+pyTag+'</div><div class="desc">'+highlightKw(i.cat, kw)+'</div></div></div>';
+      return '<div class="list-card" data-id="'+i.id+'" data-type="'+i.type+'"><div class="icon-box">'+(i.type==='drug'?'💊':i.type==='guide'?'📋':i.type==='infquery'?'💉':i.type==='page'?'🔗':'🧮')+'</div><div class="info"><div class="name">'+highlightKw(i.name, kw)+pyTag+'</div><div class="desc">'+highlightKw(i.cat, kw)+'</div></div></div>';
     }).join('');
   // 备注部分
   var notes = getNotes();
@@ -1325,6 +1351,8 @@ function renderFavorites() {
     if (t==='drug'){ addRecent(id,'drug'); pushScreen('detail'); renderDetail(id); }
     else if (t==='guide'){ addRecent(id,'guide'); openGuide(id); }
     else if (t==='calc'){ pushScreen('calc'); renderCalc(); }
+    else if (t==='infquery'){ openInfusionQuery(id); }
+    else if (t==='page'){ window.pageNav(id); }
   };});
   container.querySelectorAll('#note-content .info').forEach(function(el){ el.onclick=function(){
     var id = el.dataset.nid, tp = el.dataset.ntype;
@@ -1632,10 +1660,10 @@ function initProfileMenus() {
       // 数据卡片 - 手风琴折叠
       + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📦 数据概览</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">' + dbInfo + '</div></div>'
       // 更新日志卡片
-      + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📋 更新日志</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">' + logHtml
+      + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📋 更新日志</span><span class="page-fav" data-page="page_changelog" onclick="event.stopPropagation();togglePageFav(\'page_changelog\');this.textContent=getFavs().indexOf(\'page_changelog\')>=0?\'⭐\':\'☆\';" style="cursor:pointer;font-size:14px;user-select:none">'+(fv.indexOf('page_changelog')>=0?'⭐':'☆')+'</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">' + logHtml
       + (isAdmin ? '<button class="btn btn-outline btn-sm" id="edit-changelog-btn" style="margin-top:6px">✏️ 编辑</button>' : '') + '</div></div>'
       // 使用帮助卡片
-      + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📖 使用帮助</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px"><div class="label-doc" id="guide-content" style="white-space:pre-wrap;font-size:13px;line-height:1.8;color:var(--text-body)">' + guide + '</div>'
+      + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📖 使用帮助</span><span class="page-fav" data-page="page_help" onclick="event.stopPropagation();togglePageFav(\'page_help\');this.textContent=getFavs().indexOf(\'page_help\')>=0?\'⭐\':\'☆\';" style="cursor:pointer;font-size:14px;user-select:none">'+(fv.indexOf('page_help')>=0?'⭐':'☆')+'</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px"><div class="label-doc" id="guide-content" style="white-space:pre-wrap;font-size:13px;line-height:1.8;color:var(--text-body)">' + guide + '</div>'
       + (isAdmin ? '<button class="btn btn-outline btn-sm" id="edit-guide-btn" style="margin-top:6px">✏️ 编辑</button>' : '') + '</div></div>'
       // 数据管理卡片（仅admin）
       + (isAdmin ? '<div style="background:var(--bg);border-radius:12px;padding:14px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>💾 数据管理</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">'
@@ -1963,6 +1991,30 @@ function openInfusion(iid) {
     <div class="info-card"><div class="info-label">注意事项</div><div class="info-value" style="white-space:pre-wrap">${hlText(detail.note||'')}</div></div>` + renderNote(iid);
     bindNote(iid, function(){ openInfusion(iid); });
   });
+}
+
+// 从收藏打开输液配伍查询
+function openInfusionQuery(id) {
+  var qterm = id.slice(6).replace(/_/g, ', ');
+  pushScreen('infusion');
+  renderInfusion();
+  var inp = document.getElementById('inf-query-input');
+  if (inp) {
+    inp.value = qterm;
+    setTimeout(function(){ document.getElementById('inf-query-btn')?.click(); }, 100);
+  }
+}
+
+// 从收藏打开页面（后台管理/使用帮助/更新日志等）
+function pageNav(id) {
+  var pageMap = {
+    'page_admin': function(){ pushScreen('admin'); initAdmin(); },
+    'page_users': function(){ pushScreen('admin'); initAdmin(); },
+    'page_help': function(){ pushScreen('profile'); setTimeout(function(){ document.querySelector('[data-tab=\"help\"]')?.click(); }, 200); },
+    'page_changelog': function(){ pushScreen('profile'); setTimeout(function(){ document.querySelector('[data-tab=\"changelog\"]')?.click(); }, 200); }
+  };
+  var fn = pageMap[id];
+  if (fn) fn(); else toast('页面不存在');
 }
 
 function showDiseaseList(catName) {
