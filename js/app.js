@@ -436,7 +436,11 @@ function showSecuritySettings(){
     + '<div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">'
     + sqHtml
     + '</div></div>';
-  showModal('🔒 密码与密保', html, [{label:'关闭'}]);
+  showModal('🔒 密码与密保', html, []);
+  // 点击弹窗外部关闭
+  var ov = document.getElementById('modal-overlay');
+  var _closeHandler = function(e){ if (e.target === ov) { ov.classList.remove('show'); ov.removeEventListener('click', _closeHandler); } };
+  ov.addEventListener('click', _closeHandler);
   // 绑定密码可见切换
   document.querySelectorAll('.pw-toggle-btn, .sq-toggle').forEach(function(btn){
     btn.onclick = function(){
