@@ -536,7 +536,26 @@ function showTatDesense(){
     '📋 脱敏完成后再将余量一次肌注</div>';
 }
 
-function filterCalcTools(){ const kw=document.getElementById('calc-filter').value.toLowerCase(); document.querySelectorAll('#calc-tools .detail-hero').forEach(el=>{ el.style.display=el.textContent.toLowerCase().includes(kw)?'block':'none'; }); }
+function filterCalcTools(){ 
+  const kw=(document.getElementById('calc-filter').value||'').toLowerCase(); 
+  document.querySelectorAll('#calc-tools .detail-hero').forEach(el=>{ 
+    const match=!kw||el.textContent.toLowerCase().includes(kw); 
+    el.style.display=match?'block':'none';
+    // 搜索高亮
+    if(kw && match){
+      var titleEl=el.querySelector('div[style*="font-size:16px"][style*="font-weight:700"]');
+      if(titleEl){
+        var txt=titleEl.textContent.replace(/<mark[^>]*>|<\/mark>/g,'');
+        var re=new RegExp('('+kw.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')+')','gi');
+        titleEl.innerHTML=txt.replace(re,'<mark style="background:#FEF08A;padding:1px 2px;border-radius:2px">$1</mark>');
+      }
+    } else if(!kw){
+      // 恢复原始标题
+      var titleEl=el.querySelector('div[style*="font-size:16px"][style*="font-weight:700"]');
+      if(titleEl) titleEl.innerHTML=titleEl.textContent;
+    }
+  }); 
+}
 
 // ═══ 新增计算函数 ═══
 

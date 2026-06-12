@@ -42,7 +42,7 @@ function showModal(title, content, actions) {
   const mb=document.getElementById('modal-box');
   mb.innerHTML=`<h3>${title}</h3>${content}<div class="modal-actions">${actions.map((a,i)=>`<button class="btn ${a.primary?'btn-primary':'btn-outline'}" data-modal-act="${i}">${a.label}</button>`).join('')}</div>`;
   ov.classList.add('show');
-  mb.querySelectorAll('[data-modal-act]').forEach(btn=>{ btn.onclick=()=>{ const a=actions[parseInt(btn.dataset.modalAct)]; if(a.onClick)a.onClick(); ov.classList.remove('show'); }; });
+  mb.querySelectorAll('[data-modal-act]').forEach(btn=>{ btn.onclick=()=>{ const a=actions[parseInt(btn.dataset.modalAct)]; var close=true; if(a.onClick) close=a.onClick(); if(close!==false) ov.classList.remove('show'); }; });
 }
 
 // ═══ storage 辅助 ───
@@ -128,37 +128,28 @@ function loginSubmit() {
   const e=document.getElementById('login-error');
   const b=document.getElementById('login-btn');
   
-  // 1. 空输入检测
-  if(!u && !p){ showLoginErr(e,'请输入用户名和密码','warn'); return; }
-  if(!u){ showLoginErr(e,'请输入用户名','warn'); document.getElementById('login-user').focus(); return; }
-  if(!p){ showLoginErr(e,'请输入密码','warn'); document.getElementById('login-pw').focus(); return; }
+  // 1. 空输入检测 — 用弹窗提示
+  if(!u && !p){ showModal('登录提示','<p style="text-align:center">请输入用户名和密码</p>',[{label:'知道了',primary:true}]); return; }
+  if(!u){ showModal('登录提示','<p style="text-align:center">请输入用户名</p>',[{label:'知道了',primary:true,onClick:()=>document.getElementById('login-user').focus()}]); return; }
+  if(!p){ showModal('登录提示','<p style="text-align:center">请输入密码</p>',[{label:'知道了',primary:true,onClick:()=>document.getElementById('login-pw').focus()}]); return; }
   
-  // 2. 显示加载中
-  b.textContent='登录中…'; b.style.opacity='0.7'; showLoginErr(e,'','');
+  b.textContent='登录中…'; b.style.opacity='0.7';
   
-  // 3. 模拟网络延迟 + 校验
   setTimeout(()=>{
     const r=login(u,p);
     if(r.ok){
       if(document.getElementById('remember-pw').checked) saveRemember(u,p);
-      showLoginErr(e,'登录成功 ✓','success');
-      setTimeout(()=>{ initApp(); },500);
+      initApp();
     } else {
       b.textContent='登 录'; b.style.opacity='1';
       if(r.msg.includes('不存在')){
-        showLoginErr(e,'❌ 用户「'+u+'」不存在，请检查用户名是否正确','error');
-        toast('❌ 用户「'+u+'」不存在');
-        document.getElementById('login-user').select();
+        showModal('登录失败','<p style="text-align:center">用户「'+u+'」不存在</p>',[{label:'重新输入',primary:true,onClick:()=>document.getElementById('login-user').select()}]);
       } else if(r.msg.includes('锁定')){
-        showLoginErr(e,'⚠️ '+r.msg,'warn');
-        toast('🔒 账户已锁定，请稍后再试');
+        showModal('登录失败','<p style="text-align:center">⚠️ '+r.msg+'</p>',[{label:'知道了',primary:true}]);
       } else if(r.msg.includes('密码')){
-        showLoginErr(e,'❌ 密码错误，请重新输入','error');
-        toast('❌ 密码错误，请重新输入');
-        document.getElementById('login-pw').select();
+        showModal('登录失败','<p style="text-align:center">❌ '+r.msg+'</p>',[{label:'重新输入',primary:true,onClick:()=>document.getElementById('login-pw').select()}]);
       } else {
-        showLoginErr(e,'⚠️ '+r.msg,'warn');
-        toast(r.msg);
+        showModal('登录失败','<p style="text-align:center">'+r.msg+'</p>',[{label:'知道了',primary:true}]);
       }
     }
   },400);
@@ -346,11 +337,11 @@ function renderGuidelines() {
   }
   gl.innerHTML=systems.map((s,i)=>`
     <div class="cat-card" style="margin-bottom:8px">
-      <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-group="${i}" data-expanded="false">
-        <span class="cat-name">${s.icon} ${s.system}</span>
-        <span style="font-size:12px;color:var(--text-light)">${s.items.length} 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></span>
+      <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-group="${i}" data-expanded="${kw?'true':'false'}">
+        <span class="cat-name">${s.icon} ${highlightKw(s.system, kw)}</span>
+        <span style="font-size:12px;color:var(--text-light)">${s.items.length} 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">${kw?'▼':'▶'}</span></span>
       </div>
-      <div class="guide-items" id="guide-group-${i}" style="display:none;flex-wrap:wrap;gap:6px">${s.items.map(g=>`<span class="guide-item" data-gid="${g.id}" style="display:inline-block;padding:4px 10px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;white-space:nowrap">${highlightKw(g.title, kw)} <span style="color:var(--text-light)">${g.year||''}</span></span>`).join('')}</div>
+      <div class="guide-items" id="guide-group-${i}" style="display:${kw?'flex':'none'};flex-wrap:wrap;gap:6px">${s.items.map(g=>`<span class="guide-item" data-gid="${g.id}" style="display:inline-block;padding:4px 10px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;white-space:nowrap">${highlightKw(g.title, kw)} <span style="color:var(--text-light)">${g.year||''}</span></span>`).join('')}</div>
     </div>
   `).join('');
   if(systems.length===0&&kw) gl.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">未找到匹配的指南或法规</div>';
@@ -482,7 +473,7 @@ function renderDetail(drugId) {
     // 重新绑定备注点击
     var eb = document.getElementById('edit-note');
     if (eb) eb.onclick = function() {
-      showModal('编辑备注', `<textarea id="note-textarea" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical">${note}</textarea>`, [{label:'取消'},{label:'保存',primary:true,onClick:function(){ const t=document.getElementById('note-textarea').value; saveNote(drugId,t); renderDetail(drugId); }}]);
+      showModal('编辑备注', `<textarea id="note-textarea" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical">${escHTML(note)}</textarea>`, [{label:'取消'},{label:'保存',primary:true,onClick:function(){ const t=document.getElementById('note-textarea').value; saveNote(drugId,t); renderDetail(drugId); }}]);
     };
   });
 }
@@ -524,9 +515,12 @@ function renderFavorites() {
   }
   if(kw) items=items.filter(i=>i.name.toLowerCase().includes(kw)||i.cat.includes(kw));
   fl.innerHTML=items.map(i=>`<div class="list-card" data-id="${i.id}" data-type="${i.type}"><div class="icon-box">${i.type==='drug'?'💊':i.type==='guide'?'📋':'🧮'}</div><div class="info"><div class="name">${highlightKw(i.name, kw)}</div><div class="desc">${highlightKw(i.cat, kw)}</div></div></div>`).join('');
-  fl.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{ 
-    if(c.dataset.type==='drug'){ addRecent(c.dataset.id); addRecent(c.dataset.id,'drug'); }
-    else if(c.dataset.type==='calc'){ pushScreen('calc'); renderCalc(); setTimeout(function(){ var el=document.getElementById(c.dataset.id.replace('calc-','')); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); },300); }
+  fl.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{
+    var t = c.dataset.type;
+    var id = c.dataset.id;
+    if(t==='drug'){ addRecent(id); addRecent(id,'drug'); pushScreen('detail'); renderDetail(id); }
+    else if(t==='guide'){ addRecent(id,'guide'); openGuide(id); }
+    else if(t==='calc'){ pushScreen('calc'); renderCalc(); setTimeout(function(){ var el=document.getElementById(id.replace('calc-','')); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); },300); }
   }; });
   document.getElementById('fav-search').oninput=renderFavorites;
 }
@@ -545,14 +539,14 @@ function renderCompare() {
   const ct=document.getElementById('compare-table');
   cb.innerHTML=compareList.length===0
     ? '<div style="text-align:center;padding:10px;font-size:13px;color:var(--text-light)">对比篮为空，搜索药品添加</div>'
-    : `<div class="basket-header"><span class="basket-title">对比篮 (${compareList.length}/5)</span><button class="btn btn-sm btn-outline" onclick="compareList=[];renderCompare()">清空</button></div><div class="chips">${compareList.map(id=>{ const d=findDrug(id); return d?`<span class="chip" style="cursor:pointer" onclick="event.stopPropagation();pushScreen("detail");renderDetail("${id}')">${d.name}<span class="close" onclick="event.stopPropagation();event.preventDefault();removeFromCompare('${id}')">✕</span></span>`:''; }).join('')}</div>`;
+    : `<div class="basket-header"><span class="basket-title">对比篮 (${compareList.length}/5)</span><button class="btn btn-sm btn-outline" onclick="compareList=[];renderCompare()">清空</button></div><div class="chips">${compareList.map(id=>{ const d=findDrug(id); return d?`<span class="chip" style="cursor:pointer" onclick="event.stopPropagation();pushScreen('detail');renderDetail('${id}')">${d.name}<span class="close" onclick="event.stopPropagation();event.preventDefault();removeFromCompare('${id}')">✕</span></span>`:''; }).join('')}</div>`;
 
   if(compareList.length<2){ ct.innerHTML=''; return; }
   const drugs=compareList.map(id=>findDrug(id)).filter(Boolean);
   if(drugs.length<2){ ct.innerHTML=''; return; }
   ct.innerHTML=`<div class="compare-table">
     <div class="t-row"><div class="t-hdr">分类</div>${drugs.map(d=>`<div class="t-cell">${d.category}</div>`).join('')}</div>
-    <div class="t-row"><div class="t-hdr">适应症</div>${drugs.map(d=>`<div class="t-cell" onclick="pushScreen("detail");renderDetail("${d.id}')" style="cursor:pointer">${d.indications}</div>`).join('')}</div>
+    <div class="t-row"><div class="t-hdr">适应症</div>${drugs.map(d=>`<div class="t-cell" onclick="pushScreen('detail');renderDetail('${d.id}')" style="cursor:pointer">${d.indications}</div>`).join('')}</div>
     <div class="t-row"><div class="t-hdr">禁忌</div>${drugs.map(d=>`<div class="t-cell" style="color:var(--danger)">${d.contraindications}</div>`).join('')}</div>
     <div class="t-row"><div class="t-hdr">不良反应</div>${drugs.map(d=>`<div class="t-cell">${d.adverse?.slice(0,40)||'—'}…</div>`).join('')}</div>
     <div class="t-row"><div class="t-hdr">用法用量</div>${drugs.map(d=>`<div class="t-cell">${d.dosage}</div>`).join('')}</div>
@@ -566,7 +560,7 @@ function initCompare() {
     const kw=this.value.toLowerCase();
     const res=document.getElementById('cmp-search-results');
     if(kw.length<1){ res.style.display='none'; return; }
-    const matches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw)||d.category.includes(kw)).slice(0,5);
+    const matches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw)||d.category.includes(kw)||(d.py||'').toLowerCase().includes(kw)||genPy(d.name).toLowerCase().includes(kw)||genPy(d.category).toLowerCase().includes(kw)).slice(0,5);
     res.style.display='block';
     res.innerHTML=matches.map(d=>`<div class="result-item" data-id="${d.id}">${highlightKw(d.name, kw)} <span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('');
     res.querySelectorAll('.result-item').forEach(r=>r.onclick=()=>{ addToCompare(r.dataset.id); document.getElementById('cmp-search').value=''; res.style.display='none'; });
@@ -725,7 +719,7 @@ function checkVersion(){
 }
 function initProfileMenus() {
   document.getElementById('edit-nickname-btn').onclick=()=>{ showModal('修改昵称','<input id="new-nickname" placeholder="输入新昵称" value="'+currentUser.nickname+'">',[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const n=document.getElementById('new-nickname').value.trim(); if(n) updateNickname(n); }}]); };
-  document.getElementById('menu-change-pw').onclick=()=>{ showModal('修改密码','<div style="position:relative"><input id="old-pw" type="password" placeholder="原密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw">👁️</span></div><div style="position:relative;margin-top:8px"><input id="new-pw" type="password" placeholder="新密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw2">👁️</span></div>',[{label:'取消'},{label:'确认修改',primary:true,onClick:()=>{ const o=document.getElementById('old-pw').value; const n=document.getElementById('new-pw').value; if(!n||n.length<4){ toast('密码至少4位'); return; } const r=changePassword(o,n); if(!r.ok) toast(r.msg); else toast('密码已修改，下次登录生效'); }}]);
+  document.getElementById('menu-change-pw').onclick=()=>{ showModal('修改密码','<div style="position:relative"><input id="old-pw" type="password" placeholder="原密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw">👁️</span></div><div style="position:relative;margin-top:8px"><input id="new-pw" type="password" placeholder="新密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw2">👁️</span></div>',[{label:'取消'},{label:'确认修改',primary:true,onClick:()=>{ const o=document.getElementById('old-pw').value; const n=document.getElementById('new-pw').value; if(!n||n.length<4){ toast('密码至少4位'); return false; } const r=changePassword(o,n); if(!r.ok){ toast(r.msg); return false; } logout(); location.reload(); }}]);
   // 绑定小眼睛切换
   setTimeout(function(){
     var t1=document.getElementById('toggle-pw'); var t2=document.getElementById('toggle-pw2');
@@ -787,7 +781,7 @@ function openHealthEdu(hid) {
   pushScreen('label');
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:20px">${h.title}</div>
-    <div style="font-size:12px;color:var(--text-light)">${h.cat}</div>
+    <div class="subtitle-row" style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between"><span>${h.cat}</span></div>
     <div id="healthedu-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
   showEditBtn({type:'edu',id:hid});
@@ -851,7 +845,7 @@ function showDiseaseList(catName) {
   const sr=document.getElementById('search-results');
   let html='';
   if(ds.length>0) html+=`<div class="result-group"><div class="result-group-title diseases">🦠 ${catName} (${ds.length})</div>`+ds.map(d=>`<div class="result-item" onclick="openDisease('${d.name}')">${d.name}</div>`).join('')+`</div>`;
-  if(dr.length>0) html+=`<div class="result-group"><div class="result-group-title drugs">💊 相关药品 (${dr.length})</div>`+dr.map(d=>`<div class="result-item" onclick="pushScreen("detail");renderDetail("${d.id}')">${d.name}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')+`</div>`;
+  if(dr.length>0) html+=`<div class="result-group"><div class="result-group-title drugs">💊 相关药品 (${dr.length})</div>`+dr.map(d=>`<div class="result-item" onclick="pushScreen('detail');renderDetail('${d.id}')">${d.name}<span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`).join('')+`</div>`;
   sr.innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--text-light)">暂无数据</div>';
 }
 
@@ -905,7 +899,7 @@ function renderMedEdu(){
 function openMedEdu(mid){
   var m=MED_EDU.find(function(x){return x.id===mid;}); if(!m) return;
   pushScreen('label');
-  document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">'+m.drug+'</div><div style="font-size:12px;color:var(--text-light);margin-bottom:12px"><span class="badge badge-blue">'+m.cat+'</span></div><div id="mededu-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>';
+  document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">'+m.drug+'</div><div class="subtitle-row" style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><span class="badge badge-blue">'+m.cat+'</span></div><div id="mededu-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>';
   showEditBtn({type:'med',id:mid});
   loadMedEduDetail(mid, function(full) {
     var detail = full || m;
@@ -923,6 +917,20 @@ function showEditBtn(item){
   if(btn&&isEditor()){
     btn.style.display='inline';
     btn.onclick=editCurrentItem;
+  }
+  // 对于科普教育/用药教育，在副标题行嵌入编辑按钮
+  if((item.type==='edu'||item.type==='med') && isEditor()){
+    var el=document.getElementById('label-content');
+    if(!el) return;
+    var sub=el.querySelector('.subtitle-row');
+    if(sub && !sub.querySelector('.inline-edit-btn')){
+      var eb=document.createElement('span');
+      eb.className='inline-edit-btn';
+      eb.style.cssText='font-size:12px;color:var(--accent);cursor:pointer;font-weight:600;border:1px solid var(--accent);border-radius:6px;padding:1px 8px';
+      eb.textContent='编辑';
+      eb.onclick=editCurrentItem;
+      sub.appendChild(eb);
+    }
   }
 }
 function editCurrentItem(){
