@@ -53,7 +53,7 @@ function initAdmin() {
       document.querySelectorAll('#admin-tabs .segment-item').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
       renderAdminList(t.dataset.tab, document.getElementById('admin-search')?.value||'');
-      const labels = { drugs:'+ 新增药品', guidelines:'+ 新增指南', education:'+ 新增科普', infusion:'+ 新增配伍', diseases:'+ 新增疾病', users:'+ 新增用户' };
+      const labels = { drugs:'+ 新增药品', guidelines:'+ 新增指南', education:'+ 新增科普', infusion:'+ 新增配伍', diseases:'+ 新增疾病', mededu:'+ 新增用药教育', users:'+ 新增用户' };
       document.getElementById('admin-add-btn').textContent = labels[t.dataset.tab] || '+ 新增';
     };
   });
@@ -65,6 +65,7 @@ function initAdmin() {
     else if (t === 'education') showEduEditor();
     else if (t === 'infusion') showInfEditor();
     else if (t === 'diseases') showDiseaseEditor();
+    else if (t === 'mededu') showMedEduEditor();
     else if (t === 'users') showUserEditor();
   };
 
@@ -105,7 +106,9 @@ function renderAdminList(type, kw) {
       });
       html = filtered.map(function(d) {
         var origIdx = drugs.indexOf(d);
-        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="drug" data-view-id="'+d.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(d.name), kw)+'</span><span class="badge badge-green" style="margin-left:6px">'+highlightKw(esc(d.category), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="drug">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="drug">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">适应症：'+highlightKw(esc((d.indications||'').slice(0,50)), kw)+'…</div></div>';
+        var isPy = kw && ((d.py||'').toLowerCase().indexOf(kw)>=0||genPy(d.name||'').indexOf(kw)>=0||genPy(d.category||'').indexOf(kw)>=0) && !d.name.toLowerCase().includes(kw);
+        var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
+        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="drug" data-view-id="'+d.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(d.name), kw)+pyTag+'</span><span class="badge badge-green" style="margin-left:6px">'+highlightKw(esc(d.category), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="drug">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="drug">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">适应症：'+highlightKw(esc((d.indications||'').slice(0,50)), kw)+'…</div></div>';
       }).join('');
     } else if (type === 'guidelines') {
       // 指南分类管理
@@ -121,7 +124,9 @@ function renderAdminList(type, kw) {
       });
       html = filtered.map(function(g) {
         var origIdx = all.indexOf(g);
-        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="guide" data-view-id="'+g.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(g.title), kw)+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(g.system||'法规'), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="guide">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="guide">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc(g.year||'')+' · '+esc((g.content||'').slice(0,50))+'…</div></div>';
+        var isPy = kw && ((g.py||'').toLowerCase().indexOf(kw)>=0||genPy(g.title||'').indexOf(kw)>=0||genPy(g.system||'').indexOf(kw)>=0) && !g.title.toLowerCase().includes(kw);
+        var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
+        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="guide" data-view-id="'+g.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(g.title), kw)+pyTag+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(g.system||'法规'), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="guide">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="guide">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc(g.year||'')+' · '+esc((g.content||'').slice(0,50))+'…</div></div>';
       }).join('');
     } else if (type === 'education') {
       var filtered = HEALTH_EDU.filter(function(h){
@@ -130,7 +135,9 @@ function renderAdminList(type, kw) {
       });
       html = filtered.map(function(h) {
         var origIdx = HEALTH_EDU.indexOf(h);
-        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="edu" data-view-id="'+h.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(h.title), kw)+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(h.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="edu">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((h.content||'').slice(0,50))+'…</div></div>';
+        var isPy = kw && ((h.py||'').toLowerCase().indexOf(kw)>=0||genPy(h.title||'').indexOf(kw)>=0||genPy(h.cat||'').indexOf(kw)>=0) && !h.title.toLowerCase().includes(kw);
+        var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
+        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="edu" data-view-id="'+h.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(h.title), kw)+pyTag+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(h.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="edu">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((h.content||'').slice(0,50))+'…</div></div>';
       }).join('');
     } else if (type === 'infusion') {
       var filtered = INFUSION_DATA.filter(function(inf){
@@ -139,19 +146,34 @@ function renderAdminList(type, kw) {
       });
       html = filtered.map(function(inf) {
         var origIdx = INFUSION_DATA.indexOf(inf);
-        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="inf" data-view-id="'+inf.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(inf.drug), kw)+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(inf.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="inf">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">载体：'+esc(inf.vehicle||'')+' · 浓度：'+esc(inf.conc||'')+'</div></div>';
+        var isPy = kw && ((inf.py||'').toLowerCase().indexOf(kw)>=0||genPy(inf.drug||'').indexOf(kw)>=0||genPy(inf.cat||'').indexOf(kw)>=0) && !inf.drug.toLowerCase().includes(kw);
+        var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
+        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="inf" data-view-id="'+inf.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(inf.drug), kw)+pyTag+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(inf.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="inf">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">载体：'+esc(inf.vehicle||'')+' · 浓度：'+esc(inf.conc||'')+'</div></div>';
       }).join('');
     } else if (type === 'diseases') {
       var filtered = DISEASES.filter(function(ds){
         if (!kw) return true;
-        return (ds.name||'').toLowerCase().indexOf(kw)>=0||(ds.cat||'').toLowerCase().indexOf(kw)>=0||(ds.desc||'').toLowerCase().indexOf(kw)>=0;
+        return (ds.name||'').toLowerCase().indexOf(kw)>=0||(ds.cat||'').toLowerCase().indexOf(kw)>=0||(ds.desc||'').toLowerCase().indexOf(kw)>=0||(ds.py||'').toLowerCase().indexOf(kw)>=0||genPy(ds.name||'').indexOf(kw)>=0||genPy(ds.cat||'').indexOf(kw)>=0;
       });
       html = filtered.map(function(ds) {
         var origIdx = DISEASES.indexOf(ds);
-        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="disease" data-view-id="'+ds.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(ds.name), kw)+'</span></div></div><div style="display:flex;justify-content:space-between;align-items:center;padding:0 12px 10px;font-size:12px;color:var(--text-light)"><span>'+highlightKw(esc(ds.cat), kw)+'</span><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="disease">编辑</button></div></div>';
+        var isPy = kw && ((ds.py||'').toLowerCase().indexOf(kw)>=0||genPy(ds.name||'').indexOf(kw)>=0||genPy(ds.cat||'').indexOf(kw)>=0) && !ds.name.toLowerCase().includes(kw);
+        var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
+        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="disease" data-view-id="'+ds.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(ds.name), kw)+pyTag+'</span></div></div><div style="display:flex;justify-content:space-between;align-items:center;padding:0 12px 10px;font-size:12px;color:var(--text-light)"><span>'+highlightKw(esc(ds.cat), kw)+'</span><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="disease">编辑</button></div></div>';
       }).join('');
     } else if (type === 'users') {
       renderUserList(); return;
+    } else if (type === 'mededu') {
+      var filtered = (typeof MED_EDU !== 'undefined' ? MED_EDU : []).filter(function(m){
+        if (!kw) return true;
+        return (m.drug||'').toLowerCase().indexOf(kw)>=0||(m.key||'').toLowerCase().indexOf(kw)>=0||(m.cat||'').toLowerCase().indexOf(kw)>=0||(m.py||'').toLowerCase().indexOf(kw)>=0||genPy(m.drug||'').indexOf(kw)>=0;
+      });
+      html = filtered.map(function(m) {
+        var origIdx = (typeof MED_EDU !== 'undefined' ? MED_EDU : []).indexOf(m);
+        var isPy = kw && ((m.py||'').toLowerCase().indexOf(kw)>=0||genPy(m.drug||'').indexOf(kw)>=0||genPy(m.cat||'').indexOf(kw)>=0) && !m.drug.toLowerCase().includes(kw);
+        var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
+        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="med" data-view-id="'+m.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(m.drug), kw)+pyTag+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(m.cat||''), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="med">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((m.key||'').slice(0,50))+'</div></div>';
+      }).join('');
     }
   } catch(e) { /* 搜索过滤异常，保持空列表 */ }
   list.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--text-light)">暂无数据</div>';
@@ -169,6 +191,7 @@ function bindAdminEvents(type) {
       else if (t === 'edu') { showEduEditor(HEALTH_EDU[i], i); }
       else if (t === 'inf') { showInfEditor(INFUSION_DATA[i], i); }
       else if (t === 'disease') { showDiseaseEditor(DISEASES[i], i); }
+      else if (t === 'med') { var medArr = typeof MED_EDU !== 'undefined' ? MED_EDU : []; showMedEduEditor(medArr[i], i); }
     };
   });
   document.querySelectorAll('#admin-list [data-del]').forEach(b => {
@@ -186,6 +209,7 @@ function bindAdminEvents(type) {
       else if(t==='edu'){ openHealthEdu(id); }
       else if(t==='inf'){ openInfusion(id); }
       else if(t==='disease'){ var ds=DISEASES.find(function(x){return x.id===id;}); if(ds) openDisease(ds.name); }
+      else if(t==='med'){ openMedEdu(id); }
     };
   });
 }
