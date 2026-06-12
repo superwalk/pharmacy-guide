@@ -1150,6 +1150,9 @@ function addGuideCategory(){
       if(cats.indexOf(name)>=0||(typeof getGuideSystems==='function'?getGuideSystems():GUIDE_SYSTEMS).some(function(s){return s.system===name;})){toast('分类已存在');return;}
       cats.push(name);
       localStorage.setItem('custom_guide_cats',JSON.stringify(cats));
+      if (typeof _supabase !== 'undefined' && _supabase && _online) {
+        _supabase.from('app_settings').upsert({ key: 'guide_cats', value: JSON.stringify(cats), updated_at: new Date().toISOString() }, { onConflict: 'key' }).catch(function(){});
+      }
       renderAdminList('guidelines', document.getElementById('admin-search')?.value||'');
       toast('已新增分类：'+name);
     }}
@@ -1169,6 +1172,13 @@ function deleteGuideCategory(name, el){
         var del=JSON.parse(localStorage.getItem('deleted_guide_cats')||'[]');
         if(del.indexOf(name)<0) del.push(name);
         localStorage.setItem('deleted_guide_cats',JSON.stringify(del));
+      }
+      // 同步分类变更到 Supabase
+      if (typeof _supabase !== 'undefined' && _supabase && _online) {
+        var finalCats = JSON.parse(localStorage.getItem('custom_guide_cats') || '[]');
+        var finalDel = JSON.parse(localStorage.getItem('deleted_guide_cats') || '[]');
+        _supabase.from('app_settings').upsert({ key: 'guide_cats', value: JSON.stringify(finalCats), updated_at: new Date().toISOString() }, { onConflict: 'key' }).catch(function(){});
+        _supabase.from('app_settings').upsert({ key: 'deleted_guide_cats', value: JSON.stringify(finalDel), updated_at: new Date().toISOString() }, { onConflict: 'key' }).catch(function(){});
       }
       renderAdminList('guidelines', document.getElementById('admin-search')?.value||'');
       toast('已删除分类：'+name);
