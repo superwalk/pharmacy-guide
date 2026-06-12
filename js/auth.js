@@ -213,6 +213,8 @@ function addUser(user) {
   users.push(user);
   saveUsers(users);
   syncUserToSupabase(user.username, user);
+  // 同时写入 user_<用户名>（确保更新后不丢失）
+  localStorage.setItem('user_' + user.username, JSON.stringify({ nickname: user.nickname, password: user.password }));
   return { ok: true };
 }
 
