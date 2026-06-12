@@ -76,7 +76,12 @@ function getFavs() { return JSON.parse(localStorage.getItem(favKey())||'[]'); }
 function isFav(id) { return getFavs().includes(id); }
 function toggleFav(id) { let f=getFavs(); if(f.includes(id)) f=f.filter(x=>x!==id); else f.push(id); localStorage.setItem(favKey(),JSON.stringify(f)); }
 function getNotes() { return JSON.parse(localStorage.getItem(noteKey())||'{}'); }
-function saveNote(id, text) { const n=getNotes(); n[id]=text; localStorage.setItem(noteKey(),JSON.stringify(n)); }
+function saveNote(id, text) {
+  if (text && text.length > 200) { toast('备注不能超过200字'); return false; }
+  const n=getNotes(); if(text) { n[id]=text; } else { delete n[id]; }
+  localStorage.setItem(noteKey(),JSON.stringify(n)); return true;
+}
+function deleteNote(id) { const n=getNotes(); delete n[id]; localStorage.setItem(noteKey(),JSON.stringify(n)); }
 
 // 根据ID在所有数据源中查找内容
 function findContentById(id) {
@@ -95,14 +100,14 @@ function findContentById(id) {
 function renderNote(id) {
   const notes=getNotes();
   const note=notes[id]||'';
-  return '<div class="note-card" style="margin-top:12px"><div class="note-header"><span class="note-title">📝 个人备注</span><span class="note-edit" id="edit-note">编辑</span></div><div class="note-content" id="note-content-'+id+'">'+(note||'暂无备注')+'</div></div>';
+  return '<div class="note-card" style="margin-top:12px"><div class="note-header"><span class="note-title">📝 个人备注 <span style="font-size:11px;color:var(--text-light)">(200字上限)</span></span><span class="note-edit" id="edit-note">编辑</span></div><div class="note-content" id="note-content-'+id+'">'+(note||'暂无备注')+'</div></div>';
 }
 function bindNote(id, refreshFn) {
   var eb = document.getElementById('edit-note');
   if (eb) eb.onclick = function() {
     const notes=getNotes();
     const note=notes[id]||'';
-    showModal('编辑备注', '<textarea id="note-textarea" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical">'+note+'</textarea>', [{label:'取消'},{label:'保存',primary:true,onClick:function(){ const t=document.getElementById('note-textarea').value; saveNote(id,t); if(refreshFn) refreshFn(); }}]);
+    showModal('编辑备注', '<p style="font-size:12px;color:var(--text-light);margin-bottom:4px">最多200字</p><textarea id="note-textarea" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical" maxlength="200">'+note+'</textarea>', [{label:'取消'},{label:'保存',primary:true,onClick:function(){ const t=document.getElementById('note-textarea').value; var r=saveNote(id,t); if(r && refreshFn) refreshFn(); }}]);
   };
 }
 function getRecent() { return JSON.parse(localStorage.getItem(recentKey())||'[]'); }
@@ -717,13 +722,13 @@ function renderDetail(drugId) {
     <div class="info-card"><div class="info-label">储存条件</div><div class="info-value">${detail.storage || '暂无'}</div></div>
     <div class="info-card"><div class="info-label">药物相互作用</div><div class="info-value">${detail.interactions || '暂无'}</div></div>
     <div class="note-card" style="margin-top:12px">
-      <div class="note-header"><span class="note-title">📝 个人备注</span><span class="note-edit" id="edit-note">编辑</span></div>
+      <div class="note-header"><span class="note-title">📝 个人备注 <span style="font-size:11px;color:var(--text-light)">(200字上限)</span></span><span class="note-edit" id="edit-note">编辑</span></div>
       <div class="note-content" id="note-content-${drugId}">${note||'暂无备注，点击编辑添加…'}</div>
     </div>`;
     // 重新绑定备注点击
     var eb = document.getElementById('edit-note');
     if (eb) eb.onclick = function() {
-      showModal('编辑备注', `<textarea id="note-textarea" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical">${escHTML(note)}</textarea>`, [{label:'取消'},{label:'保存',primary:true,onClick:function(){ const t=document.getElementById('note-textarea').value; saveNote(drugId,t); renderDetail(drugId); }}]);
+      showModal('编辑备注', `<p style="font-size:12px;color:var(--text-light);margin-bottom:4px">最多200字</p><textarea id="note-textarea" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical" maxlength="200">${escHTML(note)}</textarea>`, [{label:'取消'},{label:'保存',primary:true,onClick:function(){ const t=document.getElementById('note-textarea').value; var r=saveNote(drugId,t); if(r) renderDetail(drugId); }}]);
     };
   });
 }
@@ -743,36 +748,78 @@ function renderLabel(drugId) {
   `;
 }
 
-// ═══ 收藏 ───
+// ═══ 收藏与备注（合并版）───
 function renderFavorites() {
-  const fl=document.getElementById('fav-list');
-  const fe=document.getElementById('fav-empty');
-  const fv=getFavs();
-  if(fv.length===0){ fl.innerHTML=''; fe.style.display='block'; return; }
-  fe.style.display='none';
-  const kw=(document.getElementById('fav-search').value||'').toLowerCase();
-  let items=fv.map(id=>{ const d=findDrug(id); return d?{id,type:'drug',name:d.name,cat:d.category}:null; }).filter(Boolean).reverse();
-  items=items.concat(allGuides().filter(g=>fv.includes(g.id)).map(g=>({id:g.id,type:'guide',name:g.title,cat:g.system})));
-  // 计算工具收藏
-  if(typeof findCalcTool==='function'){
+  var container = document.getElementById('fav-list');
+  var fe = document.getElementById('fav-empty');
+  var kw = (document.getElementById('fav-search').value||'').toLowerCase();
+  // 标签栏
+  var tabs = '<div class="segment" id="fav-tabs" style="margin-bottom:8px">'
+    + '<div class="segment-item active" data-tab="fav">⭐ 收藏</div>'
+    + '<div class="segment-item" data-tab="note">📝 备注</div>'
+    + '</div>';
+  // 收藏部分
+  var fv = getFavs();
+  var favItems = fv.map(function(id){ var d=findDrug(id); return d?{id:id,type:'drug',name:d.name,cat:d.category}:null; }).filter(Boolean).reverse();
+  favItems = favItems.concat(allGuides().filter(function(g){return fv.includes(g.id);}).map(function(g){return {id:g.id,type:'guide',name:g.title,cat:g.system};}));
+  if (typeof findCalcTool === 'function') {
     fv.forEach(function(id){
-      if(id.indexOf('calc-')===0){
-        var cid=id.slice(5);
-        var ct=findCalcTool(cid);
-        if(ct) items.push({id:id,type:'calc',name:ct.name,cat:'🧮 '+ct.cat});
-      }
+      if (id.indexOf('calc-')===0) { var cid=id.slice(5); var ct=findCalcTool(cid); if(ct) favItems.push({id:id,type:'calc',name:ct.name,cat:'🧮 '+ct.cat}); }
     });
   }
-  if(kw) items=items.filter(i=>i.name.toLowerCase().includes(kw)||i.cat.includes(kw));
-  fl.innerHTML=items.map(i=>`<div class="list-card" data-id="${i.id}" data-type="${i.type}"><div class="icon-box">${i.type==='drug'?'💊':i.type==='guide'?'📋':'🧮'}</div><div class="info"><div class="name">${highlightKw(i.name, kw)}</div><div class="desc">${highlightKw(i.cat, kw)}</div></div></div>`).join('');
-  fl.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{
-    var t = c.dataset.type;
-    var id = c.dataset.id;
-    if(t==='drug'){ addRecent(id); addRecent(id,'drug'); pushScreen('detail'); renderDetail(id); }
-    else if(t==='guide'){ addRecent(id,'guide'); openGuide(id); }
-    else if(t==='calc'){ pushScreen('calc'); renderCalc(); setTimeout(function(){ var el=document.getElementById(id.replace('calc-','')); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); },300); }
-  }; });
-  document.getElementById('fav-search').oninput=renderFavorites;
+  if (kw) favItems = favItems.filter(function(i){return i.name.toLowerCase().includes(kw)||i.cat.includes(kw);});
+  var favHtml = favItems.length === 0
+    ? '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px">暂无收藏</div>'
+    : favItems.map(function(i){ return '<div class="list-card" data-id="'+i.id+'" data-type="'+i.type+'"><div class="icon-box">'+(i.type==='drug'?'💊':i.type==='guide'?'📋':'🧮')+'</div><div class="info"><div class="name">'+highlightKw(i.name, kw)+'</div><div class="desc">'+highlightKw(i.cat, kw)+'</div></div></div>'; }).join('');
+  // 备注部分
+  var notes = getNotes();
+  var noteEntries = Object.entries(notes).filter(function(e){return e[1];});
+  if (kw) noteEntries = noteEntries.filter(function(e){var c=findContentById(e[0]); return c && (c.name.toLowerCase().includes(kw)||e[1].toLowerCase().includes(kw));});
+  var noteHtml = '<div id="fav-notes-section">';
+  if (noteEntries.length === 0) {
+    noteHtml += '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px">暂无备注</div>';
+  } else {
+    noteEntries.forEach(function(e){
+      var id = e[0], text = e[1];
+      var c = findContentById(id);
+      if (!c) return;
+      noteHtml += '<div class="list-card" style="display:flex;align-items:center;gap:8px"><div class="icon-box">'+c.icon+'</div><div class="info" style="flex:1;cursor:pointer" data-nid="'+id+'" data-ntype="'+c.type+'"><div class="name">'+highlightKw(c.name, kw)+'</div><div class="desc">'+text.slice(0, 40)+(text.length>40?'…':'')+'</div></div><button class="btn btn-sm btn-del-note" data-nid="'+id+'" style="color:var(--danger);border-color:var(--danger);font-size:11px;white-space:nowrap;flex-shrink:0">🗑️</button></div>';
+    });
+  }
+  noteHtml += '</div>';
+  container.innerHTML = tabs + '<div id="fav-content">' + favHtml + '</div><div id="note-content" style="display:none">' + noteHtml + '</div>';
+  fe.style.display = 'none';
+  // 绑定点击
+  container.querySelectorAll('#fav-content .list-card').forEach(function(c){ c.onclick=function(){
+    var t = c.dataset.type, id = c.dataset.id;
+    if (t==='drug'){ addRecent(id,'drug'); pushScreen('detail'); renderDetail(id); }
+    else if (t==='guide'){ addRecent(id,'guide'); openGuide(id); }
+    else if (t==='calc'){ pushScreen('calc'); renderCalc(); }
+  };});
+  container.querySelectorAll('#note-content .info').forEach(function(el){ el.onclick=function(){
+    var id = el.dataset.nid, tp = el.dataset.ntype;
+    if (tp==='drug'){ addRecent(id,'drug'); pushScreen('detail'); renderDetail(id); }
+    else if (tp==='guide'){ openGuide(id); }
+    else if (tp==='disease'){ var ds=DISEASES.find(function(x){return x.id===id;}); if(ds) openDisease(ds.name); }
+    else if (tp==='edu'){ openHealthEdu(id); }
+    else if (tp==='infusion'){ openInfusion(id); }
+    else if (tp==='med'){ openMedEdu(id); }
+  };});
+  container.querySelectorAll('#note-content .btn-del-note').forEach(function(btn){ btn.onclick=function(e){ e.stopPropagation(); var nid=btn.dataset.nid; showModal('删除备注','<p>确定删除此备注？</p>',[{label:'取消'},{label:'删除',primary:true,style:'background:var(--danger)',onClick:function(){ deleteNote(nid); renderFavorites(); toast('已删除'); }}]); };});
+  // 标签切换
+  var tabsEl = document.getElementById('fav-tabs');
+  if (tabsEl) {
+    tabsEl.querySelectorAll('.segment-item').forEach(function(t){
+      t.onclick = function(){
+        tabsEl.querySelectorAll('.segment-item').forEach(function(x){x.classList.remove('active');});
+        t.classList.add('active');
+        var showFav = t.dataset.tab === 'fav';
+        document.getElementById('fav-content').style.display = showFav ? '' : 'none';
+        document.getElementById('note-content').style.display = showFav ? 'none' : '';
+      };
+    });
+  }
+  document.getElementById('fav-search').oninput = renderFavorites;
 }
 
 // ═══ 对比 ═══
