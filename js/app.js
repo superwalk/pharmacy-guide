@@ -1500,7 +1500,7 @@ function doInfusionQuery() {
   var results = [];
   terms.forEach(function(term){
     INFUSION_DATA.forEach(function(item){
-      if (item.drug.toLowerCase().indexOf(term.toLowerCase()) >= 0) {
+      if (item.drug.toLowerCase().indexOf(term.toLowerCase()) >= 0 || (item.py||'').toLowerCase().indexOf(term.toLowerCase()) >= 0 || genPy(item.drug||'').indexOf(term.toLowerCase()) >= 0) {
         // 检查是否已存在
         if (!results.find(function(r){return r.id===item.id;})) {
           results.push(item);
