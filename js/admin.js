@@ -360,7 +360,7 @@ function renderAdminList(type, kw) {
       if (kw) all = all.filter(function(a){ return a.name.toLowerCase().indexOf(kw)>=0||a.cat.toLowerCase().indexOf(kw)>=0||genPy(a.name).indexOf(kw)>=0; });
       html = all.map(function(a){
         var isPy = kw && genPy(a.name).indexOf(kw)>=0 && !a.name.toLowerCase().includes(kw);
-        return '<div class="list-card" style="display:flex;align-items:center;gap:8px"><div class="icon-box">'+(a.type==='edu'?'📖':'🗣️')+'</div><div class="info" style="flex:1"><div class="name">'+esc(a.name)+(isPy?' <span class="badge badge-blue" style="font-size:10px">PY</span>':'')+'</div><div class="desc">'+esc(a.cat)+'</div></div><button class="btn btn-sm btn-outline" style="flex-shrink:0" data-edit="'+a.idx+'" data-type="'+a.type+'">编辑</button></div>';
+        return '<div class="list-card" style="display:flex;align-items:center;gap:8px"><div class="icon-box">'+(a.type==='edu'?'📖':'🗣️')+'</div><div class="info" style="flex:1"><div class="name">'+esc(a.name)+(isPy?' <span class="badge badge-blue" style="font-size:10px">PY</span>':'')+'</div><div class="desc">'+esc(a.cat)+'</div></div><button class="btn btn-sm btn-outline" style="flex-shrink:0" data-edit="'+a.idx+'" data-type="'+a.type+'">编辑</button><button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger);flex-shrink:0" data-del="'+a.idx+'" data-type="'+a.type+'">删除</button></div>';
       }).join('');
     } else if (type === 'infusion') {
       var filtered = INFUSION_DATA.filter(function(inf){
@@ -371,7 +371,7 @@ function renderAdminList(type, kw) {
         var origIdx = INFUSION_DATA.indexOf(inf);
         var isPy = kw && ((inf.py||'').toLowerCase().indexOf(kw)>=0||genPy(inf.drug||'').indexOf(kw)>=0||genPy(inf.cat||'').indexOf(kw)>=0) && !inf.drug.toLowerCase().includes(kw);
         var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
-        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="inf" data-view-id="'+inf.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(inf.drug), kw)+pyTag+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(inf.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="inf">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">载体：'+esc(inf.vehicle||'')+' · 浓度：'+esc(inf.conc||'')+'</div></div>';
+        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="inf" data-view-id="'+inf.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(inf.drug), kw)+pyTag+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(inf.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="inf">编辑</button><button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)" data-del="'+origIdx+'" data-type="inf">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">载体：'+esc(inf.vehicle||'')+' · 浓度：'+esc(inf.conc||'')+'</div></div>';
       }).join('');
     } else if (type === 'diseases') {
       var filtered = DISEASES.filter(function(ds){
@@ -382,7 +382,7 @@ function renderAdminList(type, kw) {
         var origIdx = DISEASES.indexOf(ds);
         var isPy = kw && ((ds.py||'').toLowerCase().indexOf(kw)>=0||genPy(ds.name||'').indexOf(kw)>=0||genPy(ds.cat||'').indexOf(kw)>=0) && !ds.name.toLowerCase().includes(kw);
         var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
-        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="disease" data-view-id="'+ds.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(ds.name), kw)+pyTag+'</span></div></div><div style="display:flex;justify-content:space-between;align-items:center;padding:0 12px 10px;font-size:12px;color:var(--text-light)"><span>'+highlightKw(esc(ds.cat), kw)+'</span><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="disease">编辑</button></div></div>';
+        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="disease" data-view-id="'+ds.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(ds.name), kw)+pyTag+'</span></div></div><div style="display:flex;justify-content:space-between;align-items:center;padding:0 12px 10px;font-size:12px;color:var(--text-light)"><span>'+highlightKw(esc(ds.cat), kw)+'</span><span style="display:flex;gap:6px"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="disease">编辑</button><button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)" data-del="'+origIdx+'" data-type="disease">删除</button></span></div></div>';
       }).join('');
     } else if (type === 'users') {
       renderUserList(); return;
@@ -615,7 +615,11 @@ function deleteItem(type, index) {
       var deletedId = null;
       if(type==='drug'){if(index<DRUGS.length){toast('内置药品请在data.js中删除');return;}deletedId = cd.drugs[index-DRUGS.length].id; cd.drugs.splice(index-DRUGS.length,1);}
       else if(type==='guide'){if(index<GUIDELINES.length){toast('内置指南请在data.js中删除');return;}deletedId = cd.guidelines[index-GUIDELINES.length].id; cd.guidelines.splice(index-GUIDELINES.length,1);}
-      saveCust(cd); renderAdminList(type==='drug'?'drugs':'guidelines'); toast('已删除');
+      else if(type==='edu'){deletedId=HEALTH_EDU[index]?.['id'];if(!deletedId){toast('内置内容请在data.js中删除');return;}cd.education=cd.education||[];var ei=cd.education.findIndex(function(x){return x.id===deletedId;});if(ei>=0)cd.education.splice(ei,1);}
+      else if(type==='med'){deletedId=MED_EDU[index]?.['id'];if(!deletedId){toast('内置内容请在data.js中删除');return;}cd.mededu=cd.mededu||[];var mi=cd.mededu.findIndex(function(x){return x.id===deletedId;});if(mi>=0)cd.mededu.splice(mi,1);}
+      else if(type==='inf'){deletedId=INFUSION_DATA[index]?.['id'];if(!deletedId){toast('内置内容请在data.js中删除');return;}cd.infusion=cd.infusion||[];var ii=cd.infusion.findIndex(function(x){return x.id===deletedId;});if(ii>=0)cd.infusion.splice(ii,1);}
+      else if(type==='disease'){deletedId=DISEASES[index]?.['id'];if(!deletedId){toast('内置内容请在data.js中删除');return;}cd.diseases=cd.diseases||[];var di=cd.diseases.findIndex(function(x){return x.id===deletedId;});if(di>=0)cd.diseases.splice(di,1);}
+      saveCust(cd); renderAdminList(type==='drug'?'drugs':type==='guide'?'guidelines':type==='edu'||type==='med'?'mededu_combined':type==='inf'?'infusion':type==='disease'?'diseases':'drugs'); toast('已删除');
       // 同步删除到 Supabase
       if (deletedId) {
         var table = type==='drug' ? 'drugs' : 'guidelines';
@@ -625,7 +629,7 @@ function deleteItem(type, index) {
   ]);
 }
 
-function getCust(){ try{return JSON.parse(localStorage.getItem('custom_data')||'{"drugs":[],"guidelines":[]}');}catch(e){return {drugs:[],guidelines:[]};} }
+function getCust(){ try{return JSON.parse(localStorage.getItem('custom_data')||'{"drugs":[],"guidelines":[],"diseases":[],"education":[],"mededu":[],"infusion":[]}');}catch(e){return {drugs:[],guidelines:[],diseases:[],education:[],mededu:[],infusion:[]};} }
 function saveCust(cd){ localStorage.setItem('custom_data',JSON.stringify(cd)); }
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function peg(id){ return (document.getElementById(id)?.value||'').trim(); }
