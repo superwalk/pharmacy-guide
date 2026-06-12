@@ -1341,19 +1341,19 @@ function initProfileMenus() {
     }).join('');
     // 数据统计
     var dbInfo = '<div style="font-size:12px;line-height:1.8;color:var(--text-light);padding:4px 0">'
-      + '💊 药品：' + (window.DRUGS ? window.DRUGS.length : '—') + ' 种 | '
-      + '🦠 疾病：' + (window.DISEASES ? window.DISEASES.length : '—') + ' 种 | '
-      + '📋 指南：' + (window.GUIDELINES ? window.GUIDELINES.length : '—') + ' 条<br>'
-      + '📖 科普：' + (window.HEALTH_EDU ? window.HEALTH_EDU.length : '—') + ' 篇 | '
-      + '🗣️ 用药教育：' + (window.MED_EDU ? window.MED_EDU.length : '—') + ' 条 | '
-      + '💉 配伍：' + (window.INFUSION_DATA ? window.INFUSION_DATA.length : '—') + ' 条'
+      + '💊 药品：' + (typeof DRUGS !== 'undefined' ? DRUGS.length : '—') + ' 种 | '
+      + '🦠 疾病：' + (typeof DISEASES !== 'undefined' ? DISEASES.length : '—') + ' 种 | '
+      + '📋 指南：' + (typeof GUIDELINES !== 'undefined' ? GUIDELINES.length : '—') + ' 条<br>'
+      + '📖 科普：' + (typeof HEALTH_EDU !== 'undefined' ? HEALTH_EDU.length : '—') + ' 篇 | '
+      + '🗣️ 用药教育：' + (typeof MED_EDU !== 'undefined' ? MED_EDU.length : '—') + ' 条 | '
+      + '💉 配伍：' + (typeof INFUSION_DATA !== 'undefined' ? INFUSION_DATA.length : '—') + ' 条'
       + '</div>';
     // 导出导入按钮（仅admin）
     var exportBtns = isAdmin ? '<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="exportAllData()">📥 导出数据</button><button class="btn btn-outline btn-sm" onclick="importAllData()">📤 导入数据</button></div>' : '';
     document.getElementById('label-content').innerHTML = '<div class="section-title" style="font-size:22px">📖 更新与帮助</div>'
       // 数据卡片 - 圆角方框扁平化
       + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);margin-bottom:6px">📦 数据概览</div>'
-      + dbInfo + '<div style="font-size:11px;color:var(--text-light);margin-top:4px">数据来源：Supabase · 可在线编辑</div></div>'
+      + dbInfo + '</div>'
       // 更新日志卡片
       + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📋 更新日志</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">' + logHtml
       + (isAdmin ? '<button class="btn btn-outline btn-sm" id="edit-changelog-btn" style="margin-top:6px">✏️ 编辑</button>' : '') + '</div></div>'
