@@ -192,13 +192,22 @@ function getUsers() {
     var saved = localStorage.getItem('custom_users');
     if (saved) {
       var users = JSON.parse(saved);
-      // 补全新用户（已存在的用户不覆盖密码，保留找回密码等修改）
+      // 检查是否需要更新默认昵称（如 药师→用户）
+      var needSave = false;
       USERS.forEach(function(su){
         var local = users.find(function(u){ return u.username === su.username; });
-        if (!local) {
+        if (local) {
+          // 如果 localStorage 的昵称和旧版 USERS 一致，更新为新版
+          if (local.nickname && su.nickname && local.nickname !== su.nickname && !needSave) {
+            var oldKeys = ['药师','管理员-λ','管理员-θ','管理员-φ','管理员-σ'];
+            var isOld = oldKeys.some(function(k){ return local.nickname.indexOf(k) === 0; });
+            if (isOld) { local.nickname = su.nickname; needSave = true; }
+          }
+        } else {
           users.push(su);
         }
       });
+      if (needSave) localStorage.setItem('custom_users', JSON.stringify(users));
       return users;
     }
   } catch(e) {}
