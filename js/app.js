@@ -615,10 +615,11 @@ function renderGuidelines() {
 function toggleGuideGroup(header) {
   const gid=header.dataset.group;
   const items=gid!==undefined?document.getElementById('guide-group-'+gid):header.nextElementSibling;
+  if (!items) return;
   const arrow=header.querySelector('.guide-arrow');
   const expanded=header.dataset.expanded==='true';
-  if(expanded){ items.style.display='none'; arrow.style.transform='rotate(-90deg)'; arrow.textContent='▶'; header.dataset.expanded='false'; }
-  else { items.style.display='block'; arrow.style.transform='rotate(0deg)'; arrow.textContent='▼'; header.dataset.expanded='true'; }
+  if(expanded){ items.style.display='none'; if(arrow){arrow.style.transform='rotate(-90deg)';arrow.textContent='▶';} header.dataset.expanded='false'; }
+  else { items.style.display='block'; if(arrow){arrow.style.transform='rotate(0deg)';arrow.textContent='▼';} header.dataset.expanded='true'; }
 }
 // 药品/疾病分类折叠
 function toggleCatGroup(header, idx) {
@@ -1372,21 +1373,66 @@ function openHealthEdu(hid) {
 
 // ═══ 输液配伍 ─══
 function renderInfusion() {
-  const kw=(document.getElementById('inf-search')?.value||'').toLowerCase();
-  const il=document.getElementById('inf-list');
-  const cats=[...new Set(INFUSION_DATA.map(i=>i.cat||''))];
-  let data=INFUSION_DATA;
-  if(kw) data=data.filter(i=>i.drug.toLowerCase().includes(kw)||(i.note||'').toLowerCase().includes(kw)||(i.cat||'').includes(kw)||(i.interact||'').includes(kw)||(i.vehicle||'').toLowerCase().includes(kw)||(i.py||'').toLowerCase().includes(kw)||genPy(i.cat||'').toLowerCase().includes(kw));
-  il.innerHTML=cats.map(cat=>{
-    const items=data.filter(i=>i.cat===cat);
-    if(items.length===0) return '';
-    return `<div class="cat-card" style="margin-bottom:8px">
-      <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="true"><span class="cat-name">${cat}</span><span style="font-size:12px;color:var(--text-light)">${items.length} 条 <span class="guide-arrow">▼</span></span></div>
-      <div class="guide-items">${items.map(i=>`<div class="guide-item" data-iid="${i.id}" style="display:flex;gap:6px;align-items:center;padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><span style="width:6px;height:6px;background:#7C3AED;border-radius:3px;flex-shrink:0"></span><span style="color:var(--text-body);flex:1;font-weight:600">${highlightKw(i.drug, kw)}</span><span style="font-size:11px;color:var(--text-light)">${i.vehicle||''}</span></div>`).join('')}</div>
-    </div>`;
+  var container = document.getElementById('inf-list');
+  var kw = (document.getElementById('inf-search')?.value||'').toLowerCase();
+  var cats = [...new Set(INFUSION_DATA.map(function(i){return i.cat||'';}))];
+  var data = INFUSION_DATA;
+  if (kw) data = data.filter(function(i){return i.drug.toLowerCase().includes(kw)||(i.note||'').toLowerCase().includes(kw)||(i.cat||'').includes(kw)||(i.interact||'').includes(kw)||(i.vehicle||'').toLowerCase().includes(kw)||(i.py||'').toLowerCase().includes(kw)||genPy(i.cat||'').toLowerCase().includes(kw);});
+  // 配伍查询面板
+  var queryHtml = '<div class="cat-card" style="margin-bottom:8px;background:linear-gradient(135deg,#F3E8FF,#E9D5FF)">'
+    + '<div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">🔍 配伍禁忌查询</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></div>'
+    + '<div class="guide-items" style="display:none">'
+    + '<div style="font-size:12px;color:var(--text-light);margin-bottom:6px">输入药品名称，多个药品用逗号或空格分隔</div>'
+    + '<div style="display:flex;gap:4px"><input id="inf-query-input" placeholder="如：头孢曲松, 氨溴索" style="flex:1"><button class="btn btn-sm btn-primary" id="inf-query-btn">查询</button></div>'
+    + '<div id="inf-query-results" style="margin-top:8px"></div>'
+    + '<div style="font-size:11px;color:var(--text-light);margin-top:8px;padding:8px;border-top:1px solid var(--border)">⚠️ 内容不保证涵盖所有配伍禁忌，结果仅供参考，请以药品说明书和临床指南为准。</div>'
+    + '</div></div>';
+  // 分类列表
+  var listHtml = cats.map(function(cat){
+    var items = data.filter(function(i){return i.cat===cat;});
+    if (items.length===0) return '';
+    return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="true"><span class="cat-name">'+cat+'</span><span style="font-size:12px;color:var(--text-light)">'+items.length+' 条 <span class="guide-arrow">▼</span></span></div><div class="guide-items">'+items.map(function(i){return '<div class="guide-item" data-iid="'+i.id+'" style="display:flex;gap:6px;align-items:center;padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><span style="width:6px;height:6px;background:#7C3AED;border-radius:3px;flex-shrink:0"></span><span style="color:var(--text-body);flex:1;font-weight:600">'+highlightKw(i.drug, kw)+'</span><span style="font-size:11px;color:var(--text-light)">'+ (i.vehicle||'') +'</span></div>';}).join('')+'</div></div>';
   }).join('');
-  il.querySelectorAll('.guide-item').forEach(item=>{ item.onclick=()=>openInfusion(item.dataset.iid); });
-  document.getElementById('inf-search').oninput=renderInfusion;
+  container.innerHTML = queryHtml + listHtml;
+  // 绑定点击
+  container.querySelectorAll('.guide-item').forEach(function(item){ item.onclick=function(){openInfusion(item.dataset.iid);}; });
+  // 查询功能
+  var queryBtn = document.getElementById('inf-query-btn');
+  if (queryBtn) queryBtn.onclick = function(){ doInfusionQuery(); };
+  var queryInput = document.getElementById('inf-query-input');
+  if (queryInput) queryInput.onkeydown = function(e){ if(e.key==='Enter') doInfusionQuery(); };
+  document.getElementById('inf-search').oninput = renderInfusion;
+}
+
+function doInfusionQuery() {
+  var input = document.getElementById('inf-query-input').value.trim();
+  if (!input) { toast('请输入药品名称'); return; }
+  var terms = input.split(/[,，\s]+/).filter(function(t){return t;});
+  var results = [];
+  terms.forEach(function(term){
+    INFUSION_DATA.forEach(function(item){
+      if (item.drug.toLowerCase().indexOf(term.toLowerCase()) >= 0) {
+        // 检查是否已存在
+        if (!results.find(function(r){return r.id===item.id;})) {
+          results.push(item);
+        }
+      }
+    });
+  });
+  var container = document.getElementById('inf-query-results');
+  if (results.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-light);font-size:13px">未找到相关配伍信息</div>';
+    return;
+  }
+  var html = '<div style="font-size:12px;color:var(--text-light);margin-bottom:4px">找到 '+results.length+' 条相关配伍信息：</div>';
+  results.forEach(function(r){
+    html += '<div class="guide-item" data-iid="'+r.id+'" style="padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;display:flex;gap:6px;align-items:center">'
+      + '<span style="width:6px;height:6px;background:#7C3AED;border-radius:3px;flex-shrink:0"></span>'
+      + '<span style="flex:1"><span style="font-weight:600;color:var(--primary-dark)">'+r.drug+'</span> <span style="font-size:11px;color:var(--text-light)">'+r.cat+'</span></span>'
+      + '<span style="font-size:11px;color:var(--text-light)">'+(r.vehicle||'')+'</span></div>';
+  });
+  container.innerHTML = html;
+  container.querySelectorAll('.guide-item').forEach(function(item){ item.onclick=function(){openInfusion(item.dataset.iid);}; });
 }
 
 function openInfusion(iid) {
