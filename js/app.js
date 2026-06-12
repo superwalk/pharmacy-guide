@@ -1028,7 +1028,34 @@ function renderLabel(drugId) {
 
 // ═══ 站内信系统 ═══
 function getMessages() {
-  try { return JSON.parse(localStorage.getItem('messages') || '[]'); } catch(e){ return []; }
+  var local = [];
+  try { local = JSON.parse(localStorage.getItem('messages') || '[]'); } catch(e){}
+  // 尝试从 Supabase 合并远程消息
+  if (typeof _supabase !== 'undefined' && _supabase && _online && currentUser) {
+    _supabase.from('messages').select('*').or('recipient.eq.'+currentUser.username+',recipient.eq.all,sender.eq.'+currentUser.username).order('created_at', { ascending: false }).limit(100).then(function(r){
+      if (r.data && r.data.length > 0) {
+        var merged = local.slice();
+        r.data.forEach(function(sm){
+          if (!merged.find(function(m){ return m.id === sm.id; })) {
+            merged.push({
+              id: sm.id,
+              from: sm.sender,
+              to: sm.recipient,
+              text: sm.content,
+              type: sm.msg_type || 'admin',
+              read: false,
+              timestamp: sm.created_at ? new Date(sm.created_at).toLocaleString('zh-CN') : '',
+              ts: sm.created_at ? new Date(sm.created_at).getTime() : 0,
+              sourcePage: sm.source_page || ''
+            });
+          }
+        });
+        merged.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
+        localStorage.setItem('messages', JSON.stringify(merged));
+      }
+    }).catch(function(){});
+  }
+  return local;
 }
 function saveMessages(msgs) {
   localStorage.setItem('messages', JSON.stringify(msgs));
