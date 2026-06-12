@@ -41,6 +41,11 @@ function fallbackLoadDetail(type, id, cb) {
     if(cb) cb(null);
   });
 }
+// Supabase 数据同步
+function trySync(table, data) {
+  if (typeof _supabase === 'undefined' || !_supabase) return;
+  _supabase.from(table).upsert(data, { onConflict: 'username,content_id' }).catch(function(e){});
+}
 function loadDrugDetail(id, cb) { _loadDetail('drugs', id, cb); }
 function loadDiseaseDetail(id, cb) { _loadDetail('diseases', id, cb); }
 function loadGuideDetail(id, cb) { _loadDetail('guidelines', id, cb); }
@@ -74,14 +79,30 @@ function noteKey() { return 'notes_'+currentUser.username; }
 function recentKey() { return 'recent_'+currentUser.username; }
 function getFavs() { return JSON.parse(localStorage.getItem(favKey())||'[]'); }
 function isFav(id) { return getFavs().includes(id); }
-function toggleFav(id) { let f=getFavs(); if(f.includes(id)) f=f.filter(x=>x!==id); else f.push(id); localStorage.setItem(favKey(),JSON.stringify(f)); }
+function toggleFav(id) {
+  let f=getFavs(); if(f.includes(id)) f=f.filter(x=>x!==id); else f.push(id);
+  localStorage.setItem(favKey(),JSON.stringify(f));
+  // 同步到 Supabase
+  var uname = currentUser ? currentUser.username : '';
+  if (uname) trySync('favorites', { username: uname, content_id: id, list: JSON.stringify(f) });
+}
 function getNotes() { return JSON.parse(localStorage.getItem(noteKey())||'{}'); }
 function saveNote(id, text) {
   if (text && text.length > 200) { toast('备注不能超过200字'); return false; }
   const n=getNotes(); if(text) { n[id]=text; } else { delete n[id]; }
-  localStorage.setItem(noteKey(),JSON.stringify(n)); return true;
+  localStorage.setItem(noteKey(),JSON.stringify(n));
+  // 同步到 Supabase
+  var uname = currentUser ? currentUser.username : '';
+  if (uname) trySync('notes', { username: uname, content_id: id, note: text || '', data: JSON.stringify(n) });
+  return true;
 }
-function deleteNote(id) { const n=getNotes(); delete n[id]; localStorage.setItem(noteKey(),JSON.stringify(n)); }
+function deleteNote(id) {
+  const n=getNotes(); delete n[id];
+  localStorage.setItem(noteKey(),JSON.stringify(n));
+  // 同步到 Supabase
+  var uname = currentUser ? currentUser.username : '';
+  if (uname) trySync('notes', { username: uname, content_id: id, note: '', data: JSON.stringify(n) });
+}
 
 // 根据ID在所有数据源中查找内容
 function findContentById(id) {
@@ -1213,6 +1234,10 @@ function renderProfile() {
 var APP_VERSION='1.0.0';
 var CHANGELOG_KEY='changelog_custom_v3';
 var DEFAULT_CHANGELOG=[
+  '2026-06-13  系统大更新：数据概览/浏览统计合并为系统与帮助，配伍查询加入自动补全/最近搜索/拼音搜索/收藏',
+  '2026-06-13  用药科普合并为双列扁平手风琴，内容管理去标签分段，编辑审核流程完善(查看/退回/忽略)',
+  '2026-06-13  详情页整改：来源标记(系统数据/用户编辑)，内联编辑按钮，配伍禁忌关联，说明书弹窗化',
+  '2026-06-13  新增用药教育科普内容：禁酒药物清单/禁止高空作业药物清单',
   '2026-06-12  新增自注册功能：用户可在登录页自行注册账号，设置密保问题，自动生成密码并复制',
   '2026-06-12  新增找回密码功能：通过邮箱+密保问题验证即可重置密码，每日限3次',
   '2026-06-12  新增密保设置：我的页面可随时修改密保问题及答案',
