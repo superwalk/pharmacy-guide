@@ -130,6 +130,8 @@ function findContentById(id) {
   var ds = DISEASES.find(function(x){return x.id===id;}); if (ds) return { name: ds.name, type: 'disease', icon: '🦠' };
   var h = HEALTH_EDU.find(function(x){return x.id===id;}); if (h) return { name: h.title, type: 'edu', icon: '📖' };
   var i = INFUSION_DATA.find(function(x){return x.id===id;}); if (i) return { name: i.drug, type: 'infusion', icon: '💉' };
+  // 输液配伍查询收藏
+  if (id && id.indexOf('inf_q_') === 0) return { name: '🔍 输液查询：' + id.slice(6).replace(/_/g, ', '), type: 'infquery', icon: '💉' };
   var m = MED_EDU.find(function(x){return x.id===id;}); if (m) return { name: m.drug, type: 'med', icon: '🗣️' };
   return null;
 }
@@ -888,7 +890,7 @@ function openGuide(gid) {
   addRecent(gid,'guide');
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:20px">${g.title}</div>
-    <div style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${g.system||'法律法规'}</span><span>${g.year||''}</span> ${sourceBadge(g.id, allGuides())}</span>${isEditor()?`<button class="btn btn-sm btn-outline" id="guide-edit-btn">编辑</button>`:''}</div>
+    <div style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${g.system||'法律法规'}</span><span>${g.year||''}</span> ${sourceBadge(g.id, allGuides())}</span>${isEditor()?`<span id="guide-edit-btn" style="color:var(--primary);cursor:pointer;font-size:12px;flex-shrink:0">编辑</span>`:''}</div>
     <div id="guide-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
   showEditBtn({type:'guide',id:gid});
@@ -973,7 +975,7 @@ function renderDetail(drugId) {
   dc.innerHTML=`
     <div class="detail-hero">
       <div class="detail-name">${d.name}</div>
-      <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-green">${d.category}</span><span class="badge badge-blue">${d.type}</span>${tagBadge(d.tag)} ${sourceBadge(d.id, DRUGS)}</span>${isEditor()?`<button class="btn btn-sm btn-outline" id="edit-detail-btn">编辑</button>`:''}</div>
+      <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-green">${d.category}</span><span class="badge badge-blue">${d.type}</span>${tagBadge(d.tag)} ${sourceBadge(d.id, DRUGS)}</span>${isEditor()?`<span id="edit-detail-btn" style="color:var(--primary);cursor:pointer;font-size:12px;flex-shrink:0">编辑</span>`:''}</div>
       <div class="detail-actions">
         <button class="btn btn-outline" id="detail-fav"><span style="color:${fav?'var(--danger)':'var(--primary)'}">${fav?'❤️':'🤍'}</span> ${fav?'已收藏':'收藏'}</button>
         <button class="btn btn-outline" id="detail-cmp">⚖️ 加入对比</button>
@@ -1271,20 +1273,33 @@ function renderFavorites() {
     + '</div>';
   // 收藏部分
   var fv = getFavs();
-  var favItems = fv.map(function(id){ var d=findDrug(id); return d?{id:id,type:'drug',name:d.name,cat:d.category}:null; }).filter(Boolean).reverse();
-  favItems = favItems.concat(allGuides().filter(function(g){return fv.includes(g.id);}).map(function(g){return {id:g.id,type:'guide',name:g.title,cat:g.system};}));
-  if (typeof findCalcTool === 'function') {
-    fv.forEach(function(id){
-      if (id.indexOf('calc-')===0) { var cid=id.slice(5); var ct=findCalcTool(cid); if(ct) favItems.push({id:id,type:'calc',name:ct.name,cat:'🧮 '+ct.cat}); }
-    });
-  }
+  // 处理各种收藏类型
+  var favItems = [];
+  fv.forEach(function(id){
+    var d = findDrug(id);
+    if (d) { favItems.push({id:id, type:'drug', name:d.name, cat:d.category}); return; }
+    var g = allGuides().find(function(x){return x.id===id;});
+    if (g) { favItems.push({id:id, type:'guide', name:g.title, cat:g.system}); return; }
+    g = LAWS.find(function(x){return x.id===id;});
+    if (g) { favItems.push({id:id, type:'guide', name:g.title, cat:'法律法规'}); return; }
+    if (id.indexOf('inf_q_') === 0) {
+      favItems.push({id:id, type:'infquery', name:'🔍 输液查询：'+id.slice(6).replace(/_/g, ', '), cat:'配伍禁忌'});
+      return;
+    }
+    if (id.indexOf('calc-')===0 && typeof findCalcTool === 'function') {
+      var cid = id.slice(5); var ct = findCalcTool(cid);
+      if (ct) favItems.push({id:id, type:'calc', name:ct.name, cat:'🧮 '+ct.cat});
+      return;
+    }
+  });
+  favItems = favItems.reverse();
   if (kw) favItems = favItems.filter(function(i){return i.name.toLowerCase().includes(kw)||i.cat.includes(kw)||genPy(i.name).toLowerCase().includes(kw)||genPy(i.cat).toLowerCase().includes(kw);});
   var favHtml = favItems.length === 0
     ? '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px">暂无收藏</div>'
     : favItems.map(function(i){
       var isPy = kw && genPy(i.name).toLowerCase().includes(kw) && !i.name.toLowerCase().includes(kw);
       var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
-      return '<div class="list-card" data-id="'+i.id+'" data-type="'+i.type+'"><div class="icon-box">'+(i.type==='drug'?'💊':i.type==='guide'?'📋':'🧮')+'</div><div class="info"><div class="name">'+highlightKw(i.name, kw)+pyTag+'</div><div class="desc">'+highlightKw(i.cat, kw)+'</div></div></div>';
+      return '<div class="list-card" data-id="'+i.id+'" data-type="'+i.type+'"><div class="icon-box">'+(i.type==='drug'?'💊':i.type==='guide'?'📋':i.type==='infquery'?'💉':'🧮')+'</div><div class="info"><div class="name">'+highlightKw(i.name, kw)+pyTag+'</div><div class="desc">'+highlightKw(i.cat, kw)+'</div></div></div>';
     }).join('');
   // 备注部分
   var notes = getNotes();
@@ -1318,6 +1333,7 @@ function renderFavorites() {
     else if (tp==='disease'){ var ds=DISEASES.find(function(x){return x.id===id;}); if(ds) openDisease(ds.name); }
     else if (tp==='edu'){ openHealthEdu(id); }
     else if (tp==='infusion'){ openInfusion(id); }
+    else if (tp==='infquery'){ openInfusionQuery(id); }
     else if (tp==='med'){ openMedEdu(id); }
   };});
   container.querySelectorAll('#note-content .btn-del-note').forEach(function(btn){ btn.onclick=function(e){ e.stopPropagation(); var nid=btn.dataset.nid; showModal('删除备注','<p>确定删除此备注？</p>',[{label:'取消'},{label:'删除',primary:true,style:'background:var(--danger)',onClick:function(){ deleteNote(nid); renderFavorites(); toast('已删除'); }}]); };});
@@ -1860,6 +1876,11 @@ function doInfusionQuery() {
     return;
   }
   var html = '<div style="font-size:12px;color:var(--text-light);margin-bottom:4px">找到 '+results.length+' 条相关配伍信息：</div>';
+  var queryTerm = document.getElementById('inf-query-input').value.trim();
+  var qId = 'inf_q_' + queryTerm.replace(/[,，\s]+/g, '_');
+  var favs = getFavs();
+  var isQFav = favs.indexOf(qId) >= 0;
+  html += '<div style="display:flex;gap:6px;margin-bottom:6px"><span class="inf-qfav" data-qid="'+qId+'" data-qterm="'+queryTerm.replace(/"/g,'&quot;')+'" style="cursor:pointer;font-size:13px;user-select:none;color:var(--primary)">' + (isQFav ? '⭐ 已收藏此查询' : '☆ 收藏此查询') + '</span></div>';
   results.forEach(function(r){
     var favs = getFavs();
     var isF = favs.indexOf(r.id) >= 0;
@@ -1888,6 +1909,21 @@ function doInfusionQuery() {
     btn.addEventListener('mousedown', doToggle);
     btn.addEventListener('touchstart', doToggle, {passive:false});
   });
+  // 绑定收藏查询按钮
+  container.querySelectorAll('.inf-qfav').forEach(function(btn){
+    btn.onclick = function(e){
+      e.stopPropagation();
+      var qid = btn.getAttribute('data-qid');
+      var qterm = btn.getAttribute('data-qterm');
+      if (!qid) return;
+      var favs = getFavs();
+      if (favs.indexOf(qid) >= 0) { favs = favs.filter(function(x){return x!==qid;}); }
+      else { favs.push(qid); }
+      localStorage.setItem(favKey(), JSON.stringify(favs));
+      trySync('favorites', { username: currentUser ? currentUser.username : '', content_id: qid, list: JSON.stringify(favs) });
+      doInfusionQuery();
+    };
+  });
   // 保存到最近查询
   var input = document.getElementById('inf-query-input');
   if (input) {
@@ -1907,7 +1943,7 @@ function openInfusion(iid) {
   pushScreen('label');
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:22px">${i.drug}</div>
-    <div style="font-size:13px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${i.cat}</span> ${sourceBadge(i.id, INFUSION_DATA)}</span>${isEditor()?`<button class="btn btn-sm btn-outline" id="inf-edit-btn">编辑</button>`:''}</div>
+    <div style="font-size:13px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${i.cat}</span> ${sourceBadge(i.id, INFUSION_DATA)}</span>${isEditor()?`<span id="inf-edit-btn" style="color:var(--primary);cursor:pointer;font-size:12px;flex-shrink:0">编辑</span>`:''}</div>
     <div id="infusion-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>
   `;
   showEditBtn({type:'inf',id:iid});
@@ -1952,7 +1988,7 @@ function openDisease(name) {
   document.getElementById('label-content').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:12px">正在加载… (DISEASES: '+DISEASES.length+')</div>';
   let html='<div class="section-title" style="font-size:22px">'+name+'</div>';
   if(d) html+=`
-    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span> ${sourceBadge(d.id, DISEASES)}</span>${isEditor()?'<span style="display:flex;gap:6px"><button class="btn btn-sm btn-outline" onclick="editCurrentItem()">编辑</button></span>':''}</div>
+    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span> ${sourceBadge(d.id, DISEASES)}</span>${isEditor()?'<span onclick="editCurrentItem()" style="color:var(--primary);cursor:pointer;font-size:12px;flex-shrink:0">编辑</span>':''}</div>
     <div id="disease-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>`;
   if(drugs.length>0) html+=`<div class="section-title" style="margin-top:8px">💊 相关药品 (${drugs.length})</div>`+drugs.slice(0,6).map(dr=>`<div class="list-card" onclick="pushScreen('detail');renderDetail('${dr.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${dr.name}</div><div class="desc">${dr.category} · ${(dr.indications||'').slice(0,30)}…</div></div></div>`).join('');
   if(guides.length>0) html+=`<div class="section-title" style="margin-top:8px">📋 相关指南</div>`+guides.slice(0,3).map(g=>`<div class="list-card" onclick="openGuide('${g.id}')"><div class="icon-box">📋</div><div class="info"><div class="name">${g.title}</div><div class="desc">${g.system} · ${g.year}</div></div></div>`).join('');
@@ -2081,7 +2117,7 @@ function showEditBtn(item){
     if(sub && !sub.querySelector('.inline-edit-btn')){
       var eb=document.createElement('span');
       eb.className='inline-edit-btn';
-      eb.style.cssText='font-size:12px;color:var(--accent);cursor:pointer;font-weight:600;border:1px solid var(--accent);border-radius:6px;padding:1px 8px';
+      eb.style.cssText='color:var(--primary);cursor:pointer;font-size:12px;flex-shrink:0';
       eb.textContent='编辑';
       eb.onclick=editCurrentItem;
       sub.appendChild(eb);
