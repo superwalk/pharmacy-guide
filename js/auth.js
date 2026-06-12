@@ -306,6 +306,12 @@ function updateNickname(newName) {
   document.getElementById('profile-nickname').textContent = newName;
   // 同步到 Supabase
   syncUserToSupabase(currentUser.username, { password: currentUser.password, nickname: newName, role: currentUser.role });
+  // 同步到 custom_users（确保下次加载正确）
+  try {
+    var users = JSON.parse(localStorage.getItem('custom_users') || '[]');
+    var u = users.find(function(x){ return x.username === currentUser.username; });
+    if (u) { u.nickname = newName; localStorage.setItem('custom_users', JSON.stringify(users)); }
+  } catch(e) {}
   toast('昵称已修改');
 }
 
@@ -345,7 +351,7 @@ var SECURITY_QUESTIONS = [
 // ═══ 用户注册（自注册）═══
 function registerUser(username, email, sq1, sa1, sq2, sa2, sq3, sa3) {
   var users = getUsers();
-  if (!username || username.length < 3) return { ok:false, msg:'用户名至少3个字符' };
+  if (!username || username.length < 5) return { ok:false, msg:'用户名至少5个字符' };
   if (!email || email.indexOf('@') < 0) return { ok:false, msg:'请输入有效的邮箱地址' };
   if (users.find(u => u.username === username)) return { ok:false, msg:'用户名已存在' };
   if (users.find(u => u.email === email)) return { ok:false, msg:'该邮箱已被注册' };
