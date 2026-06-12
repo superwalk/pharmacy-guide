@@ -45,7 +45,18 @@ function fallbackLoadDetail(type, id, cb) {
 // Supabase 数据同步
 function trySync(table, data) {
   if (typeof _supabase === 'undefined' || !_supabase) return;
-  _supabase.from(table).upsert(data, { onConflict: 'username,content_id' }).catch(function(e){});
+  // 收藏/备注 → 改用 user_sync_data 表（用 username 替代 user_id uuid，确保能正确同步）
+  if (table === 'favorites' || table === 'notes') {
+    _supabase.from('user_sync_data').upsert({
+      username: data.username,
+      data_type: table,
+      content_id: data.content_id,
+      data_value: data.list || data.note || data.data || '',
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'username,data_type,content_id' }).catch(function(e){});
+    return;
+  }
+  _supabase.from(table).upsert(data, { onConflict: 'id' }).catch(function(e){});
 }
 function loadDrugDetail(id, cb) { _loadDetail('drugs', id, cb); }
 function loadDiseaseDetail(id, cb) { _loadDetail('diseases', id, cb); }
@@ -504,7 +515,7 @@ function showSecuritySettings(){
     if (!authPw) { toast('请输入当前密码验证身份'); return; }
     var users = getUsers();
     var user = users.find(function(x){ return x.username === currentUser.username; });
-    if (!user || user.password !== authPw) { toast('密码验证失败'); return; }
+    if (!user || !checkPw(authPw, user)) { toast('密码验证失败'); return; }
     var sq1 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq1').value)];
     var sq2 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq2').value)];
     var sq3 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq3').value)];
@@ -527,7 +538,7 @@ function showSecuritySettings(){
     if (!vpw) { toast('请输入密码'); return; }
     var users = getUsers();
     var user = users.find(function(x){ return x.username === currentUser.username; });
-    if (!user || user.password !== vpw) { toast('密码验证失败'); return; }
+    if (!user || !checkPw(vpw, user)) { toast('密码验证失败'); return; }
     var el = document.getElementById('ss-view-result');
     if (el) el.style.display = 'block';
   };
