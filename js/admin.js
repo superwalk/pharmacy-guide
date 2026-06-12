@@ -415,14 +415,16 @@ function renderUserList(){
   list.innerHTML='';
   if(users.length===0){ list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">暂无用户</div>'; return; }
   var roleLabel={admin:'管理员',editor:'管理员',user:'普通用户'};
+  var sourceLabel = {manual:'👤 手动添加', email:'📧 邮箱注册'};
   // 获取内置用户名列表
   var builtinUsernames = (typeof USERS !== 'undefined') ? USERS.map(function(u){return u.username;}) : [];
   users.forEach(function(u){
     var isBuiltin = builtinUsernames.indexOf(u.username) !== -1;
+    var sourceTag = u.source ? '<span style="font-size:10px;color:'+(u.source==='email'?'var(--accent)':'var(--primary)')+'">'+ (sourceLabel[u.source]||u.source) +'</span>' : '';
     var row=document.createElement('div');
     row.className='list-card';
     row.style.cssText='display:flex;align-items:center;gap:8px';
-    row.innerHTML='<div class="icon-box">👤</div><div class="info" style="flex:1"><div class="name">'+u.username+(isBuiltin?'':' <span style="font-size:10px;color:var(--accent)">手机端</span>')+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+u.nickname+'</div></div>'
+    row.innerHTML='<div class="icon-box">👤</div><div class="info" style="flex:1"><div class="name">'+u.username+' '+sourceTag+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+u.nickname+'</div></div>'
       + (isBuiltin ? '' : '<button class="btn btn-sm btn-outline" style="margin-right:2px;font-size:11px">☁️导出</button>')
       + '<button class="btn btn-sm btn-outline" style="margin-right:4px">编辑</button>'
       + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)">删除</button>';
