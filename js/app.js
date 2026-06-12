@@ -1052,6 +1052,8 @@ function getMessages() {
         });
         merged.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
         localStorage.setItem('messages', JSON.stringify(merged));
+        // 异步拉取完成后更新红点
+        updateMsgBadge();
       }
     }).catch(function(){});
   }
