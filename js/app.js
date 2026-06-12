@@ -138,6 +138,16 @@ function addRecent(id, type) {
   let r=getRecent(); r=r.filter(x=>!(x.id===id&&x.type===type)); 
   r.unshift({id:id,type:type}); if(r.length>15)r.pop(); 
   localStorage.setItem(recentKey(),JSON.stringify(r));
+  // 同步浏览记录到 Supabase
+  if (typeof _supabase !== 'undefined' && _supabase && _online && currentUser) {
+    _supabase.from('recent_views').upsert({
+      id: currentUser.username + '_' + id,
+      username: currentUser.username,
+      content_id: id,
+      content_type: type,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'id' }).catch(function(){});
+  }
   // 同步记录浏览统计
   recordView(id, type);
 }
@@ -1458,6 +1468,9 @@ function showChangelog(){
         if(!val){ toast('内容不能为空'); return; }
         var lines=val.split('\n').filter(function(l){return l.trim();});
         localStorage.setItem(CHANGELOG_KEY,JSON.stringify(lines));
+        if (typeof _supabase !== 'undefined' && _supabase && _online) {
+          _supabase.from('app_settings').upsert({ key: 'changelog', value: JSON.stringify(lines), updated_at: new Date().toISOString() }, { onConflict: 'key' }).catch(function(){});
+        }
         toast('更新日志已保存');
         showChangelog();
       }}]
@@ -1571,6 +1584,9 @@ function initProfileMenus() {
           var val = document.getElementById('changelog-editor').value;
           var arr = val.split('\n').filter(function(l){return l.trim();});
           try { localStorage.setItem('changelog_custom_v3', JSON.stringify(arr)); } catch(e) {}
+          if (typeof _supabase !== 'undefined' && _supabase && _online) {
+            _supabase.from('app_settings').upsert({ key: 'changelog', value: JSON.stringify(arr), updated_at: new Date().toISOString() }, { onConflict: 'key' }).catch(function(){});
+          }
           toast('更新日志已保存');
           document.getElementById('menu-update-help').onclick();
         }}]);
@@ -1582,6 +1598,9 @@ function initProfileMenus() {
         [{label:'取消'},{label:'保存',primary:true,onClick:function(){
           var newGuide = document.getElementById('guide-editor').value;
           try { localStorage.setItem('custom_guide', JSON.stringify({content: newGuide, role: currentUser.role, updated: new Date().toISOString()})); } catch(e) {}
+          if (typeof _supabase !== 'undefined' && _supabase && _online) {
+            _supabase.from('app_settings').upsert({ key: 'user_guide', value: newGuide, updated_at: new Date().toISOString() }, { onConflict: 'key' }).catch(function(){});
+          }
           toast('使用帮助已更新');
           document.getElementById('menu-update-help').onclick();
         }}]);
