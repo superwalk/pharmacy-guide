@@ -1515,13 +1515,24 @@ function doInfusionQuery() {
   }
   var html = '<div style="font-size:12px;color:var(--text-light);margin-bottom:4px">找到 '+results.length+' 条相关配伍信息：</div>';
   results.forEach(function(r){
+    var favs = getFavs();
+    var isF = favs.indexOf(r.id) >= 0;
     html += '<div class="guide-item" data-iid="'+r.id+'" style="padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;display:flex;gap:6px;align-items:center">'
       + '<span style="width:6px;height:6px;background:#7C3AED;border-radius:3px;flex-shrink:0"></span>'
       + '<span style="flex:1"><span style="font-weight:600;color:var(--primary-dark)">'+r.drug+'</span> <span style="font-size:11px;color:var(--text-light)">'+r.cat+'</span></span>'
-      + '<span style="font-size:11px;color:var(--text-light)">'+(r.vehicle||'')+'</span></div>';
+      + '<span style="font-size:11px;color:var(--text-light)">'+(r.vehicle||'')+'</span>'
+      + '<span class="inf-fav" data-iid="'+r.id+'" style="cursor:pointer;font-size:14px;user-select:none;flex-shrink:0">'+(isF?'⭐':'☆')+'</span></div>';
   });
   container.innerHTML = html;
   container.querySelectorAll('.guide-item').forEach(function(item){ item.onclick=function(){openInfusion(item.dataset.iid);}; });
+  // 绑定收藏按钮
+  container.querySelectorAll('.inf-fav').forEach(function(btn){
+    btn.onclick = function(e){ e.stopPropagation();
+      var id = btn.dataset.iid;
+      toggleFav(id);
+      doInfusionQuery(); // 刷新结果
+    };
+  });
 }
 
 function openInfusion(iid) {
