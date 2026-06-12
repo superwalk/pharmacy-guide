@@ -190,10 +190,10 @@ function showRegisterModal(){
     '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">📝 填写注册信息</div>'+
     '<input id="reg-username" placeholder="用户名（至少3个字符）" style="width:100%">'+
     '<input id="reg-email" placeholder="邮箱地址" type="email" style="width:100%">'+
-    '<div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;font-size:13px;color:var(--text-light)">🔐 设置密保问题（用于找回密码）</div>'+
-    '<div style="display:flex;gap:4px"><select id="reg-sq1" style="flex:1">'+qOpts+'</select><input id="reg-sa1" placeholder="答案1" style="width:40%"></div>'+
-    '<div style="display:flex;gap:4px"><select id="reg-sq2" style="flex:1">'+qOpts+'</select><input id="reg-sa2" placeholder="答案2" style="width:40%"></div>'+
-    '<div style="display:flex;gap:4px"><select id="reg-sq3" style="flex:1">'+qOpts+'</select><input id="reg-sa3" placeholder="答案3" style="width:40%"></div>'+
+    '<div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;font-size:13px;color:var(--text-light)">🔐 设置密保问题（用于找回密码，至少填写一个）</div>'+
+    '<div style="display:flex;gap:4px"><select id="reg-sq1" style="flex:1">'+qOpts+'</select><input id="reg-sa1" placeholder="答案1（选填）" style="width:40%"></div>'+
+    '<div style="display:flex;gap:4px"><select id="reg-sq2" style="flex:1">'+qOpts+'</select><input id="reg-sa2" placeholder="答案2（选填）" style="width:40%"></div>'+
+    '<div style="display:flex;gap:4px"><select id="reg-sq3" style="flex:1">'+qOpts+'</select><input id="reg-sa3" placeholder="答案3（选填）" style="width:40%"></div>'+
     '</div>';
   showModal('📝 注册新账号', step1HTML, [{label:'取消'},{label:'注册',primary:true,onClick:function(){
     var uname = document.getElementById('reg-username').value.trim();
@@ -237,17 +237,19 @@ function showForgotPasswordModal(){
 function showForgotPasswordQuestions(uname, email, questions){
   var html =
     '<div style="display:flex;flex-direction:column;gap:8px">'+
-    '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔐 请回答以下密保问题</div>';
-  questions.forEach(function(q, i){
-    html += '<div style="font-size:13px;color:var(--primary);font-weight:600">'+(i+1)+'. '+q+'</div>'+
-      '<input id="fp-a'+(i+1)+'" placeholder="答案'+(i+1)+'" style="width:100%">';
+    '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔐 任选一个密保问题回答即可（不区分大小写）</div>';
+  questions.forEach(function(q){
+    html += '<div style="font-size:13px;color:var(--primary);font-weight:600;margin-top:4px">'+q.question+'</div>'+
+      '<input id="fp-a'+q.idx+'" placeholder="你的答案" style="width:100%">';
   });
   html += '</div>';
   showModal('🔑 找回密码 · 密保验证', html, [{label:'取消'},{label:'重置密码',primary:true,onClick:function(){
-    var a1 = document.getElementById('fp-a1').value.trim();
-    var a2 = document.getElementById('fp-a2').value.trim();
-    var a3 = document.getElementById('fp-a3').value.trim();
-    var r = forgotPasswordReset(uname, email, a1, a2, a3);
+    var answers = {};
+    questions.forEach(function(q){
+      var val = document.getElementById('fp-a'+q.idx).value.trim();
+      if (val) answers[q.idx] = val;
+    });
+    var r = forgotPasswordReset(uname, email, answers);
     if(!r.ok){ toast(r.msg); return; }
     var info = '用户名：'+r.username+'\n新密码：'+r.password;
     navigator.clipboard.writeText(info).then(function(){ toast('已复制新密码'); }).catch(function(){});
@@ -281,16 +283,16 @@ function showSecuritySettings(){
     var sa1 = document.getElementById('ss-sa1').value.trim();
     var sa2 = document.getElementById('ss-sa2').value.trim();
     var sa3 = document.getElementById('ss-sa3').value.trim();
-    if(!sa1 || !sa2 || !sa3){ toast('请填写所有密保答案'); return; }
-    updateUser(u.username, {
-      security_q1: sq1, security_a1: sa1,
-      security_q2: sq2, security_a2: sa2,
-      security_q3: sq3, security_a3: sa3
-    });
-    u.security_q1 = sq1; u.security_a1 = sa1;
-    u.security_q2 = sq2; u.security_a2 = sa2;
-    u.security_q3 = sq3; u.security_a3 = sa3;
-    toast('密保设置已保存');
+    if(!sa1 && !sa2 && !sa3){ toast('请至少填写一个密保答案'); return; }
+    // 只保存有答案的问题
+    var updates = {};
+    if (sa1) { updates.security_q1 = sq1; updates.security_a1 = sa1; u.security_q1 = sq1; u.security_a1 = sa1; }
+    else { updates.security_q1 = ''; updates.security_a1 = ''; u.security_q1 = ''; u.security_a1 = ''; }
+    if (sa2) { updates.security_q2 = sq2; updates.security_a2 = sa2; u.security_q2 = sq2; u.security_a2 = sa2; }
+    else { updates.security_q2 = ''; updates.security_a2 = ''; u.security_q2 = ''; u.security_a2 = ''; }
+    if (sa3) { updates.security_q3 = sq3; updates.security_a3 = sa3; u.security_q3 = sq3; u.security_a3 = sa3; }
+    else { updates.security_q3 = ''; updates.security_a3 = ''; u.security_q3 = ''; u.security_a3 = ''; }
+    updateUser(u.username, updates);
   }}]);
 }
 
