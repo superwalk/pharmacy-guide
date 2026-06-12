@@ -1784,8 +1784,8 @@ var _currentEditItem=null;
 function showEditBtn(item){ 
   _currentEditItem=item; 
   var btn=document.getElementById('label-edit-btn'); 
-  // 用药教育/科普教育使用内联编辑按钮，不在顶部显示
-  if(item.type==='med'||item.type==='edu'){
+  // 用药教育/科普教育/指南/配伍使用内联编辑按钮，不在顶部显示
+  if(item.type==='med'||item.type==='edu'||item.type==='guide'||item.type==='inf'){
     if(btn) btn.style.display='none';
   } else if(btn&&isEditor()){
     btn.style.display='inline';
