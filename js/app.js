@@ -1012,6 +1012,12 @@ function sendMessage(from, to, text, type, sourcePage) {
   saveMessages(msgs);
   return true;
 }
+function deleteMessage(msgId) {
+  if (!msgId) return;
+  var msgs = getMessages().filter(function(m){ return m.id !== msgId; });
+  saveMessages(msgs);
+  updateMsgBadge();
+}
 function markAsRead(msgId) {
   var msgs = getMessages();
   var m = msgs.find(function(x){ return x.id === msgId; });
@@ -1058,7 +1064,10 @@ function showMessages() {
           + '<div style="white-space:pre-wrap">'+m.text+'</div>'
           + (m.sourcePage ? '<div style="font-size:12px;color:var(--accent);margin-top:8px">📍 '+m.sourcePage+'</div>' : '')
           + '</div>';
-        showModal('💬 消息详情', detailHtml, [{label:'关闭',primary:true}]);
+        showModal('💬 消息详情', detailHtml, [{label:'关闭',primary:true},{label:'删除',onClick:function(){
+          deleteMessage(msgId);
+          showMessages();
+        }}]);
       }
       showMessages();
     };
