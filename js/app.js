@@ -284,9 +284,10 @@ function showRegisterModal(){
     '<input id="reg-username" placeholder="用户名（至少5个字符）" style="width:100%">'+
     '<input id="reg-email" placeholder="邮箱地址" type="email" style="width:100%">'+
     '<div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;font-size:13px;color:var(--text-light)">🔐 设置密保问题（用于找回密码，至少填写一个）</div>'+
-    '<div style="display:flex;gap:4px"><select id="reg-sq1" style="flex:1">'+q1+'</select><input id="reg-sa1" placeholder="答案1（选填）" style="width:40%"></div>'+
-    '<div style="display:flex;gap:4px"><select id="reg-sq2" style="flex:1">'+q2+'</select><input id="reg-sa2" placeholder="答案2（选填）" style="width:40%"></div>'+
-    '<div style="display:flex;gap:4px"><select id="reg-sq3" style="flex:1">'+q3+'</select><input id="reg-sa3" placeholder="答案3（选填）" style="width:40%"></div>'+
+    '<div style="display:flex;gap:4px"><select id="reg-sq1" style="flex:1">'+q1+'</select><input id="reg-sa1" placeholder="答案" style="width:40%"></div>'+
+    '<div style="display:flex;gap:4px"><select id="reg-sq2" style="flex:1">'+q2+'</select><input id="reg-sa2" placeholder="答案" style="width:40%"></div>'+
+    '<div style="display:flex;gap:4px"><select id="reg-sq3" style="flex:1">'+q3+'</select><input id="reg-sa3" placeholder="答案" style="width:40%"></div>'+
+    '<div style="font-size:11px;color:var(--text-light);text-align:center">三选一填写密保答案，用于找回密码</div>'+
     '</div>';
   showModal('📝 注册新账号', step1HTML, [{label:'取消'},{label:'注册',primary:true,onClick:function(){
     var uname = document.getElementById('reg-username').value.trim();
@@ -373,9 +374,10 @@ function showSecuritySettings(){
   var html =
     '<div style="display:flex;flex-direction:column;gap:6px">'+
     '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔐 设置密保问题（用于找回密码）</div>'+
-    '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题1</div><div style="display:flex;gap:4px"><select id="ss-sq1" style="flex:1">'+q1+'</select><input id="ss-sa1" placeholder="答案1" value="'+(u.security_a1||'')+'" style="flex:1"></div></div>'+
-    '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题2</div><div style="display:flex;gap:4px"><select id="ss-sq2" style="flex:1">'+q2+'</select><input id="ss-sa2" placeholder="答案2" value="'+(u.security_a2||'')+'" style="flex:1"></div></div>'+
-    '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题3</div><div style="display:flex;gap:4px"><select id="ss-sq3" style="flex:1">'+q3+'</select><input id="ss-sa3" placeholder="答案3" value="'+(u.security_a3||'')+'" style="flex:1"></div></div>'+
+    '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题1</div><div style="display:flex;gap:4px"><select id="ss-sq1" style="flex:1">'+q1+'</select><input id="ss-sa1" placeholder="答案" value="'+(u.security_a1||'')+'" style="flex:1"></div></div>'+
+    '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题2</div><div style="display:flex;gap:4px"><select id="ss-sq2" style="flex:1">'+q2+'</select><input id="ss-sa2" placeholder="答案" value="'+(u.security_a2||'')+'" style="flex:1"></div></div>'+
+    '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题3</div><div style="display:flex;gap:4px"><select id="ss-sq3" style="flex:1">'+q3+'</select><input id="ss-sa3" placeholder="答案" value="'+(u.security_a3||'')+'" style="flex:1"></div></div>'+
+    '<div style="font-size:11px;color:var(--text-light);text-align:center;margin-top:4px">三选一填写密保答案，任选一个回答即可找回密码</div>'+
     '</div>';
   showModal('🔐 密保设置', html, [{label:'取消'},{label:'保存',primary:true,onClick:function(){
     var sq1 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq1').value)];
@@ -1287,9 +1289,10 @@ function initProfileMenus() {
     }
     var secHtml = '<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">'
       + '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔐 密保设置（用于找回密码）</div>'
-      + '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题1</div><div style="display:flex;gap:4px"><select id="ss-sq1" style="flex:1">'+makeOpts(u.security_q1, 0)+'</select><input id="ss-sa1" placeholder="答案1" value="'+(u.security_a1||'')+'" style="flex:1"></div></div>'
-      + '<div style="margin-top:4px"><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题2</div><div style="display:flex;gap:4px"><select id="ss-sq2" style="flex:1">'+makeOpts(u.security_q2, 1)+'</select><input id="ss-sa2" placeholder="答案2" value="'+(u.security_a2||'')+'" style="flex:1"></div></div>'
-      + '<div style="margin-top:4px"><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题3</div><div style="display:flex;gap:4px"><select id="ss-sq3" style="flex:1">'+makeOpts(u.security_q3, 2)+'</select><input id="ss-sa3" placeholder="答案3" value="'+(u.security_a3||'')+'" style="flex:1"></div></div>'
+      + '<div><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题1</div><div style="display:flex;gap:4px"><select id="ss-sq1" style="flex:1">'+makeOpts(u.security_q1, 0)+'</select><input id="ss-sa1" placeholder="答案" value="'+(u.security_a1||'')+'" style="flex:1"></div></div>'
+      + '<div style="margin-top:4px"><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题2</div><div style="display:flex;gap:4px"><select id="ss-sq2" style="flex:1">'+makeOpts(u.security_q2, 1)+'</select><input id="ss-sa2" placeholder="答案" value="'+(u.security_a2||'')+'" style="flex:1"></div></div>'
+      + '<div style="margin-top:4px"><div style="font-size:11px;color:var(--text-light);margin-bottom:2px">问题3</div><div style="display:flex;gap:4px"><select id="ss-sq3" style="flex:1">'+makeOpts(u.security_q3, 2)+'</select><input id="ss-sa3" placeholder="答案" value="'+(u.security_a3||'')+'" style="flex:1"></div></div>'
+      + '<div style="font-size:11px;color:var(--text-light);text-align:center;margin-top:4px">三选一填写密保答案，任选一个回答即可找回密码</div>'
       + '</div>';
     showModal('🔒 密码与密保', pwHtml + secHtml, [{label:'取消'},{label:'确认修改',primary:true,onClick:function(){
       // 修改密码
