@@ -1151,8 +1151,8 @@ function showSendMsgModal(){
       if (sel.value === '__multi') {
         multiDiv.style.display = 'block';
         multiDiv.innerHTML = '<div style="font-size:12px;color:var(--text-light);margin:4px 0">勾选接收人：</div>'
-          + '<input id="msg-user-search" placeholder="🔍 搜索用户名或昵称…" style="width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid var(--border);font:inherit;font-size:12px">'
-          + '<div id="msg-user-list" style="max-height:200px;overflow-y:auto"></div>';
+          + '<input id="msg-user-search" placeholder="🔍 搜索用户名或昵称…" style="width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid var(--border);font:inherit;font-size:12px;height:30px;box-sizing:border-box">'
+          + '<div id="msg-user-list" style="max-height:220px;overflow-y:auto;min-height:60px"></div>';
         renderUserCheckboxes('');
         document.getElementById('msg-user-search').oninput = function(){
           renderUserCheckboxes(document.getElementById('msg-user-search').value.trim().toLowerCase());
