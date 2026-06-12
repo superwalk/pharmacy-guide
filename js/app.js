@@ -1219,8 +1219,7 @@ function initCompare() {
     res.style.display='block';
     res.innerHTML=matches.map(d=>{
       var isPyMatch = (d.py||'').toLowerCase().includes(kw) || genPy(d.name).toLowerCase().includes(kw);
-      var pyTag = isPyMatch && !d.name.toLowerCase().includes(kw) ? ' <span class="badge badge-blue" style="font-size:10px">PY:'+kw.toUpperCase()+'</span>' : '';
-      return `<div class="result-item" data-id="${d.id}">${highlightKw(d.name, kw)}${pyTag} <span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`;
+      return `<div class="result-item" data-id="${d.id}">${highlightKw(d.name, kw)} <span class="badge badge-green" style="margin-left:auto">${d.category}</span></div>`;
     }).join('');
     res.querySelectorAll('.result-item').forEach(r=>r.onclick=()=>{ addToCompare(r.dataset.id); document.getElementById('cmp-search').value=''; res.style.display='none'; });
   };
