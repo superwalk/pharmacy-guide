@@ -33,10 +33,11 @@ function fallbackLoadDetail(type, id, cb) {
   var base = location.pathname.replace(/\/[^\/]*$/, '/');
   if (!base || base === '/') base = '/pharmacy-guide/';
   fetch(base + 'data/' + type + '/' + id + '.json').then(function(r) {
-    if (!r.ok) return;
+    if (!r.ok) { if(cb) cb(null); return; }
     return r.json();
   }).then(function(data) {
     if (data) { _detailCache[type + '/' + id] = data; if(cb) cb(data); }
+    else if(cb) cb(null);
   }).catch(function() {
     if(cb) cb(null);
   });
@@ -636,7 +637,18 @@ function renderGuidelines() {
 
 function toggleGuideGroup(header) {
   const gid=header.dataset.group;
-  const items=gid!==undefined?document.getElementById('guide-group-'+gid):header.nextElementSibling;
+  var items = null;
+  if (gid !== undefined) {
+    items = document.getElementById('guide-group-'+gid);
+  }
+  if (!items) {
+    // 找下一个 guide-items 兄弟元素
+    var el = header.nextElementSibling;
+    while (el) {
+      if (el.classList && el.classList.contains('guide-items')) { items = el; break; }
+      el = el.nextElementSibling;
+    }
+  }
   if (!items) return;
   const arrow=header.querySelector('.guide-arrow');
   const expanded=header.dataset.expanded==='true';
@@ -1493,8 +1505,8 @@ function renderHealthEdu() {
     const items=data.filter(h=>h.cat===cat);
     if(items.length===0) return '';
     return `<div class="cat-card" style="margin-bottom:8px">
-      <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="true"><span class="cat-name">${cat}</span><span style="font-size:12px;color:var(--text-light)">${items.length} 篇 <span class="guide-arrow">▼</span></span></div>
-      <div class="guide-items">${items.map(h=>{
+      <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">${cat}</span><span style="font-size:12px;color:var(--text-light)">${items.length} 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></span></div>
+      <div class="guide-items" style="display:none">${items.map(h=>{
         var isPy = kw && ((h.py||'').toLowerCase().includes(kw) || genPy(h.cat).toLowerCase().includes(kw)) && !h.title.toLowerCase().includes(kw);
         var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
         return `<div class="guide-item" data-hid="${h.id}" style="display:flex;gap:6px;align-items:center;padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><span style="width:6px;height:6px;background:#D97706;border-radius:3px;flex-shrink:0"></span><span style="color:var(--text-body);flex:1">${highlightKw(h.title, kw)}${pyTag}</span></div>`;
