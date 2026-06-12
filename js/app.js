@@ -1114,8 +1114,8 @@ function showSendMsgModal(){
       if (sel.value === '__multi') {
         multiDiv.style.display = 'block';
         multiDiv.innerHTML = '<div style="font-size:12px;color:var(--text-light);margin:4px 0">勾选接收人：</div>'
-          + '<input id="msg-user-search" placeholder="🔍 搜索用户名或昵称…" style="width:100%;margin-bottom:6px">'
-          + '<div id="msg-user-list"></div>';
+          + '<input id="msg-user-search" placeholder="🔍 搜索用户名或昵称…" style="width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid var(--border);font:inherit;font-size:12px">'
+          + '<div id="msg-user-list" style="max-height:200px;overflow-y:auto"></div>';
         renderUserCheckboxes('');
         document.getElementById('msg-user-search').oninput = function(){
           renderUserCheckboxes(document.getElementById('msg-user-search').value.trim().toLowerCase());
@@ -1137,7 +1137,7 @@ function renderUserCheckboxes(kw) {
   });
   if (users.length === 0) { list.innerHTML = '<div style="font-size:12px;color:var(--text-light);padding:8px">未找到匹配用户</div>'; return; }
   list.innerHTML = users.map(function(u){
-    return '<label style="display:flex;align-items:center;gap:4px;font-size:13px;padding:2px 0"><input type="checkbox" value="'+u.username+'"> '+u.nickname+' ('+u.username+')</label>';
+    return '<label style="display:flex;align-items:center;gap:6px;font-size:12px;padding:3px 4px;cursor:pointer;border-bottom:1px solid var(--border)"><input type="checkbox" value="'+u.username+'" style="width:14px;height:14px;margin:0;flex-shrink:0"> <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+u.nickname+' ('+u.username+')</span></label>';
   }).join('');
 }
 // 纠错反馈弹窗
