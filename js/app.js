@@ -67,6 +67,7 @@ function toast(msg, cb) {
 
 // ═══ 弹窗 ───
 function showModal(title, content, actions) {
+  if (!actions) actions = [];
   const ov=document.getElementById('modal-overlay');
   const mb=document.getElementById('modal-box');
   mb.innerHTML=`<h3>${title}</h3>${content}<div class="modal-actions">${actions.map((a,i)=>`<button class="btn ${a.primary?'btn-primary':'btn-outline'}" data-modal-act="${i}">${a.label}</button>`).join('')}</div>`;
@@ -1407,7 +1408,6 @@ function initSearch() {
     pushScreen('search');
     var results=document.getElementById('search-results');
     var dr=[],gd=[],dis=[],lw=[],rd=[],inf=[],me=[];
-    var me=[];
     try{dr=allDrugs().filter(function(d){return matchAny(d.name)||matchAny(d.indications)||matchAny(d.category)||matchAny(d.subcategory)||matchAny(d.py||genPy(d.name))||matchAny(genPy(d.category))||matchAny(genPy(d.subcategory||''));});}catch(e){}
     try{gd=allGuides().filter(function(g){return matchAny(g.title)||matchAny(g.system)||matchAny(g.content)||matchAny(g.py)||matchAny(genPy(g.title))||matchAny(genPy(g.system));});}catch(e){}
     try{dis=DISEASES.filter(function(d){return matchAny(d.name)||matchAny(d.desc)||matchAny(d.cat)||matchAny(genPy(d.cat));});}catch(e){}
