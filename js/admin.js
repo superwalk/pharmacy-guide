@@ -39,6 +39,10 @@ function trySyncOrQueue(table, data, typeName, itemName) {
         ts: Date.now()
       });
       localStorage.setItem('pending_edits', JSON.stringify(pending));
+      // 同步到 Supabase（跨浏览器可见）
+      if (_online && typeof trySync === 'function') {
+        trySync('pending_edits', { id: data.id, table: table, data: JSON.stringify(data), type: typeName, name: itemName, editor: currentUser ? currentUser.nickname : '未知', time: new Date().toLocaleString('zh-CN'), ts: Date.now() });
+      }
       toast('已提交审核，管理员通过后即可生效');
     } catch(e) {}
   }
