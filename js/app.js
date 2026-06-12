@@ -647,6 +647,8 @@ function openGuide(gid) {
       html += '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" style="font-size:13px;padding:6px 16px" onclick="viewGuideFull(\''+gid+'\')">📄 查看全文</button></div>';
     }
     html += renderNote(gid);
+    var guideName = detail.title || g.title || gid;
+    html += '<button class="btn btn-outline btn-sm" onclick="showFeedbackModal(\''+guideName.replace(/'/g,"\\'")+'\',\'指南\')" style="margin-top:12px;font-size:12px">🔍 纠错</button>';
     gb.innerHTML = html;
     bindNote(gid, function(){ openGuide(gid); });
   });
@@ -696,13 +698,12 @@ function renderDetail(drugId) {
   dc.innerHTML=`
     <div class="detail-hero">
       <div class="detail-name">${d.name}</div>
-      <div class="detail-badges"><span class="badge badge-green">${d.category}</span><span class="badge badge-blue">${d.type}</span>${tagBadge(d.tag)}</div>
+      <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-green">${d.category}</span><span class="badge badge-blue">${d.type}</span>${tagBadge(d.tag)}</span>${isEditor()?`<button class="btn btn-sm btn-outline" id="edit-detail-btn">编辑</button>`:''}</div>
       <div class="detail-actions">
         <button class="btn btn-outline" id="detail-fav"><span style="color:${fav?'var(--danger)':'var(--primary)'}">${fav?'❤️':'🤍'}</span> ${fav?'已收藏':'收藏'}</button>
         <button class="btn btn-outline" id="detail-cmp">⚖️ 加入对比</button>
         <button class="btn btn-primary" id="detail-label">📄 说明书</button>
       </div>
-      ${isEditor()?`<div style="display:flex;justify-content:flex-end;align-items:center;gap:6px"><button class="btn btn-sm btn-outline" id="edit-detail-btn">编辑</button></div>`:''}
     </div>
     <div id="detail-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
@@ -727,12 +728,16 @@ function renderDetail(drugId) {
     <div class="note-card" style="margin-top:12px">
       <div class="note-header"><span class="note-title">📝 个人备注 <span style="font-size:11px;color:var(--text-light)">(200字上限)</span></span><span class="note-edit" id="edit-note">编辑</span></div>
       <div class="note-content" id="note-content-${drugId}">${note||'暂无备注，点击编辑添加…'}</div>
-    </div>`;
+    </div>
+    <button class="btn btn-outline btn-sm" id="report-error-btn" style="margin-top:12px;font-size:12px">🔍 纠错</button>`;
     // 重新绑定备注点击
     var eb = document.getElementById('edit-note');
     if (eb) eb.onclick = function() {
       showModal('编辑备注', `<p style="font-size:12px;color:var(--text-light);margin-bottom:4px">最多200字</p><textarea id="note-textarea" style="width:100%;min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical" maxlength="200">${escHTML(note)}</textarea>`, [{label:'取消'},{label:'保存',primary:true,onClick:function(){ const t=document.getElementById('note-textarea').value; var r=saveNote(drugId,t); if(r) renderDetail(drugId); }}]);
     };
+    // 纠错按钮绑定
+    var reportBtn = document.getElementById('report-error-btn');
+    if (reportBtn) reportBtn.onclick = function(){ showFeedbackModal(d.name, '药品'); };
   });
 }
 
@@ -749,6 +754,159 @@ function renderLabel(drugId) {
       return `<p>${line}</p>`;
     }).join('')}</div>
   `;
+}
+
+// ═══ 站内信系统 ═══
+function getMessages() {
+  try { return JSON.parse(localStorage.getItem('messages') || '[]'); } catch(e){ return []; }
+}
+function saveMessages(msgs) {
+  localStorage.setItem('messages', JSON.stringify(msgs));
+}
+function getUnreadCount() {
+  var msgs = getMessages();
+  return msgs.filter(function(m){ return m.to === currentUser.username || (m.to === 'all' && m.from !== currentUser.username); }).filter(function(m){ return !m.read; }).length;
+}
+function sendMessage(from, to, text, type, sourcePage) {
+  if (!text || text.length > 200) { toast('消息不能为空或超过200字'); return false; }
+  var msgs = getMessages();
+  msgs.unshift({ id: 'msg_'+Date.now(), from: from, to: to, text: text, type: type || 'admin', read: false, timestamp: new Date().toLocaleString('zh-CN'), ts: Date.now(), sourcePage: sourcePage || '' });
+  saveMessages(msgs);
+  return true;
+}
+function markAsRead(msgId) {
+  var msgs = getMessages();
+  var m = msgs.find(function(x){ return x.id === msgId; });
+  if (m) { m.read = true; saveMessages(msgs); }
+}
+// 渲染站内信面板
+function showMessages() {
+  pushScreen('label');
+  var isAdmin = currentUser.username === 'walkman0097';
+  var msgs = getMessages();
+  // 筛选当前用户的消息：发给我的、群发的、我发出去的
+  var myMsgs = msgs.filter(function(m){
+    return m.to === currentUser.username || m.to === 'all' || m.from === currentUser.username;
+  });
+  var html = '<div class="section-title" style="font-size:22px">💬 站内信</div>';
+  if (isAdmin) {
+    html += '<button class="btn btn-primary btn-full" id="msg-send-btn" style="margin-bottom:12px">✉️ 发送消息</button>';
+  }
+  if (myMsgs.length === 0) {
+    html += '<div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px">暂无消息</div>';
+  } else {
+    myMsgs.forEach(function(m){
+      var isUnread = !m.read && (m.to === currentUser.username || m.to === 'all');
+      var fromLabel = m.from === currentUser.username ? '我' : m.from;
+      var typeIcon = m.type === 'feedback' ? '📝' : m.type === 'system' ? '🔔' : '💬';
+      var pageInfo = m.sourcePage ? '<div style="font-size:11px;color:var(--accent);margin-top:2px">📍 '+m.sourcePage+'</div>' : '';
+      html += '<div class="list-card" data-msgid="'+m.id+'" style="'+(isUnread?'border-left:3px solid var(--danger)':'')+'">'
+        + '<div class="info" style="flex:1"><div class="name">'+(isUnread?'<span style="display:inline-block;width:8px;height:8px;background:var(--danger);border-radius:4px;margin-right:4px"></span>':'')+typeIcon+' '+m.text.slice(0,80)+(m.text.length>80?'…':'')+'</div>'
+        + '<div class="desc">'+fromLabel+' · '+m.timestamp+pageInfo+'</div></div></div>';
+    });
+  }
+  document.getElementById('label-content').innerHTML = html;
+  // 点击消息标记已读
+  document.querySelectorAll('[data-msgid]').forEach(function(el){
+    el.onclick = function(){
+      var msgId = el.dataset.msgid;
+      markAsRead(msgId);
+      // 显示详情
+      var msgs = getMessages();
+      var m = msgs.find(function(x){ return x.id === msgId; });
+      if (m) {
+        var detailHtml = '<div style="font-size:14px;line-height:1.8">'
+          + '<div style="font-size:12px;color:var(--text-light);margin-bottom:8px">'+m.from+' · '+m.timestamp+'</div>'
+          + '<div style="white-space:pre-wrap">'+m.text+'</div>'
+          + (m.sourcePage ? '<div style="font-size:12px;color:var(--accent);margin-top:8px">📍 '+m.sourcePage+'</div>' : '')
+          + '</div>';
+        showModal('💬 消息详情', detailHtml, [{label:'关闭',primary:true}]);
+      }
+      showMessages();
+    };
+  });
+  // 管理员发送按钮
+  if (isAdmin) {
+    document.getElementById('msg-send-btn').onclick = function(){ showSendMsgModal(); };
+  }
+}
+// 管理员发送消息弹窗
+function showSendMsgModal(){
+  var users = getUsers().filter(function(u){ return u.username !== currentUser.username; });
+  var userOpts = '<option value="all">📢 全员广播</option><option value="__multi">☑️ 多选发送</option>';
+  users.forEach(function(u){ userOpts += '<option value="'+u.username+'">'+u.nickname+' ('+u.username+')</option>'; });
+  var html = '<div style="display:flex;flex-direction:column;gap:8px">'
+    + '<div style="font-size:13px;color:var(--text-light)">收件人</div>'
+    + '<select id="msg-recipient">'+userOpts+'</select>'
+    + '<div id="msg-multi-checkboxes" style="display:none"></div>'
+    + '<textarea id="msg-text" style="width:100%;min-height:80px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical;maxlength="200" placeholder="消息内容（200字以内）"></textarea>'
+    + '<div style="font-size:11px;color:var(--text-light);text-align:right"><span id="msg-char-count">0</span>/200</div>'
+    + '</div>';
+  showModal('✉️ 发送消息', html, [{label:'取消'},{label:'发送',primary:true,onClick:function(){
+    var text = document.getElementById('msg-text').value.trim();
+    if (!text) { toast('请输入消息内容'); return; }
+    var recip = document.getElementById('msg-recipient').value;
+    if (recip === '__multi') {
+      var checked = document.querySelectorAll('#msg-multi-checkboxes input:checked');
+      if (checked.length === 0) { toast('请选择接收人'); return; }
+      checked.forEach(function(cb){ sendMessage(currentUser.username, cb.value, text, 'admin'); });
+      toast('消息已发送');
+    } else     if (recip === 'all') {
+      sendMessage(currentUser.username, 'all', text, 'admin');
+      toast('全员广播已发送');
+    } else {
+      sendMessage(currentUser.username, recip, text, 'admin');
+      toast('消息已发送');
+    }
+  }}]);
+  setTimeout(function(){
+    var sel = document.getElementById('msg-recipient');
+    var multiDiv = document.getElementById('msg-multi-checkboxes');
+    var textarea = document.getElementById('msg-text');
+    sel.onchange = function(){
+      if (sel.value === '__multi') {
+        multiDiv.style.display = 'block';
+        var users = getUsers().filter(function(u){ return u.username !== currentUser.username; });
+        multiDiv.innerHTML = '<div style="font-size:12px;color:var(--text-light);margin:4px 0">勾选接收人：</div>';
+        users.forEach(function(u){
+          multiDiv.innerHTML += '<label style="display:flex;align-items:center;gap:4px;font-size:13px;padding:2px 0"><input type="checkbox" value="'+u.username+'"> '+u.nickname+' ('+u.username+')</label>';
+        });
+      } else {
+        multiDiv.style.display = 'none';
+      }
+    };
+    textarea.oninput = function(){ document.getElementById('msg-char-count').textContent = textarea.value.length; };
+  }, 100);
+}
+// 纠错反馈弹窗
+function showFeedbackModal(sourceName, sourceType) {
+  showModal('🔍 内容纠错',
+    '<div style="font-size:13px;color:var(--text-light);margin-bottom:8px">反馈内容将发送给管理员</div>'
+    + '<div style="font-size:12px;color:var(--primary);margin-bottom:8px">📍 ' + sourceType + '：' + sourceName + '</div>'
+    + '<textarea id="feedback-text" style="width:100%;min-height:80px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical;maxlength="200" placeholder="请描述需要修正的内容（200字以内）"></textarea>'
+    + '<div style="font-size:11px;color:var(--text-light);text-align:right"><span id="fb-char-count">0</span>/200</div>',
+    [{label:'取消'},{label:'提交',primary:true,onClick:function(){
+      var text = document.getElementById('feedback-text').value.trim();
+      if (!text) { toast('请输入纠错内容'); return; }
+      // 发送给所有管理员
+      var admins = getUsers().filter(function(u){ return u.role === 'admin' || u.username === 'walkman0097'; });
+      admins.forEach(function(admin){
+        sendMessage(currentUser.username, admin.username, '【纠错】' + sourceType + '「' + sourceName + '」：' + text, 'feedback', sourceType + '：' + sourceName);
+      });
+      toast('纠错已提交，感谢您的反馈！');
+    }}]);
+  setTimeout(function(){
+    var fb = document.getElementById('feedback-text');
+    if (fb) fb.oninput = function(){ document.getElementById('fb-char-count').textContent = fb.value.length; };
+  }, 100);
+}
+// 更新红点状态
+function updateMsgBadge() {
+  var badge = document.getElementById('msg-badge');
+  if (!badge) return;
+  var count = getUnreadCount();
+  badge.style.display = count > 0 ? 'inline-flex' : 'none';
+  badge.textContent = count > 99 ? '99+' : count;
 }
 
 // ═══ 收藏与备注（合并版）───
@@ -976,6 +1134,8 @@ function renderProfile() {
   // 数据导出菜单：仅管理员可见（普通用户无此入口）
   var exMenu=document.getElementById('menu-export');
   if(exMenu) exMenu.style.display=isEditor()?'flex':'none';
+  // 更新消息红点
+  updateMsgBadge();
 }
 // ═══ 版本更新 ───
 var APP_VERSION='1.0.0';
@@ -1125,6 +1285,9 @@ function initProfileMenus() {
   // 编辑审核菜单（函数在 admin.js 中定义）
   var reviewMenu=document.getElementById('menu-review');
   if(reviewMenu) reviewMenu.onclick=()=>{ showReviewPanel(); };
+  // 站内信菜单
+  var msgMenu=document.getElementById('menu-messages');
+  if(msgMenu) msgMenu.onclick=()=>{ showMessages(); };
   // 数据导出
   var exBtn=document.getElementById('menu-export');
   if(exBtn) exBtn.onclick=function(){ showExportPanel(); };
