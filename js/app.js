@@ -1338,7 +1338,7 @@ function initProfileMenus() {
       + '💉 配伍：' + (window.INFUSION_DATA ? window.INFUSION_DATA.length : '—') + ' 条'
       + '</div>';
     // 导出导入按钮（仅admin）
-    var exportBtns = isAdmin ? '<button class="btn btn-outline btn-sm" onclick="exportAllData()" style="margin-right:4px">📥 导出数据</button><button class="btn btn-outline btn-sm" onclick="importAllData()">📤 导入数据</button>' : '';
+    var exportBtns = isAdmin ? '<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="exportAllData()">📥 导出数据</button><button class="btn btn-outline btn-sm" onclick="importAllData()">📤 导入数据</button></div>' : '';
     document.getElementById('label-content').innerHTML = '<div class="section-title" style="font-size:22px">📖 更新与帮助</div>'
       // 数据卡片 - 圆角方框扁平化
       + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);margin-bottom:6px">📦 数据概览</div>'
@@ -1350,7 +1350,7 @@ function initProfileMenus() {
       + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📖 使用帮助</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px"><div class="label-doc" id="guide-content" style="white-space:pre-wrap;font-size:13px;line-height:1.8;color:var(--text-body)">' + guide + '</div>'
       + (isAdmin ? '<button class="btn btn-outline btn-sm" id="edit-guide-btn" style="margin-top:6px">✏️ 编辑</button>' : '') + '</div></div>'
       // 数据管理卡片（仅admin）
-      + (isAdmin ? '<div style="background:var(--bg);border-radius:12px;padding:14px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);margin-bottom:8px">💾 数据管理</div>' + exportBtns + '</div>' : '');
+      + (isAdmin ? '<div style="background:var(--bg);border-radius:12px;padding:14px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>💾 数据管理</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">' + exportBtns + '</div></div>' : '');
     var editChangelogBtn = document.getElementById('edit-changelog-btn');
     if (editChangelogBtn) editChangelogBtn.onclick = function(){
       var logs = getChangelog();
@@ -1383,9 +1383,7 @@ function initProfileMenus() {
   // 编辑记录与审核（函数在 admin.js 中定义）
   var reviewMenu=document.getElementById('menu-review');
   if(reviewMenu) reviewMenu.onclick=()=>{ showEditLogs(); };
-  // 站内信菜单
-  var msgMenu=document.getElementById('menu-messages');
-  if(msgMenu) msgMenu.onclick=()=>{ showMessages(); };
+  // 站内信只在首页入口，不需要菜单绑定
   // 数据导出
   var exBtn=document.getElementById('menu-export');
   if(exBtn) exBtn.onclick=function(){ showExportPanel(); };
