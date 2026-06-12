@@ -349,7 +349,7 @@ function registerUser(username, email, sq1, sa1, sq2, sa2, sq3, sa3) {
   if (!email || email.indexOf('@') < 0) return { ok:false, msg:'请输入有效的邮箱地址' };
   if (users.find(u => u.username === username)) return { ok:false, msg:'用户名已存在' };
   if (users.find(u => u.email === email)) return { ok:false, msg:'该邮箱已被注册' };
-  if (!sa1 || !sa2 || !sa3) return { ok:false, msg:'请填写所有密保答案' };
+  if (!sa1 && !sa2 && !sa3) return { ok:false, msg:'请至少填写一个密保答案' };
   // 默认昵称 = 用户名
   var password = genRandPw();
   var newUser = {
@@ -375,7 +375,12 @@ function forgotPasswordVerify(username, email) {
   var u = users.find(function(x){ return x.username === username });
   if (!u) return { ok:false, step:'check', msg:'用户不存在' };
   if (u.email !== email) return { ok:false, step:'check', msg:'邮箱不匹配' };
-  if (!u.security_q1) return { ok:false, step:'check', msg:'该用户未设置密保问题，请联系管理员重置密码' };
+  if (!u.security_a1 && !u.security_a2 && !u.security_a3) return { ok:false, step:'check', msg:'该用户未设置密保问题，请联系管理员重置密码' };
+  // 只返回有答案的问题
+  var qs = [];
+  if (u.security_a1) qs.push({ question: u.security_q1, idx: 1 });
+  if (u.security_a2) qs.push({ question: u.security_q2, idx: 2 });
+  if (u.security_a3) qs.push({ question: u.security_q3, idx: 3 });
   // 检查每日重置次数限制
   var today = new Date().toISOString().slice(0,10);
   var resetCount = u.pw_reset_count || 0;
@@ -383,18 +388,28 @@ function forgotPasswordVerify(username, email) {
   if (resetDate === today && resetCount >= 3) {
     return { ok:false, step:'check', msg:'今日重置次数已达上限（3次），请明天再试' };
   }
-  return { ok:true, step:'questions', questions: [u.security_q1, u.security_q2, u.security_q3] };
+  return { ok:true, step:'questions', questions: qs };
 }
 
-function forgotPasswordReset(username, email, a1, a2, a3) {
+function forgotPasswordReset(username, email, answers) {
+  // answers = { 1: "答案1", 2: "答案2", 3: "答案3" } — 任选一个正确即可
   var users = getUsers();
   var u = users.find(function(x){ return x.username === username });
   if (!u) return { ok:false, msg:'用户不存在' };
   if (u.email !== email) return { ok:false, msg:'邮箱不匹配' };
-  // 验证密保答案（不区分大小写）
-  if ((u.security_a1 || '').toLowerCase() !== (a1 || '').toLowerCase()) return { ok:false, msg:'密保答案1错误' };
-  if ((u.security_a2 || '').toLowerCase() !== (a2 || '').toLowerCase()) return { ok:false, msg:'密保答案2错误' };
-  if ((u.security_a3 || '').toLowerCase() !== (a3 || '').toLowerCase()) return { ok:false, msg:'密保答案3错误' };
+  // 验证：任意一个答案匹配即通过
+  var anyCorrect = false;
+  var answersProvided = [];
+  for (var k in answers) {
+    if (answers.hasOwnProperty(k) && answers[k]) {
+      answersProvided.push(parseInt(k));
+      var expected = u['security_a' + k] || '';
+      if (expected.toLowerCase() === answers[k].toLowerCase()) {
+        anyCorrect = true;
+      }
+    }
+  }
+  if (!anyCorrect) return { ok:false, msg:'密保答案不正确，请核对后重试' };
   // 验证通过，生成新密码
   var newPw = genRandPw();
   u.password = newPw;
