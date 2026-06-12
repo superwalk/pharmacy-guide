@@ -264,15 +264,19 @@ function showBrowseStats() {
 // ═══ 注册新账号 ═══
 function showRegisterModal(){
   var qOpts = SECURITY_QUESTIONS.map(function(q, i){ return '<option value="'+i+'">'+q+'</option>'; }).join('');
+  // 三个下拉默认选中不同的选项（0,1,2）
+  var q1 = qOpts.replace('<option value="0"', '<option value="0" selected');
+  var q2 = qOpts.replace('<option value="1"', '<option value="1" selected');
+  var q3 = qOpts.replace('<option value="2"', '<option value="2" selected');
   var step1HTML =
     '<div style="display:flex;flex-direction:column;gap:8px">'+
     '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">📝 填写注册信息</div>'+
     '<input id="reg-username" placeholder="用户名（至少5个字符）" style="width:100%">'+
     '<input id="reg-email" placeholder="邮箱地址" type="email" style="width:100%">'+
     '<div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;font-size:13px;color:var(--text-light)">🔐 设置密保问题（用于找回密码，至少填写一个）</div>'+
-    '<div style="display:flex;gap:4px"><select id="reg-sq1" style="flex:1">'+qOpts+'</select><input id="reg-sa1" placeholder="答案1（选填）" style="width:40%"></div>'+
-    '<div style="display:flex;gap:4px"><select id="reg-sq2" style="flex:1">'+qOpts+'</select><input id="reg-sa2" placeholder="答案2（选填）" style="width:40%"></div>'+
-    '<div style="display:flex;gap:4px"><select id="reg-sq3" style="flex:1">'+qOpts+'</select><input id="reg-sa3" placeholder="答案3（选填）" style="width:40%"></div>'+
+    '<div style="display:flex;gap:4px"><select id="reg-sq1" style="flex:1">'+q1+'</select><input id="reg-sa1" placeholder="答案1（选填）" style="width:40%"></div>'+
+    '<div style="display:flex;gap:4px"><select id="reg-sq2" style="flex:1">'+q2+'</select><input id="reg-sa2" placeholder="答案2（选填）" style="width:40%"></div>'+
+    '<div style="display:flex;gap:4px"><select id="reg-sq3" style="flex:1">'+q3+'</select><input id="reg-sa3" placeholder="答案3（选填）" style="width:40%"></div>'+
     '</div>';
   showModal('📝 注册新账号', step1HTML, [{label:'取消'},{label:'注册',primary:true,onClick:function(){
     var uname = document.getElementById('reg-username').value.trim();
@@ -767,14 +771,18 @@ function renderFavorites() {
       if (id.indexOf('calc-')===0) { var cid=id.slice(5); var ct=findCalcTool(cid); if(ct) favItems.push({id:id,type:'calc',name:ct.name,cat:'🧮 '+ct.cat}); }
     });
   }
-  if (kw) favItems = favItems.filter(function(i){return i.name.toLowerCase().includes(kw)||i.cat.includes(kw);});
+  if (kw) favItems = favItems.filter(function(i){return i.name.toLowerCase().includes(kw)||i.cat.includes(kw)||genPy(i.name).toLowerCase().includes(kw)||genPy(i.cat).toLowerCase().includes(kw);});
   var favHtml = favItems.length === 0
     ? '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px">暂无收藏</div>'
-    : favItems.map(function(i){ return '<div class="list-card" data-id="'+i.id+'" data-type="'+i.type+'"><div class="icon-box">'+(i.type==='drug'?'💊':i.type==='guide'?'📋':'🧮')+'</div><div class="info"><div class="name">'+highlightKw(i.name, kw)+'</div><div class="desc">'+highlightKw(i.cat, kw)+'</div></div></div>'; }).join('');
+    : favItems.map(function(i){
+      var isPy = kw && genPy(i.name).toLowerCase().includes(kw) && !i.name.toLowerCase().includes(kw);
+      var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
+      return '<div class="list-card" data-id="'+i.id+'" data-type="'+i.type+'"><div class="icon-box">'+(i.type==='drug'?'💊':i.type==='guide'?'📋':'🧮')+'</div><div class="info"><div class="name">'+highlightKw(i.name, kw)+pyTag+'</div><div class="desc">'+highlightKw(i.cat, kw)+'</div></div></div>';
+    }).join('');
   // 备注部分
   var notes = getNotes();
   var noteEntries = Object.entries(notes).filter(function(e){return e[1];});
-  if (kw) noteEntries = noteEntries.filter(function(e){var c=findContentById(e[0]); return c && (c.name.toLowerCase().includes(kw)||e[1].toLowerCase().includes(kw));});
+  if (kw) noteEntries = noteEntries.filter(function(e){var c=findContentById(e[0]); return c && (c.name.toLowerCase().includes(kw)||e[1].toLowerCase().includes(kw)||genPy(c.name).toLowerCase().includes(kw));});
   var noteHtml = '<div id="fav-notes-section">';
   if (noteEntries.length === 0) {
     noteHtml += '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px">暂无备注</div>';
