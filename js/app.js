@@ -42,21 +42,25 @@ function fallbackLoadDetail(type, id, cb) {
     if(cb) cb(null);
   });
 }
-// Supabase 数据同步
+// Supabase 数据同步（带安全保护，CDN 被拦截也不崩溃）
 function trySync(table, data) {
-  if (typeof _supabase === 'undefined' || !_supabase) return;
-  // 收藏/备注 → 改用 user_sync_data 表（用 username 替代 user_id uuid，确保能正确同步）
-  if (table === 'favorites' || table === 'notes') {
-    _supabase.from('user_sync_data').upsert({
-      username: data.username,
-      data_type: table,
-      content_id: data.content_id,
-      data_value: data.list || data.note || data.data || '',
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'username,data_type,content_id' }).catch(function(e){});
-    return;
-  }
-  _supabase.from(table).upsert(data, { onConflict: 'id' }).catch(function(e){});
+  try {
+    if (typeof _supabase === 'undefined' || !_supabase || typeof _supabase.from !== 'function') return;
+    // 收藏/备注 → 改用 user_sync_data 表（用 username 替代 user_id uuid，确保能正确同步）
+    if (table === 'favorites' || table === 'notes') {
+      var r = _supabase.from('user_sync_data').upsert({
+        username: data.username,
+        data_type: table,
+        content_id: data.content_id,
+        data_value: data.list || data.note || data.data || '',
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'username,data_type,content_id' });
+      if (r && typeof r.catch === 'function') r.catch(function(e){});
+      return;
+    }
+    var r2 = _supabase.from(table).upsert(data, { onConflict: 'id' });
+    if (r2 && typeof r2.catch === 'function') r2.catch(function(e){});
+  } catch(e) {}
 }
 function loadDrugDetail(id, cb) { _loadDetail('drugs', id, cb); }
 function loadDiseaseDetail(id, cb) { _loadDetail('diseases', id, cb); }
@@ -151,7 +155,7 @@ function addRecent(id, type) {
   r.unshift({id:id,type:type}); if(r.length>15)r.pop(); 
   localStorage.setItem(recentKey(),JSON.stringify(r));
   // 同步浏览记录到 Supabase
-  if (typeof _supabase !== 'undefined' && _supabase && _online && currentUser) {
+  try { if (typeof _supabase !== 'undefined' && _supabase && _online && currentUser && typeof _supabase.from === 'function') {
     _supabase.from('recent_views').upsert({
       id: currentUser.username + '_' + id,
       username: currentUser.username,
@@ -159,7 +163,7 @@ function addRecent(id, type) {
       content_type: type,
       updated_at: new Date().toISOString()
     }, { onConflict: 'id' }).catch(function(){});
-  }
+  } } catch(e){}
   // 同步记录浏览统计
   recordView(id, type);
 }
@@ -260,14 +264,15 @@ function recordLogin(username) {
       stats.push({date: today, username: username});
       localStorage.setItem('login_stats', JSON.stringify(stats));
       // 同步到 Supabase
-      if (typeof _supabase !== 'undefined' && _supabase && _online) {
-        _supabase.from('login_stats').upsert({
+      try { if (typeof _supabase !== 'undefined' && _supabase && _online && typeof _supabase.from === 'function') {
+        var r = _supabase.from('login_stats').upsert({
           id: username + '_' + today,
           username: username,
           login_date: today,
           created_at: new Date().toISOString()
-        }, { onConflict: 'id' }).catch(function(){});
-      }
+        }, { onConflict: 'id' });
+        if (r && typeof r.catch === 'function') r.catch(function(){});
+      } } catch(e){}
     }
   } catch(e) {}
 }
@@ -284,18 +289,19 @@ function recordView(id, type) {
     }
     localStorage.setItem('view_stats', JSON.stringify(views));
     // 同步到 Supabase
-    if (typeof _supabase !== 'undefined' && _supabase && _online) {
+    try { if (typeof _supabase !== 'undefined' && _supabase && _online && typeof _supabase.from === 'function') {
       var found = views.find(function(v){return v.id===id && v.type===type;});
       if (found) {
-        _supabase.from('view_stats').upsert({
+        var r = _supabase.from('view_stats').upsert({
           id: type + '_' + id,
           content_id: id,
           content_type: type,
           content_name: name,
           view_count: found.count || 1
-        }, { onConflict: 'id' }).catch(function(){});
+        }, { onConflict: 'id' });
+        if (r && typeof r.catch === 'function') r.catch(function(){});
       }
-    }
+    } } catch(e){}
   } catch(e) {}
 }
 // 渲染浏览统计
