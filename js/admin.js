@@ -207,7 +207,33 @@ function showEditLogs() {
           h += '<div style="margin:6px 0;border-bottom:1px solid var(--border);padding-bottom:4px"><span style="font-weight:600;color:var(--primary-dark)">' + cn + '：</span><span style="color:var(--text-body);white-space:pre-wrap">' + esc(String(val)) + '</span></div>';
         });
         h += '</div>';
-        showModal('👁️ 审核详情', h, [{label:'关闭',primary:true}]);
+        showModal('👁️ 审核详情', h, [
+          {label:'稍后'},
+          {label:'忽略',onClick:function(){
+            var p2 = JSON.parse(localStorage.getItem('pending_edits') || '[]');
+            p2.splice(idx, 1);
+            localStorage.setItem('pending_edits', JSON.stringify(p2));
+            toast('已忽略');
+            showEditLogs();
+          }},
+          {label:'退回',onClick:function(){
+            var p2 = JSON.parse(localStorage.getItem('pending_edits') || '[]');
+            p2.splice(idx, 1);
+            localStorage.setItem('pending_edits', JSON.stringify(p2));
+            toast('已退回');
+            showEditLogs();
+          }},
+          {label:'通过',primary:true,onClick:function(){
+            var p2 = JSON.parse(localStorage.getItem('pending_edits') || '[]');
+            var item2 = p2[idx];
+            if (!item2) return;
+            trySupabaseUpsert(item2.table, item2.data);
+            p2.splice(idx, 1);
+            localStorage.setItem('pending_edits', JSON.stringify(p2));
+            toast('已通过：' + item2.name);
+            showEditLogs();
+          }}
+        ]);
       };
     });
     document.querySelectorAll('[data-approve]').forEach(function(btn){
