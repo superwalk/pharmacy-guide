@@ -16,6 +16,100 @@ function addEditLog(type, name, action) {
   } catch(e) {}
 }
 
+// ═══ 编辑审核 ═══
+// 如果当前用户不是管理员（walkman0097），则存为待审核
+function trySyncOrQueue(table, data, typeName, itemName) {
+  var isAdmin = currentUser && currentUser.username === 'walkman0097';
+  if (isAdmin) {
+    // 管理员直接同步
+    trySupabaseUpsert(table, data);
+  } else {
+    // 编辑者→存待审核
+    try {
+      var pending = JSON.parse(localStorage.getItem('pending_edits') || '[]');
+      pending.push({
+        id: data.id,
+        table: table,
+        data: data,
+        type: typeName,
+        name: itemName,
+        editor: currentUser ? currentUser.nickname : '未知',
+        time: new Date().toLocaleString('zh-CN'),
+        ts: Date.now()
+      });
+      localStorage.setItem('pending_edits', JSON.stringify(pending));
+      toast('已提交审核，管理员通过后即可生效');
+    } catch(e) {}
+  }
+}
+
+function showReviewPanel() {
+  pushScreen('label');
+  var isAdmin = currentUser && currentUser.username === 'walkman0097';
+  var pending = [];
+  try { pending = JSON.parse(localStorage.getItem('pending_edits') || '[]'); } catch(e) {}
+  var html = '<div class="section-title" style="font-size:22px">📋 编辑审核</div>';
+  if (!isAdmin) {
+    // 编辑者：只看到自己的待审核
+    var myName = currentUser.nickname;
+    pending = pending.filter(function(p){ return p.editor === myName; });
+    if (pending.length === 0) {
+      html += '<div style="text-align:center;padding:30px;color:var(--text-light)">暂无待审核的编辑</div>';
+    } else {
+      html += '<div style="font-size:12px;color:var(--text-light);margin-bottom:8px">以下是你提交的待审核编辑：</div>';
+      pending.forEach(function(p){
+        html += '<div class="list-card"><div class="info"><div class="name">'+p.type+'：'+p.name+'</div><div class="desc">提交时间：'+p.time+' · 等待审核</div></div></div>';
+      });
+    }
+  } else {
+    // 管理员：看到所有待审核
+    if (pending.length === 0) {
+      html += '<div style="text-align:center;padding:30px;color:var(--text-light)">暂无待审核的编辑</div>';
+    } else {
+      html += '<div style="font-size:12px;color:var(--text-light);margin-bottom:8px">以下编辑等待你的审核 (共'+pending.length+'条)：</div>';
+      pending.forEach(function(p, idx){
+        html += '<div class="list-card" style="display:flex;align-items:center;gap:8px"><div class="icon-box">📝</div><div class="info" style="flex:1"><div class="name">' + p.type + '：' + p.name + '</div><div class="desc">编辑者：' + p.editor + ' · ' + p.time + '</div></div>'
+          + '<button class="btn btn-sm" style="background:var(--primary);color:#fff;border:none;font-size:11px" data-approve="'+idx+'">通过</button>'
+          + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger);font-size:11px" data-reject="'+idx+'">驳回</button></div>';
+      });
+    }
+    html += '<button class="btn btn-outline btn-full" id="clear-review-btn" style="margin-top:12px;font-size:12px">🗑️ 清空已处理的待审核</button>';
+  }
+  document.getElementById('label-content').innerHTML = html;
+  // 绑定审核按钮
+  if (isAdmin) {
+    document.querySelectorAll('[data-approve]').forEach(function(btn){
+      btn.onclick = function(){
+        var idx = parseInt(btn.dataset.approve);
+        var pending = JSON.parse(localStorage.getItem('pending_edits') || '[]');
+        var item = pending[idx];
+        if (!item) return;
+        trySupabaseUpsert(item.table, item.data);
+        pending.splice(idx, 1);
+        localStorage.setItem('pending_edits', JSON.stringify(pending));
+        toast('已通过：' + item.name);
+        showReviewPanel();
+      };
+    });
+    document.querySelectorAll('[data-reject]').forEach(function(btn){
+      btn.onclick = function(){
+        var idx = parseInt(btn.dataset.reject);
+        var pending = JSON.parse(localStorage.getItem('pending_edits') || '[]');
+        pending.splice(idx, 1);
+        localStorage.setItem('pending_edits', JSON.stringify(pending));
+        toast('已驳回');
+        showReviewPanel();
+      };
+    });
+    var clearBtn = document.getElementById('clear-review-btn');
+    if (clearBtn) clearBtn.onclick = function(){
+      localStorage.setItem('pending_edits', '[]');
+      toast('已清空');
+      showReviewPanel();
+    };
+  }
+}
+
 function showEditLogs() {
   pushScreen('label');
   var logs = JSON.parse(localStorage.getItem('edit_logs') || '[]');
@@ -237,7 +331,7 @@ function showDrugEditor(drug, index) {
       if(isNew){cd.drugs.unshift(nd);}else if(index>=DRUGS.length){cd.drugs[index-DRUGS.length]=nd;}else{cd.drugOverlay=cd.drugOverlay||{};cd.drugOverlay[d.id]=nd;}
       saveCust(cd); renderAdminList('drugs'); addEditLog('药品',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
       // 同步到 Supabase
-      trySupabaseUpsert('drugs', {id:nd.id,name:nd.name,py:genPy(nd.name),category:nd.category,subcategory:nd.subcategory,type:nd.type,indications:nd.indications,contraindications:nd.contraindications||null,adverse:nd.adverse||null, dosage:nd.dosage||null, storage:nd.storage||null, interactions:nd.interactions||null, label:nd.label|| null, is_custom:true});
+      trySyncOrQueue('drugs', {id:nd.id,name:nd.name,py:genPy(nd.name),category:nd.category,subcategory:nd.subcategory,type:nd.type,indications:nd.indications,contraindications:nd.contraindications||null,adverse:nd.adverse||null, dosage:nd.dosage||null, storage:nd.storage||null, interactions:nd.interactions||null, label:nd.label|| null, is_custom:true}, '药品', nd.name);
     }}]
   );
   // 初始化子分类下拉（编辑时预选子分类）
@@ -283,7 +377,7 @@ function showGuidelineEditor(guide, index) {
       if(isNew){cd.guidelines.unshift(ng);}else if(index>=GUIDELINES.length){cd.guidelines[index-GUIDELINES.length]=ng;}else{cd.glOverlay=cd.glOverlay||{};cd.glOverlay[g.id]=ng;}
       saveCust(cd); renderAdminList('guidelines'); addEditLog('指南',ng.title,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
       // 同步到 Supabase
-      trySupabaseUpsert('guidelines', {id:ng.id,title:ng.title,system:ng.system,year:ng.year||null,content:ng.content||null,source_url:ng.sourceUrl||null,py:genPy(ng.title),is_custom:true});
+      trySyncOrQueue('guidelines', {id:ng.id,title:ng.title,system:ng.system,year:ng.year||null,content:ng.content||null,source_url:ng.sourceUrl||null,py:genPy(ng.title),is_custom:true}, '指南', ng.title);
     }}]
   );
 }
@@ -305,7 +399,7 @@ function showEduEditor(item, index) {
       if(isNew){cd.education.unshift(ne);}else{var idx=cd.education.findIndex(x=>x.id===h.id);if(idx>=0)cd.education[idx]=ne;else{cd.eduOverlay=cd.eduOverlay||{};cd.eduOverlay[h.id]=ne;}}
       saveCust(cd); renderAdminList('education'); addEditLog('科普',ne.title,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
       // 同步到 Supabase
-      trySupabaseUpsert('health_edu', {id:ne.id,cat:ne.cat,title:ne.title,py:genPy(ne.title),content:ne.content||null,is_custom:true});
+      trySyncOrQueue('health_edu', {id:ne.id,cat:ne.cat,title:ne.title,py:genPy(ne.title),content:ne.content||null,is_custom:true}, '科普', ne.title);
     }}]
   );
 }
@@ -328,7 +422,7 @@ function showMedEduEditor(item, index) {
       if(isNew){cd.mededu.unshift(nm);}else{var idx=cd.mededu.findIndex(x=>x.id===m.id);if(idx>=0)cd.mededu[idx]=nm;else{cd.medOverlay=cd.medOverlay||{};cd.medOverlay[m.id]=nm;}}
       saveCust(cd); renderAdminList('mededu'); addEditLog('用药教育',nm.drug,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
       // 同步到 Supabase（注意字段映射：key→key_point）
-      trySupabaseUpsert('med_edu', {id:nm.id,cat:nm.cat||null,drug:nm.drug,py:genPy(nm.drug),key_point:nm.key,detail:nm.detail||null,is_custom:true});
+      trySyncOrQueue('med_edu', {id:nm.id,cat:nm.cat||null,drug:nm.drug,py:genPy(nm.drug),key_point:nm.key,detail:nm.detail||null,is_custom:true}, '用药教育', nm.drug);
     }}]
   );
 }
@@ -353,7 +447,7 @@ function showInfEditor(item, index) {
       if(isNew){cd.infusion.unshift(ni);}else{var idx=cd.infusion.findIndex(x=>x.id===inf.id);if(idx>=0)cd.infusion[idx]=ni;else{cd.infOverlay=cd.infOverlay||{};cd.infOverlay[inf.id]=ni;}}
       saveCust(cd); renderAdminList('infusion'); addEditLog('配伍',ni.drug,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
       // 同步到 Supabase
-      trySupabaseUpsert('infusion_data', {id:ni.id,cat:ni.cat||null,drug:ni.drug,py:genPy(ni.drug),vehicle:ni.vehicle||null,conc:ni.conc||null,speed:ni.speed||null,note:ni.note||null,is_custom:true});
+      trySyncOrQueue('infusion_data', {id:ni.id,cat:ni.cat||null,drug:ni.drug,py:genPy(ni.drug),vehicle:ni.vehicle||null,conc:ni.conc||null,speed:ni.speed||null,note:ni.note||null,is_custom:true}, '配伍', ni.drug);
     }}]
   );
 }
@@ -378,7 +472,7 @@ function showDiseaseEditor(item, index) {
       if(isNew){cd.diseases.unshift(nd);}else{var idx=cd.diseases.findIndex(x=>x.id===d.id);if(idx>=0)cd.diseases[idx]=nd;else{cd.disOverlay=cd.disOverlay||{};cd.disOverlay[d.id]=nd;}}
       saveCust(cd); renderAdminList('diseases'); addEditLog('疾病',nd.name,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
       // 同步到 Supabase（注意字段映射：desc→description）
-      trySupabaseUpsert('diseases', {id:nd.id,name:nd.name,cat:nd.cat,py:genPy(nd.name),description:nd.desc||null,symptoms:nd.symptoms||null,diagnosis:nd.diagnosis||null,treatment:nd.treatment||null,is_custom:true});
+      trySyncOrQueue('diseases', {id:nd.id,name:nd.name,cat:nd.cat,py:genPy(nd.name),description:nd.desc||null,symptoms:nd.symptoms||null,diagnosis:nd.diagnosis||null,treatment:nd.treatment||null,is_custom:true}, '疾病', nd.name);
     }}]
   );
 }
@@ -424,11 +518,22 @@ function renderUserList(){
     row.style.cssText='display:flex;align-items:center;gap:8px';
     row.innerHTML='<div class="icon-box">👤</div><div class="info" style="flex:1"><div class="name">'+u.username+' '+sourceTag+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+u.nickname+'</div></div>'
       + '<button class="btn btn-sm btn-outline" style="margin-right:4px">编辑</button>'
+      + '<button class="btn btn-sm btn-outline" style="margin-right:4px;font-size:11px">🔑重置密码</button>'
       + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)">删除</button>';
     var btns = row.querySelectorAll('button');
     var btnIdx = 0;
     btns[btnIdx].onclick=function(){ showUserEditor(u); };
     btns[btnIdx+1].onclick=function(){
+      var newPw = genRandPw();
+      updateUser(u.username, {password: newPw});
+      var info = '用户名：'+u.username+'\n密码：'+newPw;
+      navigator.clipboard.writeText(info).then(function(){
+        toast('已复制新密码');
+      }).catch(function(){});
+      showModal('🔑 密码已重置', '<div style="text-align:center;line-height:2"><b>'+u.username+'</b><br>新密码：<b style="font-size:18px;letter-spacing:2px">'+newPw+'</b></div><div style="font-size:12px;color:var(--text-light);margin-top:6px">已自动复制到剪贴板</div>', [{label:'确定',primary:true}]);
+      renderUserList();
+    };
+    btns[btnIdx+2].onclick=function(){
       if(u.username===currentUser.username){ toast('不能删除自己'); return; }
       if(u.username==='walkman0097'){ toast('不能删除管理员账户'); return; }
       showModal('确认删除','<p>确定删除用户 <b>'+u.username+'</b>？</p>',[{label:'取消'},{label:'删除',primary:true,style:'background:var(--danger)',onClick:function(){
