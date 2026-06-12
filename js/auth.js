@@ -2,6 +2,8 @@
 let currentUser = null;
 var _sbUsersLoaded = false;
 var _sbUsers = [];
+var _online = typeof _online !== 'undefined' ? _online : true;
+var _supabase = typeof _supabase !== 'undefined' ? _supabase : null;
 
 // 从 users.json 同步过来的核心数据（离线降级用）
 const USERS = [
@@ -188,8 +190,9 @@ function findUser(username) {
 }
 
 function getUsers() {
+  var saved = null;
   try {
-    var saved = localStorage.getItem('custom_users');
+    saved = localStorage.getItem('custom_users');
     if (saved) {
       var users = JSON.parse(saved);
       // 检查是否需要更新默认昵称（如 药师→用户）
@@ -210,7 +213,7 @@ function getUsers() {
       if (needSave) localStorage.setItem('custom_users', JSON.stringify(users));
       return users;
     }
-  } catch(e) {}
+  } catch(e) { console.warn('getUsers 解析失败:', e); if (saved) { try { return JSON.parse(saved); } catch(e2) {} } }
   localStorage.setItem('custom_users', JSON.stringify(USERS));
   return USERS.slice();
 }
