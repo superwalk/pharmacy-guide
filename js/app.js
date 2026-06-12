@@ -534,6 +534,9 @@ document.addEventListener('touchend',e=>{
 // ═══ 首页 ───
 function renderHome() {
   // 绑定首页站内信按钮
+  // 首页站内信按钮
+  var msgHome = document.getElementById('msg-home-btn');
+  if (msgHome) { msgHome.onclick = function(){ showMessages(); }; updateMsgBadge(); }
   document.getElementById('home-grid').querySelectorAll('.entry-card').forEach(card=>{
     card.onclick=()=>{
       const nav=card.dataset.nav;
@@ -1526,9 +1529,7 @@ function initProfileMenus() {
   // 编辑记录与审核（函数在 admin.js 中定义）
   var reviewMenu=document.getElementById('menu-review');
   if(reviewMenu) reviewMenu.onclick=()=>{ showEditLogs(); };
-  // 站内信菜单
-  var msgMenu=document.getElementById('menu-messages');
-  if(msgMenu) msgMenu.onclick=()=>{ showMessages(); };
+  // 站内信入口在首页状态栏
   // 数据导出已合并到更新与帮助
   document.querySelectorAll('.menu-item[data-nav]').forEach(m=>{ m.onclick=()=>showScreen(m.dataset.nav); });
 }
@@ -1714,13 +1715,22 @@ function doInfusionQuery() {
   });
   container.innerHTML = html;
   container.querySelectorAll('.guide-item').forEach(function(item){ item.onclick=function(){openInfusion(item.dataset.iid);}; });
-  // 绑定收藏按钮
+  // 绑定收藏按钮 - 改用 touchstart+mousedown 确保移动端生效
   container.querySelectorAll('.inf-fav').forEach(function(btn){
-    btn.onclick = function(e){ e.stopPropagation();
-      var id = btn.dataset.iid;
-      toggleFav(id);
-      doInfusionQuery(); // 刷新结果
-    };
+    function doToggle(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var id = btn.getAttribute('data-iid');
+      if (!id) return;
+      var favs = getFavs();
+      if (favs.indexOf(id) >= 0) favs = favs.filter(function(x){return x!==id;});
+      else favs.push(id);
+      localStorage.setItem(favKey(), JSON.stringify(favs));
+      trySync('favorites', { username: currentUser ? currentUser.username : '', content_id: id, list: JSON.stringify(favs) });
+      doInfusionQuery();
+    }
+    btn.addEventListener('mousedown', doToggle);
+    btn.addEventListener('touchstart', doToggle, {passive:false});
   });
   // 保存到最近查询
   var input = document.getElementById('inf-query-input');
