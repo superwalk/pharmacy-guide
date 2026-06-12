@@ -13,6 +13,9 @@ alter table profiles add column if not exists security_q1 text;
 alter table profiles add column if not exists security_a1 text;
 alter table profiles add column if not exists security_q2 text;
 alter table profiles add column if not exists security_a2 text;
+alter table profiles add column if not exists security_q3 text;
+alter table profiles add column if not exists security_a3 text;
+alter table profiles add column if not exists email text;
 alter table profiles add column if not exists pw_reset_count integer not null default 0;
 alter table profiles add column if not exists pw_reset_date date;
 
