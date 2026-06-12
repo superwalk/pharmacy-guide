@@ -71,7 +71,8 @@ function showReviewPanel() {
       pending.forEach(function(p, idx){
         html += '<div class="list-card" style="display:flex;align-items:center;gap:8px"><div class="icon-box">📝</div><div class="info" style="flex:1"><div class="name">' + p.type + '：' + p.name + '</div><div class="desc">编辑者：' + p.editor + ' · ' + p.time + '</div></div>'
           + '<button class="btn btn-sm" style="background:var(--primary);color:#fff;border:none;font-size:11px" data-approve="'+idx+'">通过</button>'
-          + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger);font-size:11px" data-reject="'+idx+'">退回</button></div>';
+          + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger);font-size:11px" data-reject="'+idx+'">退回</button>'
+          + '<button class="btn btn-sm" style="color:var(--text-light);border-color:var(--text-light);font-size:11px" data-ignore="'+idx+'">忽略</button></div>';
       });
     }
     html += '<button class="btn btn-outline btn-full" id="clear-review-btn" style="margin-top:12px;font-size:12px">🗑️ 清空已处理的待审核</button>';
@@ -99,6 +100,16 @@ function showReviewPanel() {
         pending.splice(idx, 1);
         localStorage.setItem('pending_edits', JSON.stringify(pending));
         toast('已退回');
+        showReviewPanel();
+      };
+    });
+    document.querySelectorAll('[data-ignore]').forEach(function(btn){
+      btn.onclick = function(e){ e.stopPropagation();
+        var idx = parseInt(btn.dataset.ignore);
+        var pending = JSON.parse(localStorage.getItem('pending_edits') || '[]');
+        pending.splice(idx, 1);
+        localStorage.setItem('pending_edits', JSON.stringify(pending));
+        toast('已忽略');
         showReviewPanel();
       };
     });
@@ -143,7 +154,8 @@ function showEditLogs() {
         html += '<div class="list-card" style="display:flex;align-items:center;gap:8px"><div class="icon-box">📝</div><div class="info" style="flex:1"><div class="name">' + p.type + '：' + p.name + '</div><div class="desc">编辑者：' + p.editor + ' · ' + p.time + '</div></div>'
           + '<button class="btn btn-sm btn-outline" style="font-size:11px" data-review="'+idx+'">👁️</button>'
           + '<button class="btn btn-sm" style="background:var(--primary);color:#fff;border:none;font-size:11px" data-approve="'+idx+'">通过</button>'
-          + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger);font-size:11px" data-reject="'+idx+'">退回</button></div>';
+          + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger);font-size:11px" data-reject="'+idx+'">退回</button>'
+          + '<button class="btn btn-sm" style="color:var(--text-light);border-color:var(--text-light);font-size:11px" data-ignore="'+idx+'">忽略</button></div>';
       });
       html += '<button class="btn btn-outline btn-sm" id="clear-review-btn" style="margin-top:4px;font-size:11px">🗑️ 清空已处理</button></div></div>';
     }
@@ -216,6 +228,16 @@ function showEditLogs() {
         pending.splice(idx, 1);
         localStorage.setItem('pending_edits', JSON.stringify(pending));
         toast('已退回');
+        showEditLogs();
+      };
+    });
+    document.querySelectorAll('[data-ignore]').forEach(function(btn){
+      btn.onclick = function(e){ e.stopPropagation();
+        var idx = parseInt(btn.dataset.ignore);
+        var pending = JSON.parse(localStorage.getItem('pending_edits') || '[]');
+        pending.splice(idx, 1);
+        localStorage.setItem('pending_edits', JSON.stringify(pending));
+        toast('已忽略');
         showEditLogs();
       };
     });
