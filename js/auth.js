@@ -326,9 +326,9 @@ function showFindUsername() {
     '<p style="font-size:13px;color:var(--text-light);text-align:center;margin-bottom:8px">输入你的昵称即可查看到对应的用户名</p>'
     + '<input id="find-name-input" placeholder="输入你的昵称" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:14px">'
     + '<div id="find-name-result" style="margin-top:8px;text-align:center;font-size:14px"></div>',
-    [{label:'取消'},{label:'查找',primary:true,onClick:function(){
+    [{label:'知道啦'},{label:'查找',primary:true,onClick:function(){
       var nickname = document.getElementById('find-name-input').value.trim();
-      if (!nickname) { toast('请输入昵称'); return; }
+      if (!nickname) { toast('请输入昵称'); return false; }
       // 先从 getUsers() 查，再从 user_<用户名> localStorage 查
       var users = getUsers();
       var match = users.find(function(u){ return u.nickname === nickname; });
@@ -352,6 +352,7 @@ function showFindUsername() {
       } else {
         resultEl.innerHTML = '<span style="color:var(--danger)">未找到匹配的用户名，请确认昵称是否正确</span>';
       }
+      return false;
     }}]
   );
 }
