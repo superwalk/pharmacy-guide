@@ -264,15 +264,15 @@ function renderKnowledge() {
   if(activeTab==='drug'){
     let cats=DRUG_CATEGORIES;
     if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw))||genPy(c.name).toLowerCase().includes(kw)||c.subs.some(s=>genPy(s).toLowerCase().includes(kw)));
-    kb.innerHTML=cats.map((c,i)=>`
-      <div class="cat-card">
+    kb.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+cats.map((c,i)=>`
+      <div class="cat-card" style="padding:12px;min-height:0">
         <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${i})" data-cat-expanded="false">
-          <span class="cat-name">${kw ? highlightKw(c.name, kw) : c.name}</span>
-          <span class="cat-subs-count" style="font-size:12px;color:var(--text-light);margin-right:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▶</span></span>
+          <span class="cat-name" style="font-size:14px">${kw ? highlightKw(c.name, kw) : c.name}</span>
+          <span class="cat-subs-count" style="font-size:11px;color:var(--text-light);margin-left:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▶</span></span>
         </div>
-        <div class="cat-items" id="cat-group-${i}" style="display:none;padding:4px 12px 10px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();showDrugList('sub','${s}')">${kw ? highlightKw(s, kw) : s}</span>`).join('')}</div>
+        <div class="cat-items" id="cat-group-${i}" style="display:none;padding:6px 0 0;gap:4px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();showDrugList('sub','${s}')">${kw ? highlightKw(s, kw) : s}</span>`).join('')}</div>
       </div>
-    `).join('');
+    `).join('')+'</div>';
     if(kw){
       const dmatches=allDrugs().filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase().includes(kw)||genPy(d.name).toLowerCase().includes(kw));
       if(dmatches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配药品 (${dmatches.length})</div>`+dmatches.map(d=>`<div class="list-card" data-drug="${d.id}" style="cursor:pointer"><div class="icon-box">💊</div><div class="info"><div class="name">${highlightKw(d.name, kw)}</div><div class="desc">${highlightKw(d.category, kw)} · ${(d.indications||'').slice(0,30)}…</div></div></div>`).join('');
@@ -281,7 +281,7 @@ function renderKnowledge() {
   } else {
     let cats= DISEASE_CATEGORIES;
     if(kw) cats=cats.filter(c=>c.name.toLowerCase().includes(kw)||c.subs.some(s=>s.toLowerCase().includes(kw))||genPy(c.name).toLowerCase().includes(kw)||c.subs.some(s=>genPy(s).toLowerCase().includes(kw)));
-    kb.innerHTML=cats.map((c,i)=>`\n      <div class="cat-card">\n        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${100+i})" data-cat-expanded="false">\n          <span class="cat-name">${kw ? highlightKw(c.name, kw) : c.name}</span>\n          <span style="font-size:12px;color:var(--text-light);margin-right:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▶</span></span>\n        </div>\n        <div class="cat-items" id="cat-group-${100+i}" style="display:none;padding:4px 12px 10px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();openDisease('${s}')">${kw ? highlightKw(s, kw) : s}</span>`).join('')}</div>\n      </div>\n    `).join('');
+    kb.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+cats.map((c,i)=>`\n      <div class="cat-card" style="padding:12px;min-height:0">\n        <div class="cat-header" style="cursor:pointer" onclick="toggleCatGroup(this,${100+i})" data-cat-expanded="false">\n          <span class="cat-name" style="font-size:14px">${kw ? highlightKw(c.name, kw) : c.name}</span>\n          <span style="font-size:11px;color:var(--text-light);margin-left:4px">${c.subs.length} 项 <span class="cat-arrow" style="display:inline-block;transition:transform .2s">▶</span></span>\n        </div>\n        <div class="cat-items" id="cat-group-${100+i}" style="display:none;padding:6px 0 0;gap:4px">${c.subs.map(s=>`<span class="cat-sub" onclick="event.stopPropagation();openDisease('${s}')">${kw ? highlightKw(s, kw) : s}</span>`).join('')}</div>\n      </div>\n    `).join('')+'</div>';
     if(kw){
       const matches=DISEASES.filter(d=>d.name.toLowerCase().includes(kw)||(d.py||'').toLowerCase().includes(kw)||genPy(d.name).toLowerCase().includes(kw));
       if(matches.length>0) kb.innerHTML+=`<div class="section-title" style="margin-top:8px">🔍 匹配疾病</div>`+matches.map(d=>`<div class="list-card" onclick="openDisease('${d.name}')"><div class="icon-box">🦠</div><div class="info"><div class="name">${highlightKw(d.name, kw)}</div><div class="desc">${(d.desc||'').slice(0,40)}…</div></div></div>`).join('');
@@ -335,15 +335,15 @@ function renderGuidelines() {
   } else if(!kw){
     // 搜索框清空后恢复默认全部展开(折叠)状态
   }
-  gl.innerHTML=systems.map((s,i)=>`
-    <div class="cat-card" style="margin-bottom:8px">
+  gl.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+systems.map((s,i)=>`
+    <div class="cat-card" style="margin-bottom:0;padding:12px">
       <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-group="${i}" data-expanded="${kw?'true':'false'}">
-        <span class="cat-name">${s.icon} ${highlightKw(s.system, kw)}</span>
-        <span style="font-size:12px;color:var(--text-light)">${s.items.length} 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">${kw?'▼':'▶'}</span></span>
+        <span class="cat-name" style="font-size:14px">${s.icon} ${highlightKw(s.system, kw)}</span>
+        <span style="font-size:11px;color:var(--text-light)">${s.items.length} 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">${kw?'▼':'▶'}</span></span>
       </div>
-      <div class="guide-items" id="guide-group-${i}" style="display:${kw?'flex':'none'};flex-wrap:wrap;gap:6px">${s.items.map(g=>`<span class="guide-item" data-gid="${g.id}" style="display:inline-block;padding:4px 10px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;white-space:nowrap">${highlightKw(g.title, kw)} <span style="color:var(--text-light)">${g.year||''}</span></span>`).join('')}</div>
+      <div class="guide-items" id="guide-group-${i}" style="display:${kw?'flex':'none'};flex-wrap:wrap;gap:6px;margin-top:6px;padding:0">${s.items.map(g=>`<span class="guide-item" data-gid="${g.id}" style="display:inline-block;padding:4px 10px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;white-space:nowrap">${highlightKw(g.title, kw)} <span style="color:var(--text-light)">${g.year||''}</span></span>`).join('')}</div>
     </div>
-  `).join('');
+  `).join('')+'</div>';
   if(systems.length===0&&kw) gl.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">未找到匹配的指南或法规</div>';
   gl.querySelectorAll('.guide-item').forEach(item=>{ item.onclick=()=>openGuide(item.dataset.gid); });
 }
@@ -554,6 +554,31 @@ function renderCompare() {
     <div class="t-row"><div class="t-hdr">相互作用</div>${drugs.map(d=>`<div class="t-cell">${(d.interactions||'—').slice(0,40)}${d.interactions&&d.interactions.length>40?'…':''}</div>`).join('')}</div>
   </div>
   <div class="review-tip"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#0369A1" stroke-width="2"/><path d="M12 16V12" stroke="#0369A1" stroke-width="2"/><circle cx="12" cy="8" r="1" fill="#0369A1"/></svg>审方提示：${drugs.length}种药品对比，请仔细核对各药适应症及潜在相互作用，注意过敏史重叠风险。具体用药请遵医嘱。</div>`;
+  // 异步加载详情数据填充对比表
+  compareList.forEach(function(id){
+    loadDrugDetail(id, function(full){
+      if(full){
+        var d = findDrug(id);
+        if(d) Object.assign(d, full);
+        // 重新渲染对比表填充数据
+        var ct2 = document.getElementById('compare-table');
+        if(ct2 && compareList.length>=2){
+          var drugs2 = compareList.map(function(x){return findDrug(x);}).filter(Boolean);
+          if(drugs2.length>=2){
+            ct2.innerHTML=`<div class="compare-table">
+              <div class="t-row"><div class="t-hdr">分类</div>${drugs2.map(function(x){return '<div class="t-cell">'+(x.category||'—')+'</div>';}).join('')}</div>
+              <div class="t-row"><div class="t-hdr">适应症</div>${drugs2.map(function(x){return '<div class="t-cell" onclick="pushScreen(\'detail\');renderDetail(\''+x.id+'\')" style="cursor:pointer">'+(x.indications||'—')+'<br><span style="font-size:10px;color:var(--text-light)">👆 点击查看详情</span></div>';}).join('')}</div>
+              <div class="t-row"><div class="t-hdr">禁忌</div>${drugs2.map(function(x){return '<div class="t-cell" style="color:var(--danger)">'+(x.contraindications||'—')+'</div>';}).join('')}</div>
+              <div class="t-row"><div class="t-hdr">不良反应</div>${drugs2.map(function(x){return '<div class="t-cell">'+((x.adverse||'—').slice(0,40))+(x.adverse&&x.adverse.length>40?'…':'')+'</div>';}).join('')}</div>
+              <div class="t-row"><div class="t-hdr">用法用量</div>${drugs2.map(function(x){return '<div class="t-cell">'+(x.dosage||'—')+'</div>';}).join('')}</div>
+              <div class="t-row"><div class="t-hdr">储存条件</div>${drugs2.map(function(x){return '<div class="t-cell">'+(x.storage||'—')+'</div>';}).join('')}</div>
+              <div class="t-row"><div class="t-hdr">相互作用</div>${drugs2.map(function(x){return '<div class="t-cell">'+((x.interactions||'—').slice(0,40))+(x.interactions&&x.interactions.length>40?'…':'')+'</div>';}).join('')}</div>
+            </div>`;
+          }
+        }
+      }
+    });
+  });
 }
 function initCompare() {
   document.getElementById('cmp-search').oninput=function(){
@@ -757,8 +782,10 @@ function viewMyNotes() {
   const me=document.getElementById('mynotes-empty');
   if(entries.length===0){ ml.innerHTML=''; me.style.display='block'; return; }
   me.style.display='none';
-  ml.innerHTML=entries.map(([id,text])=>{ const c=findContentById(id); return c?`<div class="list-card" data-note-id="${id}" data-note-type="${c.type}"><div class="icon-box">${c.icon}</div><div class="info"><div class="name">${c.name}</div><div class="desc">${text.slice(0,40)}…</div></div></div>`:''; }).join('');
-  ml.querySelectorAll('.list-card').forEach(c=>{ c.onclick=()=>{ var id=c.dataset.noteId; var tp=c.dataset.noteType; if(tp==='drug'){ addRecent(id,'drug'); pushScreen('detail'); renderDetail(id); } else if(tp==='guide'){ openGuide(id); } else if(tp==='disease'){ var ds=DISEASES.find(function(x){return x.id===id;}); if(ds) openDisease(ds.name); } else if(tp==='edu'){ openHealthEdu(id); } else if(tp==='infusion'){ openInfusion(id); } else if(tp==='med'){ openMedEdu(id); } }; });
+  ml.innerHTML=entries.map(([id,text])=>{ const c=findContentById(id); return c?`<div class="list-card" data-note-id="${id}" data-note-type="${c.type}"><div class="icon-box">${c.icon}</div><div class="info"><div class="name">${c.name}</div><div class="desc">${text.slice(0,40)}…</div></div>${isEditor()?'<button class="btn btn-sm btn-outline note-push-btn" data-note-id="'+id+'" data-note-type="'+c.type+'" style="font-size:11px;flex-shrink:0">☁️</button>':''}</div>`:''; }).join('');
+  ml.querySelectorAll('.list-card').forEach(c=>{ c.onclick=(e)=>{ if(e.target.closest('.note-push-btn')) return;
+    var id=c.dataset.noteId; var tp=c.dataset.noteType; if(tp==='drug'){ addRecent(id,'drug'); pushScreen('detail'); renderDetail(id); } else if(tp==='guide'){ openGuide(id); } else if(tp==='disease'){ var ds=DISEASES.find(function(x){return x.id===id;}); if(ds) openDisease(ds.name); } else if(tp==='edu'){ openHealthEdu(id); } else if(tp==='infusion'){ openInfusion(id); } else if(tp==='med'){ openMedEdu(id); } }; });
+  ml.querySelectorAll('.note-push-btn').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); syncItemToGitHub({type:this.dataset.noteType,id:this.dataset.noteId}); }; });
 }
 
 // ═══ 科普教育 ─══
