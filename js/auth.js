@@ -375,6 +375,11 @@ function showFindUsername() {
           }
         } catch(e) {}
       }
+      // 最后从 Supabase 缓存查找
+      if (!match && typeof _sbUsers !== 'undefined' && _sbUsers.length > 0) {
+        var su = _sbUsers.find(function(u){ return (u.display_name || u.nickname) === nickname; });
+        if (su) match = { username: su.username, nickname: su.display_name || su.nickname };
+      }
       var resultEl = document.getElementById('find-name-result');
       if (match) {
         resultEl.innerHTML = '找到你的用户名：<b style="color:var(--primary);font-size:16px;user-select:all">' + match.username + '</b><br><span style="font-size:11px;color:var(--text-light)">点击上方用户名即可复制</span>';
