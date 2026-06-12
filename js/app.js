@@ -485,6 +485,9 @@ document.addEventListener('touchend',e=>{
 
 // ═══ 首页 ───
 function renderHome() {
+  // 绑定首页站内信按钮
+  var msgHome = document.getElementById('msg-home-btn');
+  if (msgHome) { msgHome.onclick = function(){ showMessages(); }; updateMsgBadge(); }
   document.getElementById('home-grid').querySelectorAll('.entry-card').forEach(card=>{
     card.onclick=()=>{
       const nav=card.dataset.nav;
@@ -1313,25 +1316,41 @@ function initProfileMenus() {
   document.getElementById('menu-update-help').onclick=function(){
     pushScreen('label');
     var isAdmin = currentUser.username === 'walkman0097';
-    // 使用帮助内容
-    var defaultGuide = isEditor() ? ADMIN_GUIDE : USER_GUIDE;
+    // 使用帮助 - 使用统一的USER_GUIDE
     var saved = (function(){
       try { var s = localStorage.getItem('custom_guide'); return s ? JSON.parse(s) : null; } catch(e){ return null; }
     })();
-    var guide = saved ? saved.content : defaultGuide;
-    var roleLabel = saved && saved.role === 'admin' ? '（管理员版）' : isEditor() ? '（管理员版）' : '';
+    var guide = saved ? saved.content : USER_GUIDE;
     // 更新日志内容
     var logs = getChangelog();
     var logHtml = logs.map(function(l){
       var m = l.match(/^(\d{4}-\d{2}-\d{2})\s+(.+)/);
-      if(m) return '<div style="margin:8px 0;display:flex;gap:8px;align-items:flex-start"><span style="font-size:11px;color:var(--text-light);white-space:nowrap;margin-top:2px">'+m[1]+'</span><span style="font-size:13px;line-height:1.6;color:var(--text-body)">'+m[2]+'</span></div>';
+      if(m) return '<div style="margin:6px 0;display:flex;gap:8px;align-items:flex-start"><span style="font-size:11px;color:var(--text-light);white-space:nowrap;margin-top:2px">'+m[1]+'</span><span style="font-size:13px;line-height:1.6;color:var(--text-body)">'+m[2]+'</span></div>';
       return '<div style="margin:4px 0 4px 48px;font-size:13px;color:var(--text-body)">'+l+'</div>';
     }).join('');
+    // 数据统计
+    var dbInfo = '<div style="font-size:12px;line-height:1.8;color:var(--text-light);padding:4px 0">'
+      + '💊 药品：' + (window.DRUGS ? window.DRUGS.length : '—') + ' 种 | '
+      + '🦠 疾病：' + (window.DISEASES ? window.DISEASES.length : '—') + ' 种 | '
+      + '📋 指南：' + (window.GUIDELINES ? window.GUIDELINES.length : '—') + ' 条<br>'
+      + '📖 科普：' + (window.HEALTH_EDU ? window.HEALTH_EDU.length : '—') + ' 篇 | '
+      + '🗣️ 用药教育：' + (window.MED_EDU ? window.MED_EDU.length : '—') + ' 条 | '
+      + '💉 配伍：' + (window.INFUSION_DATA ? window.INFUSION_DATA.length : '—') + ' 条'
+      + '</div>';
+    // 导出导入按钮（仅admin）
+    var exportBtns = isAdmin ? '<button class="btn btn-outline btn-sm" onclick="exportAllData()" style="margin-right:4px">📥 导出数据</button><button class="btn btn-outline btn-sm" onclick="importAllData()">📤 导入数据</button>' : '';
     document.getElementById('label-content').innerHTML = '<div class="section-title" style="font-size:22px">📖 更新与帮助</div>'
-      + '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="cursor:pointer;background:linear-gradient(135deg,#E0F2FE,#BAE6FD)" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">📋 更新日志</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></div><div class="guide-items" style="display:none"><div class="info-value" style="padding:8px 0">' + logHtml + '</div>'
-      + (isAdmin ? '<button class="btn btn-outline btn-sm" id="edit-changelog-btn" style="margin-bottom:8px">✏️ 编辑更新日志</button>' : '') + '</div></div>'
-      + '<div class="cat-card"><div class="cat-header" style="cursor:pointer;background:linear-gradient(135deg,#DCFCE7,#BBF7D0)" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">📖 使用帮助' + roleLabel + '</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></div><div class="guide-items" style="display:none"><div class="label-doc" id="guide-content" style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">' + guide + '</div>'
-      + (isAdmin ? '<button class="btn btn-outline btn-full" id="edit-guide-btn" style="margin-top:8px">✏️ 编辑使用帮助</button>' : '') + '</div></div>';
+      // 数据卡片 - 圆角方框扁平化
+      + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);margin-bottom:6px">📦 数据概览</div>'
+      + dbInfo + '<div style="font-size:11px;color:var(--text-light);margin-top:4px">数据来源：Supabase · 可在线编辑</div></div>'
+      // 更新日志卡片
+      + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📋 更新日志</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">' + logHtml
+      + (isAdmin ? '<button class="btn btn-outline btn-sm" id="edit-changelog-btn" style="margin-top:6px">✏️ 编辑</button>' : '') + '</div></div>'
+      // 使用帮助卡片
+      + '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📖 使用帮助</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px"><div class="label-doc" id="guide-content" style="white-space:pre-wrap;font-size:13px;line-height:1.8;color:var(--text-body)">' + guide + '</div>'
+      + (isAdmin ? '<button class="btn btn-outline btn-sm" id="edit-guide-btn" style="margin-top:6px">✏️ 编辑</button>' : '') + '</div></div>'
+      // 数据管理卡片（仅admin）
+      + (isAdmin ? '<div style="background:var(--bg);border-radius:12px;padding:14px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);margin-bottom:8px">💾 数据管理</div>' + exportBtns + '</div>' : '');
     var editChangelogBtn = document.getElementById('edit-changelog-btn');
     if (editChangelogBtn) editChangelogBtn.onclick = function(){
       var logs = getChangelog();
