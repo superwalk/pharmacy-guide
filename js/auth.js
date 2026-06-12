@@ -131,15 +131,9 @@ function loadUsersFromSupabase(callback) {
         if (saved.security_q1) u.security_q1 = saved.security_q1;
         if (saved.security_q2) u.security_q2 = saved.security_q2;
         if (saved.security_q3) u.security_q3 = saved.security_q3;
-        // 迁移：user_<用户名> 没有但用户有密保 → 写入
-        if ((u.security_a1 || u.security_a2 || u.security_a3) && !saved.security_a1 && !saved.security_a2 && !saved.security_a3) {
-          var m = {};
-          if (u.security_a1) { m.security_q1 = u.security_q1; m.security_a1 = u.security_a1; }
-          if (u.security_a2) { m.security_q2 = u.security_q2; m.security_a2 = u.security_a2; }
-          if (u.security_a3) { m.security_q3 = u.security_q3; m.security_a3 = u.security_a3; }
-          Object.assign(saved, m);
-          localStorage.setItem('user_' + u.username, JSON.stringify(saved));
-        }
+        // 同步写入 user_<用户名>（确保后续登录恢复）
+        Object.assign(saved, { nickname: u.nickname, password: u.password, security_q1: u.security_q1 || '', security_a1: u.security_a1 || '', security_q2: u.security_q2 || '', security_a2: u.security_a2 || '', security_q3: u.security_q3 || '', security_a3: u.security_a3 || '' });
+        localStorage.setItem('user_' + u.username, JSON.stringify(saved));
       });
       localStorage.setItem('custom_users', JSON.stringify(localUsers));
       if (callback) callback(localUsers);
@@ -271,15 +265,9 @@ function login(username, password) {
   if (saved.security_q1) u.security_q1 = saved.security_q1;
   if (saved.security_q2) u.security_q2 = saved.security_q2;
   if (saved.security_q3) u.security_q3 = saved.security_q3;
-  // 迁移：如果 user_<用户名> 尚未保存密保数据，但用户已有密保，则补充写入
-  if ((u.security_a1 || u.security_a2 || u.security_a3) && !saved.security_a1 && !saved.security_a2 && !saved.security_a3) {
-    var migrate = {};
-    if (u.security_a1) { migrate.security_q1 = u.security_q1; migrate.security_a1 = u.security_a1; }
-    if (u.security_a2) { migrate.security_q2 = u.security_q2; migrate.security_a2 = u.security_a2; }
-    if (u.security_a3) { migrate.security_q3 = u.security_q3; migrate.security_a3 = u.security_a3; }
-    Object.assign(saved, migrate);
-    localStorage.setItem('user_' + u.username, JSON.stringify(saved));
-  }
+  // 登录时将当前用户所有数据同步到 user_<用户名>（防止后续覆盖丢失）
+  Object.assign(saved, { nickname: u.nickname, password: u.password, security_q1: u.security_q1 || '', security_a1: u.security_a1 || '', security_q2: u.security_q2 || '', security_a2: u.security_a2 || '', security_q3: u.security_q3 || '', security_a3: u.security_a3 || '' });
+  localStorage.setItem('user_' + u.username, JSON.stringify(saved));
   currentUser = u;
   localStorage.setItem('currentUser', u.username);
   return { ok:true, user:u };
