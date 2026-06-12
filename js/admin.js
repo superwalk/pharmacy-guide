@@ -124,6 +124,7 @@ function showReviewPanel() {
 
 function showEditLogs() {
   pushScreen('label');
+  var eb=document.getElementById('label-edit-btn'); if(eb) eb.style.display='none';
   var isAdmin = currentUser && currentUser.username === 'walkman0097';
   var logs = JSON.parse(localStorage.getItem('edit_logs') || '[]');
   // 过滤掉账户操作（只保留内容编辑）
