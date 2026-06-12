@@ -344,10 +344,11 @@ function showForgotPasswordModal(){
     '</div>';
   showModal('🔑 找回密码', html, [{label:'取消'},{label:'下一步',primary:true,onClick:function(){
     var uname = document.getElementById('fp-username').value.trim();
-    if(!uname){ toast('请输入用户名'); return; }
+    if(!uname){ toast('请输入用户名'); return false; }
     var r = forgotPasswordVerify(uname, '');
-    if(!r.ok){ showModal('提示', '<p style="text-align:center;font-size:14px;color:var(--text-body)">'+r.msg+'</p>', [{label:'知道了',primary:true}]); return; }
+    if(!r.ok){ showModal('提示', '<p style="text-align:center;font-size:14px;color:var(--text-body)">'+r.msg+'</p>', [{label:'知道了',primary:true}]); return false; }
     showForgotPasswordQuestions(uname, r.questions);
+    return false;
   }}]);
 }
 
@@ -367,7 +368,7 @@ function showForgotPasswordQuestions(uname, questions){
       if (val) answers[q.idx] = val;
     });
     var r = forgotPasswordReset(uname, '', answers);
-    if(!r.ok){ toast(r.msg); return; }
+    if(!r.ok){ toast(r.msg); return false; }
     var info = '用户名：'+r.username+'\n新密码：'+r.password;
     navigator.clipboard.writeText(info).then(function(){ toast('已复制新密码'); }).catch(function(){});
     showModal('✅ 密码已重置', '<div style="text-align:center;line-height:2"><b>'+r.username+'</b><br>新密码：<b style="font-size:18px;letter-spacing:2px">'+r.password+'</b></div><div style="font-size:12px;color:var(--text-light);margin-top:6px">已自动复制到剪贴板</div><div style="font-size:12px;color:var(--danger);margin-top:4px">⚠️ 关闭后密码将不再显示，请立即登录</div>', [{label:'去登录',primary:true,onClick:function(){
