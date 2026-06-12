@@ -654,8 +654,9 @@ function deleteItem(type, index) {
       saveCust(cd); renderAdminList(type==='drug'?'drugs':type==='guide'?'guidelines':type==='edu'||type==='med'?'mededu_combined':type==='inf'?'infusion':type==='disease'?'diseases':'drugs'); toast('已删除');
       // 同步删除到 Supabase
       if (deletedId) {
-        var table = type==='drug' ? 'drugs' : 'guidelines';
-        trySupabaseDelete(table, deletedId);
+        var tableMap = { drug:'drugs', guide:'guidelines', edu:'health_edu', med:'med_edu', inf:'infusion_data', disease:'diseases' };
+        var tb = tableMap[type] || '';
+        if (tb) trySupabaseDelete(tb, deletedId);
       }
     }}
   ]);
