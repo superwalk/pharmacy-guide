@@ -452,7 +452,12 @@ function initApp() {
   initProfileMenus();
   bindGuideSearch();
   checkVersion(); // 自动检查版本更新
-  // 手风琴：全局点击委托（最兼容：getAttribute + parentNode）
+  // 触摸滑动检测：防止滑动时误触展开
+  var _touchStartY = null;
+  document.addEventListener('touchstart', function(e){
+    _touchStartY = e.touches[0].clientY;
+  });
+  // 手风琴：全局点击委托（兼容桌面click）
   document.addEventListener('click', function(e){
     var el = e.target;
     while (el && el !== document.body && el !== document) {
@@ -466,8 +471,13 @@ function initApp() {
       el = el.parentNode;
     }
   });
-  // 触屏设备兼容：touchend 也触发
+  // 触屏设备手风琴：检测不是滑动时才触发
   document.addEventListener('touchend', function(e){
+    if (_touchStartY !== null) {
+      var dy = Math.abs(e.changedTouches[0].clientY - _touchStartY);
+      _touchStartY = null;
+      if (dy > 10) return; // 滑动超过10px → 忽略
+    }
     var el = e.target;
     while (el && el !== document.body && el !== document) {
       try {
