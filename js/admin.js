@@ -209,7 +209,7 @@ function initAdmin() {
       document.querySelectorAll('#admin-tabs .segment-item').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
       renderAdminList(t.dataset.tab, document.getElementById('admin-search')?.value||'');
-      const labels = { drugs:'+ 新增药品', guidelines:'+ 新增指南', education:'+ 新增科普', infusion:'+ 新增配伍', diseases:'+ 新增疾病', mededu:'+ 新增用药教育', users:'+ 新增用户' };
+      const labels = { drugs:'+ 新增药品', guidelines:'+ 新增指南', mededu_combined:'+ 新增用药科普', infusion:'+ 新增配伍', diseases:'+ 新增疾病', users:'+ 新增用户' };
       document.getElementById('admin-add-btn').textContent = labels[t.dataset.tab] || '+ 新增';
     };
   });
@@ -218,7 +218,9 @@ function initAdmin() {
     const t = document.querySelector('#admin-tabs .segment-item.active').dataset.tab;
     if (t === 'drugs') showDrugEditor();
     else if (t === 'guidelines') showGuidelineEditor();
-    else if (t === 'education') showEduEditor();
+    else if (t === 'mededu_combined_edu') showEduEditor();
+    else if (t === 'mededu_combined_med') showMedEduEditor();
+    else if (t === 'mededu_combined') showMedEduEditor();
     else if (t === 'infusion') showInfEditor();
     else if (t === 'diseases') showDiseaseEditor();
     else if (t === 'mededu') showMedEduEditor();
@@ -287,6 +289,16 @@ function renderAdminList(type, kw) {
         var isPy = kw && ((h.py||'').toLowerCase().indexOf(kw)>=0||genPy(h.title||'').indexOf(kw)>=0||genPy(h.cat||'').indexOf(kw)>=0) && !h.title.toLowerCase().includes(kw);
         var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
         return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="edu" data-view-id="'+h.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(h.title), kw)+pyTag+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(h.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="edu">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((h.content||'').slice(0,50))+'…</div></div>';
+      }).join('');
+    } else if (type === 'mededu_combined') {
+      // 合并显示科普+用药教育
+      var eduItems = HEALTH_EDU.map(function(h){ return { id:h.id, name:h.title, cat:h.cat + ' · 科普', type:'edu', idx:HEALTH_EDU.indexOf(h) }; });
+      var medItems = MED_EDU.map(function(m){ return { id:m.id, name:m.drug, cat:(m.cat||'') + ' · 用药教育', type:'med', idx:MED_EDU.indexOf(m) }; });
+      var all = eduItems.concat(medItems);
+      if (kw) all = all.filter(function(a){ return a.name.toLowerCase().indexOf(kw)>=0||a.cat.toLowerCase().indexOf(kw)>=0||genPy(a.name).indexOf(kw)>=0; });
+      html = all.map(function(a){
+        var isPy = kw && genPy(a.name).indexOf(kw)>=0 && !a.name.toLowerCase().includes(kw);
+        return '<div class="list-card" style="display:flex;align-items:center;gap:8px"><div class="icon-box">'+(a.type==='edu'?'📖':'🗣️')+'</div><div class="info" style="flex:1"><div class="name">'+esc(a.name)+(isPy?' <span class="badge badge-blue" style="font-size:10px">PY</span>':'')+'</div><div class="desc">'+esc(a.cat)+'</div></div><button class="btn btn-sm btn-outline" style="flex-shrink:0" data-edit="'+a.idx+'" data-type="'+a.type+'">编辑</button></div>';
       }).join('');
     } else if (type === 'infusion') {
       var filtered = INFUSION_DATA.filter(function(inf){
