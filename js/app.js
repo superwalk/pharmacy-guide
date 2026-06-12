@@ -143,6 +143,10 @@ function genPy(s){
     else { pw.type='password'; this.textContent='👁'; }
     pw.focus();
   });
+  // 注册新账号
+  document.getElementById('login-register-link').addEventListener('click',function(){ showRegisterModal(); });
+  // 找回密码
+  document.getElementById('login-forgot-link').addEventListener('click',function(){ showForgotPasswordModal(); });
 })();
 
 function loginSubmit() {
@@ -176,6 +180,118 @@ function loginSubmit() {
       }
     }
   },400);
+}
+
+// ═══ 注册新账号 ═══
+function showRegisterModal(){
+  var qOpts = SECURITY_QUESTIONS.map(function(q, i){ return '<option value="'+i+'">'+q+'</option>'; }).join('');
+  var step1HTML =
+    '<div style="display:flex;flex-direction:column;gap:8px">'+
+    '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">📝 填写注册信息</div>'+
+    '<input id="reg-username" placeholder="用户名（至少3个字符）" style="width:100%">'+
+    '<input id="reg-email" placeholder="邮箱地址" type="email" style="width:100%">'+
+    '<div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;font-size:13px;color:var(--text-light)">🔐 设置密保问题（用于找回密码）</div>'+
+    '<div style="display:flex;gap:4px"><select id="reg-sq1" style="flex:1">'+qOpts+'</select><input id="reg-sa1" placeholder="答案1" style="width:40%"></div>'+
+    '<div style="display:flex;gap:4px"><select id="reg-sq2" style="flex:1">'+qOpts+'</select><input id="reg-sa2" placeholder="答案2" style="width:40%"></div>'+
+    '<div style="display:flex;gap:4px"><select id="reg-sq3" style="flex:1">'+qOpts+'</select><input id="reg-sa3" placeholder="答案3" style="width:40%"></div>'+
+    '</div>';
+  showModal('📝 注册新账号', step1HTML, [{label:'取消'},{label:'注册',primary:true,onClick:function(){
+    var uname = document.getElementById('reg-username').value.trim();
+    var email = document.getElementById('reg-email').value.trim();
+    var sq1 = SECURITY_QUESTIONS[parseInt(document.getElementById('reg-sq1').value)];
+    var sq2 = SECURITY_QUESTIONS[parseInt(document.getElementById('reg-sq2').value)];
+    var sq3 = SECURITY_QUESTIONS[parseInt(document.getElementById('reg-sq3').value)];
+    var sa1 = document.getElementById('reg-sa1').value.trim();
+    var sa2 = document.getElementById('reg-sa2').value.trim();
+    var sa3 = document.getElementById('reg-sa3').value.trim();
+    var r = registerUser(uname, email, sq1, sa1, sq2, sa2, sq3, sa3);
+    if(!r.ok){ toast(r.msg); return; }
+    var info = '用户名：'+r.username+'\n密码：'+r.password;
+    navigator.clipboard.writeText(info).then(function(){ toast('已复制账号信息'); }).catch(function(){});
+    showModal('✅ 注册成功', '<div style="text-align:center;line-height:2"><b>'+r.username+'</b><br>密码：<b style="font-size:18px;letter-spacing:2px">'+r.password+'</b></div><div style="font-size:12px;color:var(--text-light);margin-top:6px">已自动复制到剪贴板，请立即保存密码</div><div style="font-size:12px;color:var(--danger);margin-top:4px">⚠️ 关闭后密码将不再显示</div>', [{label:'登录',primary:true,onClick:function(){
+      document.getElementById('login-user').value = r.username;
+      document.getElementById('login-pw').value = r.password;
+      loginSubmit();
+    }}]);
+  }}]);
+}
+
+// ═══ 找回密码 ═══
+function showForgotPasswordModal(){
+  var html =
+    '<div style="display:flex;flex-direction:column;gap:8px">'+
+    '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔑 填写注册时使用的用户名和邮箱进行验证</div>'+
+    '<input id="fp-username" placeholder="用户名" style="width:100%">'+
+    '<input id="fp-email" placeholder="邮箱地址" type="email" style="width:100%">'+
+    '</div>';
+  showModal('🔑 找回密码 · 验证身份', html, [{label:'取消'},{label:'下一步',primary:true,onClick:function(){
+    var uname = document.getElementById('fp-username').value.trim();
+    var email = document.getElementById('fp-email').value.trim();
+    if(!uname || !email){ toast('请填写用户名和邮箱'); return; }
+    var r = forgotPasswordVerify(uname, email);
+    if(!r.ok){ toast(r.msg); return; }
+    showForgotPasswordQuestions(uname, email, r.questions);
+  }}]);
+}
+
+function showForgotPasswordQuestions(uname, email, questions){
+  var html =
+    '<div style="display:flex;flex-direction:column;gap:8px">'+
+    '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔐 请回答以下密保问题</div>';
+  questions.forEach(function(q, i){
+    html += '<div style="font-size:13px;color:var(--primary);font-weight:600">'+(i+1)+'. '+q+'</div>'+
+      '<input id="fp-a'+(i+1)+'" placeholder="答案'+(i+1)+'" style="width:100%">';
+  });
+  html += '</div>';
+  showModal('🔑 找回密码 · 密保验证', html, [{label:'取消'},{label:'重置密码',primary:true,onClick:function(){
+    var a1 = document.getElementById('fp-a1').value.trim();
+    var a2 = document.getElementById('fp-a2').value.trim();
+    var a3 = document.getElementById('fp-a3').value.trim();
+    var r = forgotPasswordReset(uname, email, a1, a2, a3);
+    if(!r.ok){ toast(r.msg); return; }
+    var info = '用户名：'+r.username+'\n新密码：'+r.password;
+    navigator.clipboard.writeText(info).then(function(){ toast('已复制新密码'); }).catch(function(){});
+    showModal('✅ 密码已重置', '<div style="text-align:center;line-height:2"><b>'+r.username+'</b><br>新密码：<b style="font-size:18px;letter-spacing:2px">'+r.password+'</b></div><div style="font-size:12px;color:var(--text-light);margin-top:6px">已自动复制到剪贴板</div><div style="font-size:12px;color:var(--danger);margin-top:4px">⚠️ 关闭后密码将不再显示，请立即登录</div>', [{label:'去登录',primary:true,onClick:function(){
+      document.getElementById('login-user').value = r.username;
+      document.getElementById('login-pw').value = r.password;
+      loginSubmit();
+    }}]);
+  }}]);
+}
+
+// ═══ 密保设置（我的页面）═══
+function showSecuritySettings(){
+  var u = currentUser;
+  var qOpts = SECURITY_QUESTIONS.map(function(q, i){
+    var sel = '';
+    if(u && u.security_q1 === q) sel = 'selected';
+    return '<option value="'+i+'" '+sel+'>'+q+'</option>';
+  }).join('');
+  var html =
+    '<div style="display:flex;flex-direction:column;gap:8px">'+
+    '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔐 设置密保问题（用于找回密码）</div>'+
+    '<div style="display:flex;gap:4px"><select id="ss-sq1" style="flex:1">'+qOpts+'</select><input id="ss-sa1" placeholder="答案1" value="'+(u.security_a1||'')+'" style="width:40%"></div>'+
+    '<div style="display:flex;gap:4px"><select id="ss-sq2" style="flex:1">'+qOpts+'</select><input id="ss-sa2" placeholder="答案2" value="'+(u.security_a2||'')+'" style="width:40%"></div>'+
+    '<div style="display:flex;gap:4px"><select id="ss-sq3" style="flex:1">'+qOpts+'</select><input id="ss-sa3" placeholder="答案3" value="'+(u.security_a3||'')+'" style="width:40%"></div>'+
+    '</div>';
+  showModal('🔐 密保设置', html, [{label:'取消'},{label:'保存',primary:true,onClick:function(){
+    var sq1 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq1').value)];
+    var sq2 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq2').value)];
+    var sq3 = SECURITY_QUESTIONS[parseInt(document.getElementById('ss-sq3').value)];
+    var sa1 = document.getElementById('ss-sa1').value.trim();
+    var sa2 = document.getElementById('ss-sa2').value.trim();
+    var sa3 = document.getElementById('ss-sa3').value.trim();
+    if(!sa1 || !sa2 || !sa3){ toast('请填写所有密保答案'); return; }
+    updateUser(u.username, {
+      security_q1: sq1, security_a1: sa1,
+      security_q2: sq2, security_a2: sa2,
+      security_q3: sq3, security_a3: sa3
+    });
+    u.security_q1 = sq1; u.security_a1 = sa1;
+    u.security_q2 = sq2; u.security_a2 = sa2;
+    u.security_q3 = sq3; u.security_a3 = sa3;
+    toast('密保设置已保存');
+  }}]);
 }
 
 // 处理联网登录（备用）
@@ -733,6 +849,11 @@ function renderProfile() {
 var APP_VERSION='1.0.0';
 var CHANGELOG_KEY='changelog_custom_v3';
 var DEFAULT_CHANGELOG=[
+  '2026-06-12  新增自注册功能：用户可在登录页自行注册账号，设置密保问题，自动生成密码并复制',
+  '2026-06-12  新增找回密码功能：通过邮箱+密保问题验证即可重置密码，每日限3次',
+  '2026-06-12  新增密保设置：我的页面可随时修改密保问题及答案',
+  '2026-06-12  用户管理新增重置密码按钮：管理员可一键重置用户密码并自动复制',
+  '2026-06-12  移除所有☁️推送到GitHub仓库按钮',
   '2026-06-11  指南库扩容至135条：新增25条国际指南（ACC/AHA血脂、ESC心衰/心肾/心梗、NCCN CNS肿瘤、WHO GLP-1肥胖、AACE T2DM、SOGC痛经等），覆盖心血管/神经/内分泌/妇产科/罕见病/AI数字医疗领域',
   '2026-06-11  指南库新增34条中国指南：儿科4条/妇产科6条/骨科5条/内分泌4条/感染5条/眼科1条/药学2条/腔镜机器人2条/其他5条，全部支持查看原文',
   '2026-06-10  新增7种计算工具（肌酐清除率/体表面积/INR/补液等）、33条输液配伍数据模块，药品库扩充至84种',
@@ -806,6 +927,7 @@ function checkVersion(){
 function initProfileMenus() {
   document.getElementById('edit-nickname-btn').onclick=()=>{ showModal('修改昵称','<input id="new-nickname" placeholder="输入新昵称" value="'+currentUser.nickname+'">',[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const n=document.getElementById('new-nickname').value.trim(); if(n) updateNickname(n); }}]); };
   document.getElementById('menu-change-pw').onclick=()=>{ showModal('修改密码','<div style="position:relative"><input id="old-pw" type="password" placeholder="原密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw">👁️</span></div><div style="position:relative;margin-top:8px"><input id="new-pw" type="password" placeholder="新密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw2">👁️</span></div>',[{label:'取消'},{label:'确认修改',primary:true,onClick:()=>{ const o=document.getElementById('old-pw').value; const n=document.getElementById('new-pw').value; if(!n||n.length<4){ toast('密码至少4位'); return false; } const r=changePassword(o,n); if(!r.ok){ toast(r.msg); return false; } logout(); location.reload(); }}]);
+  document.getElementById('menu-security-settings').onclick=showSecuritySettings;
   // 绑定小眼睛切换
   setTimeout(function(){
     var t1=document.getElementById('toggle-pw'); var t2=document.getElementById('toggle-pw2');
