@@ -113,13 +113,13 @@ function loadUsersFromSupabase(callback) {
     initSupabase();
     if (!_supabase) { if(callback) callback(null); return; }
   }
-  _supabase.from('profiles').select('id,username,password,nickname,display_name,role,source,created_at').then(function(r){
+  _supabase.from('profiles').select('id,username,password,nickname,display_name,role,source,email,security_q1,security_a1,security_q2,security_a2,security_q3,security_a3,pw_reset_count,pw_reset_date,created_at').then(function(r){
     if (r.error) { console.warn('Supabase 加载用户失败:', r.error); if(callback) callback(null); return; }
     if (r.data && r.data.length > 0) {
       _sbUsers = r.data;
       _sbUsersLoaded = true;
       var localUsers = r.data.map(function(p){
-        return { username: p.username, password: p.password || '', nickname: p.display_name || p.nickname || p.username, role: p.role || 'user', source: p.source || 'manual', id: p.id };
+        return { username: p.username, password: p.password || '', nickname: p.display_name || p.nickname || p.username, role: p.role || 'user', source: p.source || 'manual', id: p.id, email: p.email || '', security_q1: p.security_q1, security_a1: p.security_a1, security_q2: p.security_q2, security_a2: p.security_a2, security_q3: p.security_q3, security_a3: p.security_a3, pw_reset_count: p.pw_reset_count || 0, pw_reset_date: p.pw_reset_date };
       });
       localStorage.setItem('custom_users', JSON.stringify(localUsers));
       if (callback) callback(localUsers);
@@ -137,7 +137,15 @@ function syncUserToSupabase(username, data) {
   initSupabase();
   if (!_supabase) return;
   var existing = _sbUsers.find(function(u){ return u.username === username; });
-  var payload = { username: username, password: data.password, nickname: data.nickname, display_name: data.nickname, role: data.role || 'user', source: data.source || 'manual' };
+  var payload = { username: username, password: data.password, nickname: data.nickname, display_name: data.nickname, role: data.role || 'user', source: data.source || 'manual', email: data.email || '' };
+  if (data.security_q1 !== undefined) payload.security_q1 = data.security_q1;
+  if (data.security_a1 !== undefined) payload.security_a1 = data.security_a1;
+  if (data.security_q2 !== undefined) payload.security_q2 = data.security_q2;
+  if (data.security_a2 !== undefined) payload.security_a2 = data.security_a2;
+  if (data.security_q3 !== undefined) payload.security_q3 = data.security_q3;
+  if (data.security_a3 !== undefined) payload.security_a3 = data.security_a3;
+  if (data.pw_reset_count !== undefined) payload.pw_reset_count = data.pw_reset_count;
+  if (data.pw_reset_date !== undefined) payload.pw_reset_date = data.pw_reset_date;
   if (existing && existing.id) {
     payload.id = existing.id;
   } else {
@@ -316,4 +324,89 @@ function changePassword(oldPw, newPw) {
   syncUserToSupabase(currentUser.username, { password: newPw, nickname: currentUser.nickname, role: currentUser.role });
   clearRemember();
   return { ok:true };
+}
+
+// ═══ 安全提问预置列表 ═══
+var SECURITY_QUESTIONS = [
+  '你的小学名称是什么？',
+  '你的初中名称是什么？',
+  '你的高中名称是什么？',
+  '你的家乡是哪里？',
+  '你最喜欢的颜色是什么？',
+  '你最喜欢的动物是什么？',
+  '你的出生地是哪里？',
+  '你母亲的姓名是什么？',
+  '你父亲的姓名是什么？',
+  '你的第一只宠物名字是什么？',
+  '你最崇拜的人是谁？',
+  '你的生日是几月几日？'
+];
+
+// ═══ 用户注册（自注册）═══
+function registerUser(username, email, sq1, sa1, sq2, sa2, sq3, sa3) {
+  var users = getUsers();
+  if (!username || username.length < 3) return { ok:false, msg:'用户名至少3个字符' };
+  if (!email || email.indexOf('@') < 0) return { ok:false, msg:'请输入有效的邮箱地址' };
+  if (users.find(u => u.username === username)) return { ok:false, msg:'用户名已存在' };
+  if (users.find(u => u.email === email)) return { ok:false, msg:'该邮箱已被注册' };
+  if (!sa1 || !sa2 || !sa3) return { ok:false, msg:'请填写所有密保答案' };
+  // 默认昵称 = 用户名
+  var password = genRandPw();
+  var newUser = {
+    username: username,
+    password: password,
+    nickname: username,
+    role: 'user',
+    source: 'email',
+    email: email,
+    security_q1: sq1, security_a1: sa1,
+    security_q2: sq2, security_a2: sa2,
+    security_q3: sq3, security_a3: sa3
+  };
+  users.push(newUser);
+  saveUsers(users);
+  syncUserToSupabase(username, newUser);
+  return { ok:true, username: username, password: password };
+}
+
+// ═══ 找回密码（密保验证）═══
+function forgotPasswordVerify(username, email) {
+  var users = getUsers();
+  var u = users.find(function(x){ return x.username === username });
+  if (!u) return { ok:false, step:'check', msg:'用户不存在' };
+  if (u.email !== email) return { ok:false, step:'check', msg:'邮箱不匹配' };
+  if (!u.security_q1) return { ok:false, step:'check', msg:'该用户未设置密保问题，请联系管理员重置密码' };
+  // 检查每日重置次数限制
+  var today = new Date().toISOString().slice(0,10);
+  var resetCount = u.pw_reset_count || 0;
+  var resetDate = u.pw_reset_date || '';
+  if (resetDate === today && resetCount >= 3) {
+    return { ok:false, step:'check', msg:'今日重置次数已达上限（3次），请明天再试' };
+  }
+  return { ok:true, step:'questions', questions: [u.security_q1, u.security_q2, u.security_q3] };
+}
+
+function forgotPasswordReset(username, email, a1, a2, a3) {
+  var users = getUsers();
+  var u = users.find(function(x){ return x.username === username });
+  if (!u) return { ok:false, msg:'用户不存在' };
+  if (u.email !== email) return { ok:false, msg:'邮箱不匹配' };
+  // 验证密保答案（不区分大小写）
+  if ((u.security_a1 || '').toLowerCase() !== (a1 || '').toLowerCase()) return { ok:false, msg:'密保答案1错误' };
+  if ((u.security_a2 || '').toLowerCase() !== (a2 || '').toLowerCase()) return { ok:false, msg:'密保答案2错误' };
+  if ((u.security_a3 || '').toLowerCase() !== (a3 || '').toLowerCase()) return { ok:false, msg:'密保答案3错误' };
+  // 验证通过，生成新密码
+  var newPw = genRandPw();
+  u.password = newPw;
+  // 更新重置计数
+  var today = new Date().toISOString().slice(0,10);
+  if (u.pw_reset_date === today) {
+    u.pw_reset_count = (u.pw_reset_count || 0) + 1;
+  } else {
+    u.pw_reset_count = 1;
+    u.pw_reset_date = today;
+  }
+  saveUsers(users);
+  syncUserToSupabase(username, { password: newPw, pw_reset_count: u.pw_reset_count, pw_reset_date: u.pw_reset_date });
+  return { ok:true, username: username, password: newPw };
 }
