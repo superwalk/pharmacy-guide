@@ -197,8 +197,8 @@ function getUsers() {
       USERS.forEach(function(su){
         var local = users.find(function(u){ return u.username === su.username; });
         if (local) {
-          // 如果 localStorage 的昵称和旧版 USERS 一致，更新为新版
-          if (local.nickname && su.nickname && local.nickname !== su.nickname && !needSave) {
+          // 如果 localStorage 的昵称是旧版默认昵称，更新为新版
+          if (local.nickname && su.nickname && local.nickname !== su.nickname) {
             var oldKeys = ['药师','管理员-λ','管理员-θ','管理员-φ','管理员-σ'];
             var isOld = oldKeys.some(function(k){ return local.nickname.indexOf(k) === 0; });
             if (isOld) { local.nickname = su.nickname; needSave = true; }
