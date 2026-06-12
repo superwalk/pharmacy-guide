@@ -320,6 +320,27 @@ function updateNickname(newName) {
   toast('昵称已修改');
 }
 
+// ═══ 找回用户名 ═══
+function showFindUsername() {
+  showModal('👤 找回用户名', 
+    '<p style="font-size:13px;color:var(--text-light);text-align:center;margin-bottom:8px">输入你的昵称即可查看到对应的用户名</p>'
+    + '<input id="find-name-input" placeholder="输入你的昵称" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);font:inherit;font-size:14px">'
+    + '<div id="find-name-result" style="margin-top:8px;text-align:center;font-size:14px"></div>',
+    [{label:'取消'},{label:'查找',primary:true,onClick:function(){
+      var nickname = document.getElementById('find-name-input').value.trim();
+      if (!nickname) { toast('请输入昵称'); return; }
+      var users = getUsers();
+      var match = users.find(function(u){ return u.nickname === nickname; });
+      var resultEl = document.getElementById('find-name-result');
+      if (match) {
+        resultEl.innerHTML = '找到你的用户名：<b style="color:var(--primary);font-size:16px;user-select:all">' + match.username + '</b><br><span style="font-size:11px;color:var(--text-light)">点击上方用户名即可复制</span>';
+      } else {
+        resultEl.innerHTML = '<span style="color:var(--danger)">未找到匹配的用户名，请确认昵称是否正确</span>';
+      }
+    }}]
+  );
+}
+
 function changePassword(oldPw, newPw) {
   if (!currentUser) return { ok:false, msg:'未登录' };
   var users = getUsers();
