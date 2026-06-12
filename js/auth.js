@@ -329,8 +329,23 @@ function showFindUsername() {
     [{label:'取消'},{label:'查找',primary:true,onClick:function(){
       var nickname = document.getElementById('find-name-input').value.trim();
       if (!nickname) { toast('请输入昵称'); return; }
+      // 先从 getUsers() 查，再从 user_<用户名> localStorage 查
       var users = getUsers();
       var match = users.find(function(u){ return u.nickname === nickname; });
+      if (!match) {
+        // 遍历所有 localStorage user_<用户名> 条目查找
+        try {
+          for (var key in localStorage) {
+            if (key.indexOf('user_') === 0) {
+              var data = JSON.parse(localStorage.getItem(key) || '{}');
+              if (data.nickname === nickname) {
+                match = { username: key.slice(5), nickname: data.nickname };
+                break;
+              }
+            }
+          }
+        } catch(e) {}
+      }
       var resultEl = document.getElementById('find-name-result');
       if (match) {
         resultEl.innerHTML = '找到你的用户名：<b style="color:var(--primary);font-size:16px;user-select:all">' + match.username + '</b><br><span style="font-size:11px;color:var(--text-light)">点击上方用户名即可复制</span>';
