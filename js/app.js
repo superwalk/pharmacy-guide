@@ -598,15 +598,15 @@ function renderGuidelines() {
   } else if(!kw){
     // 搜索框清空后恢复默认全部展开(折叠)状态
   }
-  gl.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+systems.map((s,i)=>`
-    <div class="cat-card" style="margin-bottom:0;padding:12px">
+  gl.innerHTML=systems.map((s,i)=>`
+    <div class="cat-card" style="margin-bottom:8px;padding:12px">
       <div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-group="${i}" data-expanded="${kw?'true':'false'}">
         <span class="cat-name" style="font-size:14px">${s.icon} ${highlightKw(s.system, kw)}</span>
         <span style="font-size:11px;color:var(--text-light)">${s.items.length} 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">${kw?'▼':'▶'}</span></span>
       </div>
-      <div class="guide-items" id="guide-group-${i}" style="display:${kw?'flex':'none'};flex-wrap:wrap;gap:6px;margin-top:6px;padding:0">${s.items.map(g=>`<span class="guide-item" data-gid="${g.id}" style="display:inline-block;padding:4px 10px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;white-space:nowrap">${highlightKw(g.title, kw)} <span style="color:var(--text-light)">${g.year||''}</span></span>`).join('')}</div>
+      <div class="guide-items" id="guide-group-${i}" style="display:${kw?'block':'none'};margin-top:6px;padding:0">${s.items.map(g=>`<div class="guide-item" data-gid="${g.id}" style="padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px">${highlightKw(g.title, kw)} <span style="font-size:11px;color:var(--text-light);white-space:nowrap">${g.year||''}</span></div>`).join('')}</div>
     </div>
-  `).join('')+'</div>';
+  `).join('');
   if(systems.length===0&&kw) gl.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">未找到匹配的指南或法规</div>';
   gl.querySelectorAll('.guide-item').forEach(item=>{ item.onclick=()=>openGuide(item.dataset.gid); });
 }
