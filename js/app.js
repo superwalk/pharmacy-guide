@@ -1008,8 +1008,13 @@ function getUnreadCount() {
 function sendMessage(from, to, text, type, sourcePage) {
   if (!text || text.length > 200) { toast('消息不能为空或超过200字'); return false; }
   var msgs = getMessages();
-  msgs.unshift({ id: 'msg_'+Date.now(), from: from, to: to, text: text, type: type || 'admin', read: false, timestamp: new Date().toLocaleString('zh-CN'), ts: Date.now(), sourcePage: sourcePage || '' });
+  var msg = { id: 'msg_'+Date.now(), from: from, to: to, text: text, type: type || 'admin', read: false, timestamp: new Date().toLocaleString('zh-CN'), ts: Date.now(), sourcePage: sourcePage || '' };
+  msgs.unshift(msg);
   saveMessages(msgs);
+  // 同步到 Supabase（跨浏览器可见）
+  if (_online && typeof trySync === 'function') {
+    trySync('messages', { id: msg.id, sender: from, recipient: to, content: text, msg_type: type || 'admin', source_page: sourcePage || '', created_at: new Date().toISOString() });
+  }
   return true;
 }
 function deleteMessage(msgId) {
