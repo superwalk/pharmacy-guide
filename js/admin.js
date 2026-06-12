@@ -14,6 +14,19 @@ function addEditLog(type, name, action, itemId) {
     });
     if (logs.length > 200) logs = logs.slice(0, 200);
     localStorage.setItem('edit_logs', JSON.stringify(logs));
+    // 同步到 Supabase
+    if (typeof _supabase !== 'undefined' && _supabase && _online && typeof _supabase.from === 'function') {
+      _supabase.from('edit_logs').insert({
+        id: 'log_' + Date.now(),
+        time: logs[0].time,
+        user: logs[0].user,
+        type: type,
+        name: name,
+        action: action,
+        item_id: itemId || '',
+        created_at: new Date().toISOString()
+      }).catch(function(){});
+    }
   } catch(e) {}
 }
 
