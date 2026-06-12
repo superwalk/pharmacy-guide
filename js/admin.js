@@ -757,7 +757,7 @@ function showUserEditor(user){
   var isAdmin=u.username==='walkman0097';
   var body='<div style="display:flex;flex-direction:column;gap:8px">'+
     '<input id="ed-uname" placeholder="用户名" value="'+esc(u.username||'')+'" '+(isNew?'':'disabled')+'>'+
-    '<div style="display:flex;gap:6px"><input id="ed-upass" placeholder="密码" value="'+esc(u.password||'')+'" style="flex:1"><button class="btn btn-sm btn-outline" id="ed-genpw" style="white-space:nowrap">🎲 随机</button></div>'+
+    '<div style="display:flex;gap:6px"><input id="ed-upass" placeholder="密码" value="'+(isNew?esc(u.password||''):'[已加密]')+'" style="flex:1"'+(isNew?'':' disabled')+'><button class="btn btn-sm btn-outline" id="ed-genpw" style="white-space:nowrap">🎲 随机</button></div>'+
     '<input id="ed-unick" placeholder="昵称" value="'+esc(u.nickname||'')+'">';
   if(isAdmin){
     body+='<div style="padding:8px 0;font-size:13px;color:var(--primary);font-weight:600">🔒 管理员 · 拥有全部权限</div>';
@@ -768,8 +768,9 @@ function showUserEditor(user){
   showModal(isNew?'新增用户':'编辑用户', body,
     [{label:'取消'},{label:isNew?'新增并复制':'保存',primary:true,onClick:function(){
       var uname=peg('ed-uname'); var upass=peg('ed-upass'); var unick=peg('ed-unick'); var urole=peg('ed-urole');
-      if(!uname||!upass){ toast('用户名和密码不能为空'); return; }
+      if(!uname){ toast('用户名不能为空'); return; }
       if(isNew){
+        if(!upass){ toast('密码不能为空'); return; }
         var r=addUser({username:uname,password:upass,nickname:unick||uname,role:urole||'user'});
         if(!r.ok){ toast(r.msg); return; }
         var info='用户名：'+uname+'\n密码：'+upass;
@@ -780,7 +781,7 @@ function showUserEditor(user){
           '<div style="text-align:center;line-height:2"><b>'+uname+'</b><br>密码：<b>'+upass+'</b></div><div style="font-size:12px;color:var(--text-light);margin-top:6px">已自动复制到剪贴板</div>',
           [{label:'确定',primary:true}]);
       } else {
-        var upData={password:upass,nickname:unick||u.nickname};
+        var upData={nickname:unick||u.nickname};
         if(!isAdmin) upData.role=urole||'user';
         updateUser(u.username, upData);
       }
