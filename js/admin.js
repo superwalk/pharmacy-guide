@@ -128,7 +128,8 @@ function showEditLogs() {
   var logs = JSON.parse(localStorage.getItem('edit_logs') || '[]');
   // 过滤掉账户操作（只保留内容编辑）
   logs = logs.filter(function(l){ return l.type !== '用户' && l.type !== '账户'; });
-  var html = '<div class="section-title" style="font-size:22px">📝 编辑记录与审核</div>';
+  var html = '<div style="margin-bottom:8px"><span class="back-btn" onclick="goBack()" style="display:inline-flex;align-items:center;gap:4px;color:var(--accent);cursor:pointer;font-size:13px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2"/></svg> 返回</span></div>'
+  + '<div class="section-title" style="font-size:22px">📝 编辑记录与审核</div>';
   // 管理员可见待审核列表
   if (isAdmin) {
     var pending = [];
