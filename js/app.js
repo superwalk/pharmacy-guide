@@ -1713,62 +1713,57 @@ function renderMedEduCombined() {
   var kw = (document.getElementById('me-search')?.value||'').toLowerCase();
   var container = document.getElementById('mededu-combined');
   if (!container) return;
-  var t = '<div class="segment" id="me-tabs" style="margin-bottom:12px">'
-    + '<div class="segment-item active" data-tab="all">全部</div>'
-    + '<div class="segment-item" data-tab="med">用药教育</div>'
-    + '<div class="segment-item" data-tab="edu">科普教育</div>'
-    + '</div>';
-  // 用药教育部分
-  var medCats = [...new Set(MED_EDU.map(function(m){return m.cat;}))];
-  var medData = MED_EDU;
-  if (kw) medData = medData.filter(function(m){return m.drug.toLowerCase().includes(kw)||(m.detail||'').toLowerCase().includes(kw)||m.cat.toLowerCase().includes(kw)||m.key.toLowerCase().includes(kw)||(m.py||'').toLowerCase().includes(kw)||genPy(m.cat).toLowerCase().includes(kw);});
-  t += '<div id="me-section"><div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="background:linear-gradient(135deg,#E0F2FE,#BAE6FD);cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name" style="color:#0369A1">💊 用药教育 <span style="font-size:12px;color:var(--text-light)">'+medData.length+' 条</span></span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none">';
-  medCats.forEach(function(cat){
-    var items = medData.filter(function(m){return m.cat===cat;});
-    if (items.length===0) return;
-    t += '<div class="cat-card" style="margin-left:8px;margin-bottom:4px"><div class="cat-header" style="cursor:pointer;font-size:13px" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">'+cat+'</span><span style="font-size:11px;color:var(--text-light)">'+items.length+' 条 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></span></div><div class="guide-items" style="display:none">';
-    items.forEach(function(m){
-      t += '<div class="guide-item" data-meid="'+m.id+'" style="padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><div style="font-weight:600;color:var(--primary-dark)">'+highlightKw(m.drug, kw)+'</div><div style="color:var(--text-body);font-size:12px;margin-top:2px">'+m.key+'</div></div>';
-    });
-    t += '</div></div>';
+  // 合并所有数据（用药教育+科普教育），统一为 { cat, name, detail, type, id, icon }
+  var all = [];
+  MED_EDU.forEach(function(m){
+    if (kw && !matchKw(m.drug, kw) && !matchKw(m.key, kw) && !matchKw(m.cat, kw) && !matchKw(m.detail, kw) && !(m.py||'').toLowerCase().includes(kw) && !genPy(m.cat).toLowerCase().includes(kw)) return;
+    all.push({ cat:m.cat||'其他', name:m.drug, detail:m.key, type:'med', id:m.id, icon:'🗣️' });
   });
-  t += '</div></div></div>';
-  // 科普教育部分
-  var eduCats = [...new Set(HEALTH_EDU.map(function(h){return h.cat;}))];
-  var eduData = HEALTH_EDU;
-  if (kw) eduData = eduData.filter(function(h){return h.title.toLowerCase().includes(kw)||(h.content||'').toLowerCase().includes(kw)||h.cat.toLowerCase().includes(kw)||(h.py||'').toLowerCase().includes(kw)||genPy(h.cat).toLowerCase().includes(kw);});
-  t += '<div id="edu-section"><div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="background:linear-gradient(135deg,#FEF3C7,#FDE68A);cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name" style="color:#D97706">📖 科普教育 <span style="font-size:12px;color:var(--text-light)">'+eduData.length+' 篇</span></span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none">';
-  eduCats.forEach(function(cat){
-    var items = eduData.filter(function(h){return h.cat===cat;});
-    if (items.length===0) return;
-    t += '<div class="cat-card" style="margin-left:8px;margin-bottom:4px"><div class="cat-header" style="cursor:pointer;font-size:13px" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">'+cat+'</span><span style="font-size:11px;color:var(--text-light)">'+items.length+' 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></span></div><div class="guide-items" style="display:none">';
-    items.forEach(function(h){
-      var isPy = kw && ((h.py||'').toLowerCase().includes(kw) || genPy(h.cat).toLowerCase().includes(kw)) && !h.title.toLowerCase().includes(kw);
-      var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
-      t += '<div class="guide-item" data-hid="'+h.id+'" style="display:flex;gap:6px;align-items:center;padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><span style="width:6px;height:6px;background:#D97706;border-radius:3px;flex-shrink:0"></span><span style="color:var(--text-body);flex:1">'+highlightKw(h.title, kw)+pyTag+'</span></div>';
-    });
-    t += '</div></div>';
+  HEALTH_EDU.forEach(function(h){
+    if (kw && !matchKw(h.title, kw) && !matchKw(h.cat, kw) && !matchKw(h.content, kw) && !(h.py||'').toLowerCase().includes(kw) && !genPy(h.cat).toLowerCase().includes(kw)) return;
+    var isPy = kw && ((h.py||'').toLowerCase().includes(kw) || genPy(h.cat).toLowerCase().includes(kw)) && !h.title.toLowerCase().includes(kw);
+    all.push({ cat:h.cat||'其他', name:h.title, detail:h.cat, type:'edu', id:h.id, icon:'📖', pyTag: isPy });
   });
-  t += '</div></div></div>';
+  // 按分类分组
+  var cats = {};
+  all.forEach(function(a){
+    if (!cats[a.cat]) cats[a.cat] = [];
+    cats[a.cat].push(a);
+  });
+  var catNames = Object.keys(cats);
+  // 双列扁平化手风琴
+  var t = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+  catNames.forEach(function(cat){
+    var items = cats[cat];
+    t += '<div style="background:var(--bg);border-radius:12px;border:1px solid var(--border);padding:10px">'
+      + '<div style="font-size:13px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false">'
+      + '<span>'+cat+'</span><span style="font-size:11px;color:var(--text-light)">'+items.length+' <span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:10px">▶</span></span></div>'
+      + '<div class="guide-items" style="display:none;margin-top:6px;border-top:1px solid var(--border);padding-top:4px">'
+      + items.map(function(a){
+          var pyTag = a.pyTag ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
+          return '<div class="guide-item" data-aid="'+a.id+'" data-atype="'+a.type+'" style="padding:6px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:12px">'
+            + '<div style="font-weight:600;color:var(--primary-dark)">'+a.icon+' '+highlightKw(a.name, kw)+pyTag+'</div>'
+            + '<div style="color:var(--text-light);font-size:11px;margin-top:1px">'+highlightKw(a.detail, kw)+'</div></div>';
+        }).join('')
+      + '</div></div>';
+  });
+  t += '</div>';
+  if (catNames.length === 0) t = '<div style="text-align:center;padding:40px;color:var(--text-light);font-size:13px">未找到相关内容</div>';
   container.innerHTML = t;
   // 绑定点击
-  container.querySelectorAll('.guide-item[data-meid]').forEach(function(item){item.onclick=function(){openMedEdu(item.dataset.meid);};});
-  container.querySelectorAll('.guide-item[data-hid]').forEach(function(item){item.onclick=function(){openHealthEdu(item.dataset.hid);};});
-  // 标签切换
-  var tabs = document.getElementById('me-tabs');
-  if (tabs) {
-    tabs.querySelectorAll('.segment-item').forEach(function(tab){
-      tab.onclick = function(){
-        tabs.querySelectorAll('.segment-item').forEach(function(t){t.classList.remove('active');});
-        tab.classList.add('active');
-        var tabName = tab.dataset.tab;
-        document.getElementById('me-section').style.display = (tabName==='all'||tabName==='med') ? '' : 'none';
-        document.getElementById('edu-section').style.display = (tabName==='all'||tabName==='edu') ? '' : 'none';
-      };
-    });
-  }
-  // 键盘搜索
+  container.querySelectorAll('.guide-item').forEach(function(item){
+    item.onclick = function(){
+      var id = item.dataset.aid;
+      var type = item.dataset.atype;
+      if (type === 'med') openMedEdu(id);
+      else openHealthEdu(id);
+    };
+  });
   document.getElementById('me-search').oninput = renderMedEduCombined;
+}
+function matchKw(val, kw) {
+  if (!val) return false;
+  return val.toLowerCase().indexOf(kw) >= 0;
 }
 
 function openMedEdu(mid){
