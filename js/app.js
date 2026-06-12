@@ -150,8 +150,6 @@ function genPy(s){
     else { pw.type='password'; this.textContent='👁'; }
     pw.focus();
   });
-  // 注册新账号
-  document.getElementById('login-register-link').addEventListener('click',function(){ showRegisterModal(); });
   // 找回密码
   document.getElementById('login-forgot-link').addEventListener('click',function(){ showForgotPasswordModal(); });
 })();
@@ -315,21 +313,19 @@ function showRegisterModal(){
 function showForgotPasswordModal(){
   var html =
     '<div style="display:flex;flex-direction:column;gap:8px">'+
-    '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔑 填写注册时使用的用户名和邮箱进行验证</div>'+
+    '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔑 请输入用户名</div>'+
     '<input id="fp-username" placeholder="用户名" style="width:100%">'+
-    '<input id="fp-email" placeholder="邮箱地址" type="email" style="width:100%">'+
     '</div>';
   showModal('🔑 找回密码', html, [{label:'取消'},{label:'下一步',primary:true,onClick:function(){
     var uname = document.getElementById('fp-username').value.trim();
-    var email = document.getElementById('fp-email').value.trim();
-    if(!uname || !email){ toast('请填写用户名和邮箱'); return; }
-    var r = forgotPasswordVerify(uname, email);
+    if(!uname){ toast('请输入用户名'); return; }
+    var r = forgotPasswordVerify(uname, '');
     if(!r.ok){ toast(r.msg); return; }
-    showForgotPasswordQuestions(uname, email, r.questions);
+    showForgotPasswordQuestions(uname, r.questions);
   }}]);
 }
 
-function showForgotPasswordQuestions(uname, email, questions){
+function showForgotPasswordQuestions(uname, questions){
   var html =
     '<div style="display:flex;flex-direction:column;gap:8px">'+
     '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">🔐 任选一个密保问题回答即可（不区分大小写）</div>';
@@ -344,7 +340,7 @@ function showForgotPasswordQuestions(uname, email, questions){
       var val = document.getElementById('fp-a'+q.idx).value.trim();
       if (val) answers[q.idx] = val;
     });
-    var r = forgotPasswordReset(uname, email, answers);
+    var r = forgotPasswordReset(uname, '', answers);
     if(!r.ok){ toast(r.msg); return; }
     var info = '用户名：'+r.username+'\n新密码：'+r.password;
     navigator.clipboard.writeText(info).then(function(){ toast('已复制新密码'); }).catch(function(){});
