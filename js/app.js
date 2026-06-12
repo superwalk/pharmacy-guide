@@ -764,11 +764,28 @@ function renderDetail(drugId) {
     <div class="info-card"><div class="info-label">用法用量</div><div class="info-value">${detail.dosage || '暂无'}</div></div>
     <div class="info-card"><div class="info-label">储存条件</div><div class="info-value">${detail.storage || '暂无'}</div></div>
     <div class="info-card"><div class="info-label">药物相互作用</div><div class="info-value">${detail.interactions || '暂无'}</div></div>
+    <!-- 配伍禁忌 -->
+    <div class="info-card" style="margin-top:8px;border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px">
+      <div class="info-label" style="color:#7C3AED">💉 配伍禁忌</div>
+      <div class="info-value" id="detail-infusion-${drugId}" style="font-size:12px">加载中…</div>
+    </div>
     <div class="note-card" style="margin-top:12px">
       <div class="note-header"><span class="note-title">📝 个人备注 <span style="font-size:11px;color:var(--text-light)">(200字上限)</span></span><span class="note-edit" id="edit-note">编辑</span></div>
       <div class="note-content" id="note-content-${drugId}">${note||'暂无备注，点击编辑添加…'}</div>
     </div>
     <button class="btn btn-outline btn-sm" id="report-error-btn" style="margin-top:12px;font-size:12px">🔍 纠错</button>`;
+    // 加载配伍禁忌
+    var infEl = document.getElementById('detail-infusion-' + drugId);
+    if (infEl) {
+      var drugName = d.name;
+      var matches = INFUSION_DATA.filter(function(item){ return item.drug.indexOf(drugName.replace(/[（(].*[）)]/,'')) >= 0 || drugName.indexOf(item.drug.replace(/[（(].*[）)]/,'')) >= 0; });
+      if (matches.length > 0) {
+        infEl.innerHTML = matches.map(function(m){ return '<div style="padding:2px 0"><span style="font-weight:600">'+m.drug+'</span> <span style="color:var(--text-light)">'+m.cat+'</span></div>'; }).join('')
+          + '<div style="margin-top:4px"><span class="badge badge-blue" style="cursor:pointer;font-size:10px" onclick="pushScreen(\'infusion\');renderInfusion();">🔍 查看完整配伍信息</span></div>';
+      } else {
+        infEl.innerHTML = '<span style="color:var(--text-light)">暂无配伍数据</span>';
+      }
+    }
     // 重新绑定备注点击
     var eb = document.getElementById('edit-note');
     if (eb) eb.onclick = function() {
@@ -1489,7 +1506,47 @@ function renderInfusion() {
   var queryBtn = document.getElementById('inf-query-btn');
   if (queryBtn) queryBtn.onclick = function(){ doInfusionQuery(); };
   var queryInput = document.getElementById('inf-query-input');
-  if (queryInput) queryInput.onkeydown = function(e){ if(e.key==='Enter') doInfusionQuery(); };
+  if (queryInput) {
+    queryInput.onkeydown = function(e){ if(e.key==='Enter') doInfusionQuery(); };
+    // 自动补全
+    var _acTimer = null;
+    var _acBox = null;
+    queryInput.oninput = function(){
+      clearTimeout(_acTimer);
+      var val = queryInput.value.trim();
+      var lastTerm = val.split(/[,，\s]+/).pop() || '';
+      if (!lastTerm) { if (_acBox) { _acBox.remove(); _acBox = null; } return; }
+      _acTimer = setTimeout(function(){
+        var matches = INFUSION_DATA.filter(function(item){ return item.drug.indexOf(lastTerm) >= 0 || (item.py||'').toLowerCase().indexOf(lastTerm.toLowerCase()) >= 0 || genPy(item.drug||'').indexOf(lastTerm.toLowerCase()) >= 0; }).slice(0, 8);
+        if (_acBox) { _acBox.remove(); _acBox = null; }
+        if (matches.length === 0) return;
+        _acBox = document.createElement('div');
+        _acBox.style.cssText = 'position:absolute;z-index:999;background:var(--card);border:1px solid var(--border);border-radius:8px;width:'+queryInput.offsetWidth+'px;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.1)';
+        _acBox.innerHTML = matches.map(function(m){
+          return '<div style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px" data-ac-drug="'+m.drug+'">'+m.drug+' <span style="font-size:11px;color:var(--text-light)">'+m.cat+'</span></div>';
+        }).join('');
+        // 定位
+        var rect = queryInput.getBoundingClientRect();
+        var container = document.getElementById('screen-infusion') || document.querySelector('.screen.active');
+        if (container) container.appendChild(_acBox);
+        _acBox.style.top = (rect.bottom + container.scrollTop) + 'px';
+        _acBox.style.left = rect.left + 'px';
+        // 绑定点击
+        _acBox.querySelectorAll('[data-ac-drug]').forEach(function(el){
+          el.onclick = function(){
+            var drug = el.dataset.acDrug;
+            var parts = queryInput.value.split(/[,，\s]+/);
+            parts[parts.length - 1] = drug;
+            queryInput.value = parts.join(', ');
+            if (_acBox) { _acBox.remove(); _acBox = null; }
+            queryInput.focus();
+          };
+        });
+      }, 200);
+    };
+    // 点击外部关闭
+    document.addEventListener('click', function(e){ if (_acBox && !_acBox.contains(e.target) && e.target !== queryInput) { _acBox.remove(); _acBox = null; } });
+  }
   document.getElementById('inf-search').oninput = renderInfusion;
 }
 
