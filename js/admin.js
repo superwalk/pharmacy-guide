@@ -105,7 +105,7 @@ function renderAdminList(type, kw) {
       });
       html = filtered.map(function(d) {
         var origIdx = drugs.indexOf(d);
-        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(d.name), kw)+'</span><span class="badge badge-green" style="margin-left:6px">'+highlightKw(esc(d.category), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="drug">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="drug">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">适应症：'+highlightKw(esc((d.indications||'').slice(0,50)), kw)+'…</div></div>';
+        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="drug" data-view-id="'+d.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(d.name), kw)+'</span><span class="badge badge-green" style="margin-left:6px">'+highlightKw(esc(d.category), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="drug">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="drug">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">适应症：'+highlightKw(esc((d.indications||'').slice(0,50)), kw)+'…</div></div>';
       }).join('');
     } else if (type === 'guidelines') {
       // 指南分类管理
@@ -121,7 +121,7 @@ function renderAdminList(type, kw) {
       });
       html = filtered.map(function(g) {
         var origIdx = all.indexOf(g);
-        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(g.title), kw)+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(g.system||'法规'), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="guide">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="guide">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc(g.year||'')+' · '+esc((g.content||'').slice(0,50))+'…</div></div>';
+        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="guide" data-view-id="'+g.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(g.title), kw)+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(g.system||'法规'), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="guide">编辑</button><button class="btn btn-sm" style="background:#FEF2F2;color:var(--danger)" data-del="'+origIdx+'" data-type="guide">删除</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc(g.year||'')+' · '+esc((g.content||'').slice(0,50))+'…</div></div>';
       }).join('');
     } else if (type === 'education') {
       var filtered = HEALTH_EDU.filter(function(h){
@@ -130,7 +130,7 @@ function renderAdminList(type, kw) {
       });
       html = filtered.map(function(h) {
         var origIdx = HEALTH_EDU.indexOf(h);
-        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(h.title), kw)+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(h.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="edu">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((h.content||'').slice(0,50))+'…</div></div>';
+        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="edu" data-view-id="'+h.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(h.title), kw)+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(h.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="edu">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">'+esc((h.content||'').slice(0,50))+'…</div></div>';
       }).join('');
     } else if (type === 'infusion') {
       var filtered = INFUSION_DATA.filter(function(inf){
@@ -139,7 +139,7 @@ function renderAdminList(type, kw) {
       });
       html = filtered.map(function(inf) {
         var origIdx = INFUSION_DATA.indexOf(inf);
-        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(inf.drug), kw)+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(inf.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="inf">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">载体：'+esc(inf.vehicle||'')+' · 浓度：'+esc(inf.conc||'')+'</div></div>';
+        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="inf" data-view-id="'+inf.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(inf.drug), kw)+'</span><span class="badge badge-blue" style="margin-left:6px">'+highlightKw(esc(inf.cat), kw)+'</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="inf">编辑</button></div></div><div style="font-size:12px;color:var(--text-light)">载体：'+esc(inf.vehicle||'')+' · 浓度：'+esc(inf.conc||'')+'</div></div>';
       }).join('');
     } else if (type === 'diseases') {
       var filtered = DISEASES.filter(function(ds){
@@ -148,7 +148,7 @@ function renderAdminList(type, kw) {
       });
       html = filtered.map(function(ds) {
         var origIdx = DISEASES.indexOf(ds);
-        return '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(ds.name), kw)+'</span></div></div><div style="display:flex;justify-content:space-between;align-items:center;padding:0 12px 10px;font-size:12px;color:var(--text-light)"><span>'+highlightKw(esc(ds.cat), kw)+'</span><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="disease">编辑</button></div></div>';
+        return '<div class="cat-card" style="margin-bottom:8px;cursor:pointer" data-view="disease" data-view-id="'+ds.id+'"><div class="cat-header"><div style="flex:1;min-width:0"><span class="cat-name">'+highlightKw(esc(ds.name), kw)+'</span></div></div><div style="display:flex;justify-content:space-between;align-items:center;padding:0 12px 10px;font-size:12px;color:var(--text-light)"><span>'+highlightKw(esc(ds.cat), kw)+'</span><button class="btn btn-sm btn-outline" data-edit="'+origIdx+'" data-type="disease">编辑</button></div></div>';
       }).join('');
     } else if (type === 'users') {
       renderUserList(); return;
@@ -160,7 +160,8 @@ function renderAdminList(type, kw) {
 
 function bindAdminEvents(type) {
   document.querySelectorAll('#admin-list [data-edit]').forEach(b => {
-    b.onclick = () => {
+    b.onclick = (e) => {
+      e.stopPropagation();
       var i = parseInt(b.dataset.edit);
       var t = b.dataset.type;
       if (t === 'drug') { showDrugEditor(allDrugs()[i], i); }
@@ -171,7 +172,21 @@ function bindAdminEvents(type) {
     };
   });
   document.querySelectorAll('#admin-list [data-del]').forEach(b => {
-    b.onclick = () => deleteItem(b.dataset.type, parseInt(b.dataset.del));
+    b.onclick = (e) => {
+      e.stopPropagation();
+      deleteItem(b.dataset.type, parseInt(b.dataset.del));
+    };
+  });
+  document.querySelectorAll('#admin-list [data-view]').forEach(card => {
+    card.onclick = function() {
+      var t = this.dataset.view;
+      var id = this.dataset.viewId;
+      if(t==='drug'){ pushScreen('detail'); renderDetail(id); }
+      else if(t==='guide'){ openGuide(id); }
+      else if(t==='edu'){ openHealthEdu(id); }
+      else if(t==='inf'){ openInfusion(id); }
+      else if(t==='disease'){ var ds=DISEASES.find(function(x){return x.id===id;}); if(ds) openDisease(ds.name); }
+    };
   });
 }
 
@@ -228,16 +243,17 @@ function updateSubcatOptions(selectedSub) {
 function showGuidelineEditor(guide, index) {
   var all=[...allGuides(),...LAWS];
   var isNew=!guide;
-  var g=guide||{title:'',system:'',year:'',content:''};
+  var g=guide||{title:'',system:'',year:'',content:'',sourceUrl:''};
   showModal(isNew?'新增指南':'编辑指南',
     `<div style="display:flex;flex-direction:column;gap:10px">
       <input id="ed-gtitle" value="${esc(g.title)}" placeholder="标题 *">
       <select id="ed-gsystem"><option value="">— 选择系统 —</option>${(typeof getGuideSystems==='function'?getGuideSystems():GUIDE_SYSTEMS).filter(function(s){return s.system!=='法律法规'&&s.system!=='其他';}).map(function(s){return '<option value="'+s.system+'"'+(g.system===s.system?' selected':'')+'>'+s.system+'</option>';}).join('')}</select>
       <input id="ed-gyear" value="${esc(g.year||'')}" placeholder="年份">
-      <textarea id="ed-gcontent" style="min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical" placeholder="内容">${esc(g.content||'')}</textarea>
+      <input id="ed-gsource" value="${esc(g.sourceUrl||'')}" placeholder="原文链接（可选，输入URL即可跳转外部网站）">
+      <textarea id="ed-gcontent" style="min-height:120px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical" placeholder="指南内容（如已填写原文链接，内容可不填）">${esc(g.content||'')}</textarea>
     </div>`,
     [{label:'取消'},{label:isNew?'新增':'保存',primary:true,onClick:()=>{
-      var ng={id:g.id||'gl_'+Date.now(),title:peg('ed-gtitle'),system:peg('ed-gsystem'),year:peg('ed-gyear'),content:peg('ed-gcontent')};
+      var ng={id:g.id||'gl_'+Date.now(),title:peg('ed-gtitle'),system:peg('ed-gsystem'),year:peg('ed-gyear'),content:peg('ed-gcontent'),sourceUrl:peg('ed-gsource')||null};
       if(!ng.title||!ng.system){toast('标题和系统为必填');return;}
       var cd=getCust();
       if(isNew){cd.guidelines.unshift(ng);}else if(index>=GUIDELINES.length){cd.guidelines[index-GUIDELINES.length]=ng;}else{cd.glOverlay=cd.glOverlay||{};cd.glOverlay[g.id]=ng;}
@@ -262,6 +278,27 @@ function showEduEditor(item, index) {
       cd.education=cd.education||[];
       if(isNew){cd.education.unshift(ne);}else{var idx=cd.education.findIndex(x=>x.id===h.id);if(idx>=0)cd.education[idx]=ne;else{cd.eduOverlay=cd.eduOverlay||{};cd.eduOverlay[h.id]=ne;}}
       saveCust(cd); renderAdminList('education'); addEditLog('科普',ne.title,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
+    }}]
+  );
+}
+
+function showMedEduEditor(item, index) {
+  var isNew=!item;
+  var m=item||{drug:'',cat:'',key:'',detail:''};
+  showModal(isNew?'新增用药教育':'编辑用药教育',
+    `<div style="display:flex;flex-direction:column;gap:10px">
+      <input id="ed-mdrug" value="${esc(m.drug)}" placeholder="药品名 *">
+      <input id="ed-mcat" value="${esc(m.cat||'')}" placeholder="分类">
+      <input id="ed-mkey" value="${esc(m.key||'')}" placeholder="交代要点 *">
+      <textarea id="ed-mdetail" style="min-height:80px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:14px;resize:vertical" placeholder="详细说明">${esc(m.detail||'')}</textarea>
+    </div>`,
+    [{label:'取消'},{label:isNew?'新增':'保存',primary:true,onClick:()=>{
+      var nm={id:m.id||'m_'+Date.now(),drug:peg('ed-mdrug'),cat:peg('ed-mcat'),key:peg('ed-mkey'),detail:peg('ed-mdetail')};
+      if(!nm.drug||!nm.key){toast('药品名和交代要点为必填');return;}
+      var cd=getCust();
+      cd.mededu=cd.mededu||[];
+      if(isNew){cd.mededu.unshift(nm);}else{var idx=cd.mededu.findIndex(x=>x.id===m.id);if(idx>=0)cd.mededu[idx]=nm;else{cd.medOverlay=cd.medOverlay||{};cd.medOverlay[m.id]=nm;}}
+      saveCust(cd); renderAdminList('mededu'); addEditLog('用药教育',nm.drug,isNew?'新增':'编辑'); toast(isNew?'新增成功':'保存成功');
     }}]
   );
 }
