@@ -175,6 +175,8 @@ function genPy(s){
   // 找回密码
   document.getElementById('login-forgot-link').addEventListener('click',function(){ showForgotPasswordModal(); });
   document.getElementById('login-forgot-user').addEventListener('click',function(){ showFindUsername(); });
+  var ca=document.getElementById('contact-admin');
+  if(ca) ca.onclick=function(){ showModal('联系管理员','<p style="text-align:center;font-size:14px">邮箱：<b style="user-select:all;color:var(--primary)">walkman0097@163.com</b></p><p style="text-align:center;font-size:11px;color:var(--text-light);margin-top:4px">点击上方邮箱地址即可复制</p>',[{label:'关闭'}]); };
 })();
 
 function loginSubmit() {
