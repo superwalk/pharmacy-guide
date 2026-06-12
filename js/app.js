@@ -1193,9 +1193,9 @@ function renderProfile() {
   const roleMap={admin:'管理员',editor:'管理员',user:'普通用户'};
   document.getElementById('profile-role').textContent=roleMap[currentUser.role]||'普通用户';
   document.getElementById('menu-edit-content').style.display=isEditor()?'flex':'none';
-  // 浏览统计仅管理员可见
+  // 浏览统计已合并到系统与帮助
   var bs=document.getElementById('menu-browse-stats');
-  if(bs) bs.style.display=isEditor()?'flex':'none';
+  if(bs) bs.style.display='none';
   // 编辑记录仅编辑员以上可见
   var elog=document.getElementById('menu-edit-log');
   if(elog) elog.style.display=isEditor()?'flex':'none';
@@ -1384,7 +1384,29 @@ function initProfileMenus() {
       // 数据管理卡片（仅admin）
       + (isAdmin ? '<div style="background:var(--bg);border-radius:12px;padding:14px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>💾 数据管理</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">'
         + '<div style="font-size:13px;line-height:1.8;color:var(--text-body)"><p><b>📤 导出</b>：下载包含所有编辑内容、收藏、日志的 JSON 备份文件。</p><p><b>📥 导入</b>：从电脑或旧手机恢复之前导出的备份数据。</p></div>'
-        + exportBtns + '</div></div>' : '');
+        + exportBtns + '</div></div>' : '')
+      // 浏览统计卡片
+      + (isEditor() ? (function(){
+        var today = new Date().toISOString().slice(0,10);
+        var loginStats = []; try { loginStats = JSON.parse(localStorage.getItem('login_stats') || '[]'); } catch(e) {}
+        var todayCount = loginStats.filter(function(s){return s.date===today;}).length;
+        var totalUsers = loginStats.filter(function(s){return s.date===today;}).reduce(function(acc, s){ if (acc.indexOf(s.username) < 0) acc.push(s.username); return acc; }, []).length;
+        var views = []; try { views = JSON.parse(localStorage.getItem('view_stats') || '[]'); } catch(e) {}
+        var top = views.sort(function(a,b){return (b.count||0) - (a.count||0);}).slice(0,20);
+        var typeIcon = {drug:'💊', guide:'📋', disease:'🦠', edu:'📖', med:'🗣️', inf:'💉'};
+        var topHtml = top.map(function(v,i){
+          var icon = typeIcon[v.type] || '📄';
+          return '<div class="list-card" style="cursor:pointer" data-hot-id="'+v.id+'" data-hot-type="'+v.type+'"><div class="icon-box">'+icon+'</div><div class="info"><div class="name"><span style="color:'+(i<3?'var(--danger)':'var(--text-light)')+';font-weight:'+(i<3?'800':'400')+'">#'+(i+1)+'</span> '+v.name+'</div><div class="desc">浏览 '+v.count+' 次</div></div></div>';
+        }).join('');
+        return '<div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📊 浏览统计</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">'
+          + '<div style="display:flex;gap:12px;margin-bottom:8px">'
+          + '<div style="flex:1;background:var(--bg);border-radius:12px;padding:10px;text-align:center;border:1px solid var(--border)"><div style="font-size:22px;font-weight:800;color:var(--primary)">'+todayCount+'</div><div style="font-size:11px;color:var(--text-light)">今日登录(次)</div></div>'
+          + '<div style="flex:1;background:var(--bg);border-radius:12px;padding:10px;text-align:center;border:1px solid var(--border)"><div style="font-size:22px;font-weight:800;color:var(--accent)">'+totalUsers+'</div><div style="font-size:11px;color:var(--text-light)">今日人数</div></div>'
+          + '</div>'
+          + '<div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:4px">🔥 热门TOP20</div>'
+          + (top.length > 0 ? topHtml : '<div style="text-align:center;padding:20px;color:var(--text-light)">暂无浏览数据</div>')
+          + '</div></div>';
+      })() : '');
     var editChangelogBtn = document.getElementById('edit-changelog-btn');
     if (editChangelogBtn) editChangelogBtn.onclick = function(){
       var logs = getChangelog();
@@ -1410,7 +1432,7 @@ function initProfileMenus() {
     };
   };
   // 用户管理（仅admin）
-  document.getElementById('menu-user-mgmt').onclick=()=>{ pushScreen('label'); renderUserListInLabel(); };
+  document.getElementById('menu-user-mgmt').onclick=()=>{ pushScreen('label'); var e2=document.getElementById('label-edit-btn'); if(e2) e2.style.display='none'; renderUserListInLabel(); };
   // 编辑记录菜单（函数在 admin.js 中定义）
   var elog=document.getElementById('menu-edit-log');
   if(elog) elog.onclick=()=>{ showEditLogs(); };
@@ -1630,7 +1652,7 @@ function openInfusion(iid) {
   pushScreen('label');
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:22px">${i.drug}</div>
-    <div style="font-size:13px;color:var(--text-light);margin-bottom:12px"><span class="badge badge-blue">${i.cat}</span> ${sourceBadge(i.id, INFUSION_DATA)}</div>
+    <div style="font-size:13px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${i.cat}</span> ${sourceBadge(i.id, INFUSION_DATA)}</span>${isEditor()?`<button class="btn btn-sm btn-outline" id="inf-edit-btn">编辑</button>`:''}</div>
     <div id="infusion-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>
   `;
   showEditBtn({type:'inf',id:iid});
@@ -1638,6 +1660,9 @@ function openInfusion(iid) {
     var detail = full || i;
     var ib = document.getElementById('infusion-body');
     if(!ib) return;
+    // 绑定内联编辑按钮
+    var ieBtn = document.getElementById('inf-edit-btn');
+    if (ieBtn) ieBtn.onclick = function(){ editCurrentItem(); };
     ib.innerHTML = `
     <div class="info-card"><div class="info-label">输液载体</div><div class="info-value">${detail.vehicle||'—'}</div></div>
     <div class="info-card"><div class="info-label">浓度</div><div class="info-value">${detail.conc||'—'}</div></div>
