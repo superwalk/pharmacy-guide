@@ -237,12 +237,7 @@ function initAdmin() {
     };
   }
 
-  // 仅walkman0097可见导出导入
   var isSuper = currentUser && currentUser.username === 'walkman0097';
-  var expBtn = document.getElementById('admin-export-btn');
-  var impBtn = document.getElementById('admin-import-btn');
-  if (expBtn) expBtn.style.display = isSuper ? 'inline-flex' : 'none';
-  if (impBtn) impBtn.style.display = isSuper ? 'inline-flex' : 'none';
 
   renderAdminList('drugs');
 }
