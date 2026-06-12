@@ -125,7 +125,23 @@ function showEditLogs() {
     if (pending.length > 0) {
       html += '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="cursor:pointer;background:linear-gradient(135deg,#FEF3C7,#FDE68A)" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">📋 待审核 <span style="font-size:12px;color:var(--danger)">('+pending.length+')</span></span><span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></div><div class="guide-items" style="display:none">';
       pending.forEach(function(p, idx){
+        // 生成详情内容
+        var detailHtml = '<div style="font-size:13px;line-height:1.8">'
+          + '<div style="font-size:12px;color:var(--text-light);margin-bottom:8px">编辑者：' + p.editor + ' · ' + p.time + '</div>'
+          + '<div style="margin-bottom:8px"><span class="badge badge-blue">' + p.type + '</span></div>';
+        if (p.data) {
+          var keys = Object.keys(p.data).filter(function(k){ return k !== 'id' && k !== 'py' && k !== 'is_custom'; });
+          keys.forEach(function(k){
+            var val = p.data[k];
+            if (!val) return;
+            var nameMap = { name:'名称', title:'标题', category:'分类', cat:'分类', subcategory:'子分类', type:'类型', indications:'适应症', contraindications:'禁忌症', adverse:'不良反应', dosage:'用法用量', storage:'储存条件', interactions:'相互作用', label:'说明书', content:'内容', source_url:'原文链接', system:'系统', year:'年份', drug:'药品名', key_point:'交代要点', key:'交代要点', detail:'详细说明', description:'描述', symptoms:'症状', diagnosis:'诊断', treatment:'治疗原则', vehicle:'输液载体', conc:'浓度', speed:'输注速度', note:'注意事项', interact:'配伍禁忌' };
+            var cn = nameMap[k] || k;
+            detailHtml += '<div style="margin:6px 0;border-bottom:1px solid var(--border);padding-bottom:4px"><span style="font-weight:600;color:var(--primary-dark)">' + cn + '：</span><span style="color:var(--text-body);white-space:pre-wrap">' + esc(String(val)) + '</span></div>';
+          });
+        }
+        detailHtml += '</div>';
         html += '<div class="list-card" style="display:flex;align-items:center;gap:8px"><div class="icon-box">📝</div><div class="info" style="flex:1"><div class="name">' + p.type + '：' + p.name + '</div><div class="desc">编辑者：' + p.editor + ' · ' + p.time + '</div></div>'
+          + '<button class="btn btn-sm btn-outline" style="font-size:11px" data-review="'+idx+'">👁️</button>'
           + '<button class="btn btn-sm" style="background:var(--primary);color:#fff;border:none;font-size:11px" data-approve="'+idx+'">通过</button>'
           + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger);font-size:11px" data-reject="'+idx+'">驳回</button></div>';
       });
@@ -158,6 +174,28 @@ function showEditLogs() {
   });
   // 绑定审核按钮
   if (isAdmin) {
+    // 查看详情
+    document.querySelectorAll('[data-review]').forEach(function(btn){
+      btn.onclick = function(e){ e.stopPropagation();
+        var idx = parseInt(btn.dataset.review);
+        var pending = JSON.parse(localStorage.getItem('pending_edits') || '[]');
+        var item = pending[idx];
+        if (!item || !item.data) { toast('无详细数据'); return; }
+        var h = '<div style="font-size:13px;line-height:1.8">'
+          + '<div style="font-size:12px;color:var(--text-light);margin-bottom:8px">编辑者：' + item.editor + ' · ' + item.time + '</div>'
+          + '<div style="margin-bottom:8px"><span class="badge badge-blue">' + item.type + '</span></div>';
+        var keys = Object.keys(item.data).filter(function(k){ return k !== 'id' && k !== 'py' && k !== 'is_custom'; });
+        var nameMap = { name:'名称', title:'标题', category:'分类', cat:'分类', subcategory:'子分类', type:'类型', indications:'适应症', contraindications:'禁忌症', adverse:'不良反应', dosage:'用法用量', storage:'储存条件', interactions:'相互作用', label:'说明书', content:'内容', source_url:'原文链接', system:'系统', year:'年份', drug:'药品名', key_point:'交代要点', key:'交代要点', detail:'详细说明', description:'描述', symptoms:'症状', diagnosis:'诊断', treatment:'治疗原则', vehicle:'输液载体', conc:'浓度', speed:'输注速度', note:'注意事项', interact:'配伍禁忌' };
+        keys.forEach(function(k){
+          var val = item.data[k];
+          if (!val) return;
+          var cn = nameMap[k] || k;
+          h += '<div style="margin:6px 0;border-bottom:1px solid var(--border);padding-bottom:4px"><span style="font-weight:600;color:var(--primary-dark)">' + cn + '：</span><span style="color:var(--text-body);white-space:pre-wrap">' + esc(String(val)) + '</span></div>';
+        });
+        h += '</div>';
+        showModal('👁️ 审核详情', h, [{label:'关闭',primary:true}]);
+      };
+    });
     document.querySelectorAll('[data-approve]').forEach(function(btn){
       btn.onclick = function(e){ e.stopPropagation();
         var idx = parseInt(btn.dataset.approve);
