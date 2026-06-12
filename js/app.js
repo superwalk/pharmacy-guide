@@ -452,21 +452,20 @@ function initApp() {
   initProfileMenus();
   bindGuideSearch();
   checkVersion(); // 自动检查版本更新
-  // 手风琴绑定：用 MutationObserver 自动绑定新生成的 accordion 头
-  function bindAccordions() {
-    document.querySelectorAll('[data-expanded]').forEach(function(el){
-      if (el.onclick) return; // 已绑定则跳过
-      if (el.getAttribute('onclick') && el.getAttribute('onclick').indexOf('toggleGuideGroup') >= 0) {
-        el.onclick = function(e){
-          toggleGuideGroup(this);
-          e.preventDefault();
-        };
+  // 手风琴：全局点击委托（最可靠方式，兼容所有浏览器）
+  document.addEventListener('click', function(e){
+    // 从点击元素向上查找可展开的头部
+    var el = e.target;
+    while (el && el !== document.body) {
+      if (el.dataset && el.dataset.expanded !== undefined) {
+        // 找到了带有 data-expanded 的元素 → 执行手风琴
+        toggleGuideGroup(el);
+        e.preventDefault();
+        return;
       }
-    });
-  }
-  bindAccordions();
-  var _obs = new MutationObserver(function(){ bindAccordions(); });
-  _obs.observe(document.getElementById('app'), { childList: true, subtree: true });
+      el = el.parentElement;
+    }
+  });
 
   // ─── 从 Supabase 加载数据（不阻塞 UI） ───
   if (typeof supabaseLoadAll === 'function') {
