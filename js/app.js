@@ -711,7 +711,6 @@ function renderDetail(drugId) {
   document.getElementById('detail-label').onclick=()=>{ pushScreen('label'); renderLabel(drugId); };
   if(isEditor()){
     document.getElementById('edit-detail-btn').onclick = editCurrentItem;
-    document.getElementById('export-detail-btn').onclick = function(){ syncItemToGitHub({type:'drug',id:drugId}); };
   }
   // 按需加载详情
   loadDrugDetail(drugId, function(full) {
