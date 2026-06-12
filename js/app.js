@@ -321,7 +321,7 @@ function showForgotPasswordModal(){
     var uname = document.getElementById('fp-username').value.trim();
     if(!uname){ toast('请输入用户名'); return; }
     var r = forgotPasswordVerify(uname, '');
-    if(!r.ok){ toast(r.msg); return; }
+    if(!r.ok){ showModal('提示', '<p style="text-align:center;font-size:14px;color:var(--text-body)">'+r.msg+'</p>', [{label:'知道了',primary:true}]); return; }
     showForgotPasswordQuestions(uname, r.questions);
   }}]);
 }
