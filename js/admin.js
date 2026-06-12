@@ -302,6 +302,9 @@ function initAdmin() {
   }
 
   var isSuper = currentUser && currentUser.username === 'walkman0097';
+  // 用户管理手风琴：仅管理员可见
+  var userCard = document.querySelector('#screen-admin .content > div:last-child');
+  if (userCard) userCard.style.display = isSuper ? 'block' : 'none';
 
   renderAdminList('drugs');
   // 渲染用户管理手风琴内容
