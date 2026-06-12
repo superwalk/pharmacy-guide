@@ -452,18 +452,32 @@ function initApp() {
   initProfileMenus();
   bindGuideSearch();
   checkVersion(); // 自动检查版本更新
-  // 手风琴：全局点击委托（最可靠方式，兼容所有浏览器）
+  // 手风琴：全局点击委托（最兼容：getAttribute + parentNode）
   document.addEventListener('click', function(e){
-    // 从点击元素向上查找可展开的头部
     var el = e.target;
-    while (el && el !== document.body) {
-      if (el.dataset && el.dataset.expanded !== undefined) {
-        // 找到了带有 data-expanded 的元素 → 执行手风琴
-        toggleGuideGroup(el);
-        e.preventDefault();
-        return;
-      }
-      el = el.parentElement;
+    while (el && el !== document.body && el !== document) {
+      try {
+        if (el.getAttribute && el.getAttribute('data-expanded') !== null) {
+          toggleGuideGroup(el);
+          e.preventDefault();
+          return;
+        }
+      } catch(ex) { /* 安全跳过 */ }
+      el = el.parentNode;
+    }
+  });
+  // 触屏设备兼容：touchend 也触发
+  document.addEventListener('touchend', function(e){
+    var el = e.target;
+    while (el && el !== document.body && el !== document) {
+      try {
+        if (el.getAttribute && el.getAttribute('data-expanded') !== null) {
+          toggleGuideGroup(el);
+          e.preventDefault();
+          return;
+        }
+      } catch(ex) { /* 安全跳过 */ }
+      el = el.parentNode;
     }
   });
 
@@ -651,25 +665,26 @@ function renderGuidelines() {
 
 function toggleGuideGroup(header) {
   if (!header) return;
-  // 优先 data-target, 其次 data-group, 最后 data-idx
   var items = null;
-  var tid = header.dataset.target;
-  if (tid) { items = document.getElementById(tid); }
-  if (!items && header.dataset.group !== undefined) { items = document.getElementById('guide-group-'+header.dataset.group); }
-  if (!items && header.dataset.idx !== undefined) { items = document.getElementById('gi-'+header.dataset.idx); }
+  var target = header.getAttribute('data-target');
+  var group = header.getAttribute('data-group');
+  var idx = header.getAttribute('data-idx');
+  if (target) { items = document.getElementById(target); }
+  if (!items && group !== null) { items = document.getElementById('guide-group-'+group); }
+  if (!items && idx !== null) { items = document.getElementById('gi-'+idx); }
   if (!items) { items = header.nextElementSibling; }
-  if (!items) { var p = header.parentElement; if (p) items = p.querySelector('.guide-items'); }
+  if (!items) { var p = header.parentNode; if (p) items = p.querySelector('.guide-items'); }
   if (!items) return;
   var arrow = header.querySelector('.guide-arrow');
-  var expanded = header.dataset.expanded === 'true';
+  var expanded = header.getAttribute('data-expanded') === 'true';
   if (expanded) {
     items.style.display = 'none';
     if (arrow) { arrow.style.transform = 'rotate(-90deg)'; arrow.textContent = '▶'; }
-    header.dataset.expanded = 'false';
+    header.setAttribute('data-expanded', 'false');
   } else {
     items.style.display = 'block';
     if (arrow) { arrow.style.transform = 'rotate(0deg)'; arrow.textContent = '▼'; }
-    header.dataset.expanded = 'true';
+    header.setAttribute('data-expanded', 'true');
   }
 }
 // 药品/疾病分类折叠
