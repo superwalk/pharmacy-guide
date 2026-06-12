@@ -110,7 +110,9 @@ function addRecent(id, type) {
   type=type||'drug';
   let r=getRecent(); r=r.filter(x=>!(x.id===id&&x.type===type)); 
   r.unshift({id:id,type:type}); if(r.length>15)r.pop(); 
-  localStorage.setItem(recentKey(),JSON.stringify(r)); 
+  localStorage.setItem(recentKey(),JSON.stringify(r));
+  // 同步记录浏览统计
+  recordView(id, type);
 }
 
 // 简易拼音首字母（新增内容自动支持搜索）
@@ -166,6 +168,7 @@ function loginSubmit() {
     const r=login(u,p);
     if(r.ok){
       if(document.getElementById('remember-pw').checked) saveRemember(u,p);
+      recordLogin(u); // 记录今日登录
       initApp();
     } else {
       b.textContent='登 录'; b.style.opacity='1';
@@ -180,6 +183,77 @@ function loginSubmit() {
       }
     }
   },400);
+}
+
+// ═══ 浏览统计 ═══
+// 查找内容名称（供统计显示用）
+function findContentName(id, type) {
+  if (type === 'drug') { var d = findDrug(id); return d ? d.name : id; }
+  if (type === 'guide') { var g = allGuides().find(function(x){return x.id===id;}); if(g)return g.title; var l=LAWS.find(function(x){return x.id===id;}); if(l)return l.title; return id; }
+  if (type === 'disease') { var d2 = DISEASES.find(function(x){return x.id===id;}); return d2 ? d2.name : id; }
+  if (type === 'edu') { var h = HEALTH_EDU.find(function(x){return x.id===id;}); return h ? h.title : id; }
+  if (type === 'med') { var m = MED_EDU.find(function(x){return x.id===id;}); return m ? m.drug : id; }
+  if (type === 'inf') { var inf = INFUSION_DATA.find(function(x){return x.id===id;}); return inf ? inf.drug : id; }
+  return id;
+}
+// 记录今日登录
+function recordLogin(username) {
+  try {
+    var stats = JSON.parse(localStorage.getItem('login_stats') || '[]');
+    var today = new Date().toISOString().slice(0,10);
+    // 同一用户同日不重复记录
+    if (!stats.find(function(s){return s.date===today && s.username===username;})) {
+      stats.push({date: today, username: username});
+      localStorage.setItem('login_stats', JSON.stringify(stats));
+    }
+  } catch(e) {}
+}
+// 记录浏览次数
+function recordView(id, type) {
+  try {
+    var views = JSON.parse(localStorage.getItem('view_stats') || '[]');
+    var name = findContentName(id, type);
+    var existing = views.find(function(v){return v.id===id && v.type===type;});
+    if (existing) {
+      existing.count = (existing.count || 0) + 1;
+    } else {
+      views.push({id: id, type: type, name: name, count: 1});
+    }
+    localStorage.setItem('view_stats', JSON.stringify(views));
+  } catch(e) {}
+}
+// 渲染浏览统计
+function showBrowseStats() {
+  pushScreen('label');
+  // 今日登录人数
+  var today = new Date().toISOString().slice(0,10);
+  var loginStats = [];
+  try { loginStats = JSON.parse(localStorage.getItem('login_stats') || '[]'); } catch(e) {}
+  var todayCount = loginStats.filter(function(s){return s.date===today;}).length;
+  var totalUsers = loginStats.filter(function(s){return s.date===today;}).reduce(function(acc, s){
+    if (acc.indexOf(s.username) < 0) acc.push(s.username); return acc;
+  }, []).length;
+  // TOP20 热门
+  var views = [];
+  try { views = JSON.parse(localStorage.getItem('view_stats') || '[]'); } catch(e) {}
+  var top = views.sort(function(a,b){return (b.count||0) - (a.count||0);}).slice(0,20);
+  var typeIcon = {drug:'💊', guide:'📋', disease:'🦠', edu:'📖', med:'🗣️', inf:'💉'};
+  var html = '<div style="font-size:28px;font-weight:800;color:var(--primary);margin:4px 0 2px">📊 浏览统计</div>'
+    + '<div style="font-size:12px;color:var(--text-light);margin-bottom:16px">今日 · '+today+'</div>'
+    + '<div style="display:flex;gap:12px;margin-bottom:16px">'
+    + '<div style="flex:1;background:var(--bg);border-radius:12px;padding:14px;text-align:center;border:1px solid var(--border)"><div style="font-size:28px;font-weight:800;color:var(--primary)">'+todayCount+'</div><div style="font-size:12px;color:var(--text-light)">今日登录(次)</div></div>'
+    + '<div style="flex:1;background:var(--bg);border-radius:12px;padding:14px;text-align:center;border:1px solid var(--border)"><div style="font-size:28px;font-weight:800;color:var(--accent)">'+totalUsers+'</div><div style="font-size:12px;color:var(--text-light)">今日登录人数</div></div>'
+    + '</div>'
+    + '<div class="section-title" style="margin-top:8px">🔥 热门内容 TOP20</div>';
+  if (top.length === 0) {
+    html += '<div style="text-align:center;padding:30px;color:var(--text-light)">暂无浏览数据</div>';
+  } else {
+    top.forEach(function(v, i){
+      var icon = typeIcon[v.type] || '📄';
+      html += '<div class="list-card"><div class="icon-box">'+icon+'</div><div class="info"><div class="name"><span style="color:'+(i<3?'var(--danger)':'var(--text-light)')+';font-weight:'+(i<3?'800':'400')+'">#'+(i+1)+'</span> '+v.name+'</div><div class="desc">浏览 '+v.count+' 次</div></div></div>';
+    });
+  }
+  document.getElementById('label-content').innerHTML = html;
 }
 
 // ═══ 注册新账号 ═══
@@ -385,9 +459,8 @@ function renderHome() {
       const nav=card.dataset.nav;
       if(nav==='compare'){ pushScreen('compare'); renderCompare(); return; }
       if(nav==='calc'){ pushScreen('calc'); renderCalc(); return; }
-      if(nav==='healthedu'){ pushScreen('healthedu'); renderHealthEdu(); return; }
       if(nav==='infusion'){ pushScreen('infusion'); renderInfusion(); return; }
-      if(nav==='mededu'){ pushScreen('mededu'); renderMedEdu(); return; }
+      if(nav==='mededu'){ pushScreen('mededu'); renderMedEduCombined(); return; }
       if(card.dataset.tab) { pushScreen(nav); document.querySelectorAll('#kb-tabs .segment-item').forEach(t=>t.classList.toggle('active',t.dataset.tab===card.dataset.tab)); renderKnowledge(); }
       else { pushScreen(nav); }
     };
@@ -930,6 +1003,7 @@ function initProfileMenus() {
   document.getElementById('edit-nickname-btn').onclick=()=>{ showModal('修改昵称','<input id="new-nickname" placeholder="输入新昵称" value="'+currentUser.nickname+'">',[{label:'取消'},{label:'保存',primary:true,onClick:()=>{ const n=document.getElementById('new-nickname').value.trim(); if(n) updateNickname(n); }}]); };
   document.getElementById('menu-change-pw').onclick=()=>{ showModal('修改密码','<div style="position:relative"><input id="old-pw" type="password" placeholder="原密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw">👁️</span></div><div style="position:relative;margin-top:8px"><input id="new-pw" type="password" placeholder="新密码" style="padding-right:36px"><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none" id="toggle-pw2">👁️</span></div>',[{label:'取消'},{label:'确认修改',primary:true,onClick:()=>{ const o=document.getElementById('old-pw').value; const n=document.getElementById('new-pw').value; if(!n||n.length<4){ toast('密码至少4位'); return false; } const r=changePassword(o,n); if(!r.ok){ toast(r.msg); return false; } logout(); location.reload(); }}]);
   document.getElementById('menu-security-settings').onclick=showSecuritySettings;
+  document.getElementById('menu-browse-stats').onclick=showBrowseStats;
   // 绑定小眼睛切换
   setTimeout(function(){
     var t1=document.getElementById('toggle-pw'); var t2=document.getElementById('toggle-pw2');
@@ -939,7 +1013,29 @@ function initProfileMenus() {
   document.getElementById('menu-disclaimer').onclick=()=>{ showModal('免责声明','<div style="font-size:13px;line-height:1.8;color:var(--text-body)"><p>本应用提供的药学知识内容仅供参考和学习交流之用，<span style="color:var(--danger)">不构成医疗建议、诊断或处方依据。</span></p><p style="margin-top:8px">具体用药方案请以药品说明书和临床指南为准，并遵循执业医师或药师的指导。</p><p style="margin-top:8px"><span style="color:var(--danger)">内容仅供药学专业人员学习参考，不替代专业诊断或治疗方案。</span>因参考本资料而产生的任何直接或间接后果，<span style="color:var(--danger)">作者概不负责</span>。</p><p style="margin-top:8px;color:var(--text-light)">© 2026 药学知识指南</p></div>',[{label:'我知道了',primary:true}]); };
   document.getElementById('menu-logout').onclick=()=>{ logout(); location.reload(); };
   // 使用帮助
-  document.getElementById('menu-guide').onclick=()=>{ pushScreen('label'); var guide=isEditor()?ADMIN_GUIDE:USER_GUIDE; document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">📖 使用帮助</div><div class="label-doc" style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">'+guide+'</div>'; };
+  document.getElementById('menu-guide').onclick=function(){
+    pushScreen('label');
+    var isAdmin = currentUser.username === 'walkman0097';
+    var defaultGuide = isEditor() ? ADMIN_GUIDE : USER_GUIDE;
+    var saved = (function(){
+      try { var s = localStorage.getItem('custom_guide'); return s ? JSON.parse(s) : null; } catch(e){ return null; }
+    })();
+    var guide = saved ? saved.content : defaultGuide;
+    var roleLabel = saved && saved.role === 'admin' ? '（管理员版）' : isEditor() ? '（管理员版）' : '';
+    document.getElementById('label-content').innerHTML = '<div class="section-title" style="font-size:22px">📖 使用帮助' + roleLabel + '</div><div class="label-doc" id="guide-content" style="white-space:pre-wrap;font-size:14px;line-height:1.9;color:var(--text-body)">' + guide + '</div>'
+      + (isAdmin ? '<button class="btn btn-outline btn-full" id="edit-guide-btn" style="margin-top:20px">✏️ 编辑使用帮助</button>' : '');
+    var editBtn = document.getElementById('edit-guide-btn');
+    if (editBtn) editBtn.onclick = function(){
+      var currentGuide = document.getElementById('guide-content').textContent;
+      showModal('编辑使用帮助', '<p style="font-size:12px;color:var(--text-light);margin-bottom:8px">编辑使用帮助内容，每一行自动换行。</p><textarea id="guide-editor" style="width:100%;min-height:300px;border-radius:10px;border:1px solid var(--border);padding:12px;font:inherit;font-size:13px;resize:vertical">' + escHTML(currentGuide) + '</textarea>',
+        [{label:'取消'},{label:'保存',primary:true,onClick:function(){
+          var newGuide = document.getElementById('guide-editor').value;
+          try { localStorage.setItem('custom_guide', JSON.stringify({content: newGuide, role: currentUser.role, updated: new Date().toISOString()})); } catch(e) {}
+          document.getElementById('guide-content').textContent = newGuide;
+          toast('使用帮助已更新');
+        }}]);
+    };
+  };
   // 用户管理（仅admin）
   document.getElementById('menu-user-mgmt').onclick=()=>{ pushScreen('label'); renderUserListInLabel(); };
   // 编辑记录菜单（函数在 admin.js 中定义）
@@ -1109,6 +1205,69 @@ function renderMedEdu(){
   }).join('');
   hl.querySelectorAll('.guide-item').forEach(function(item){item.onclick=function(){openMedEdu(item.dataset.meid);};});
   document.getElementById('me-search').oninput=renderMedEdu;
+}
+
+// ═══ 用药科普（合并用药教育 + 科普教育）═══
+function renderMedEduCombined() {
+  var kw = (document.getElementById('me-search')?.value||'').toLowerCase();
+  var container = document.getElementById('mededu-combined');
+  if (!container) return;
+  var t = '<div class="segment" id="me-tabs" style="margin-bottom:12px">'
+    + '<div class="segment-item active" data-tab="all">全部</div>'
+    + '<div class="segment-item" data-tab="med">用药教育</div>'
+    + '<div class="segment-item" data-tab="edu">科普教育</div>'
+    + '</div>';
+  // 用药教育部分
+  var medCats = [...new Set(MED_EDU.map(function(m){return m.cat;}))];
+  var medData = MED_EDU;
+  if (kw) medData = medData.filter(function(m){return m.drug.toLowerCase().includes(kw)||(m.detail||'').toLowerCase().includes(kw)||m.cat.toLowerCase().includes(kw)||m.key.toLowerCase().includes(kw)||(m.py||'').toLowerCase().includes(kw)||genPy(m.cat).toLowerCase().includes(kw);});
+  t += '<div id="me-section"><div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="background:linear-gradient(135deg,#E0F2FE,#BAE6FD);cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name" style="color:#0369A1">💊 用药教育 <span style="font-size:12px;color:var(--text-light)">'+medData.length+' 条</span></span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none">';
+  medCats.forEach(function(cat){
+    var items = medData.filter(function(m){return m.cat===cat;});
+    if (items.length===0) return;
+    t += '<div class="cat-card" style="margin-left:8px;margin-bottom:4px"><div class="cat-header" style="cursor:pointer;font-size:13px" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">'+cat+'</span><span style="font-size:11px;color:var(--text-light)">'+items.length+' 条 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></span></div><div class="guide-items" style="display:none">';
+    items.forEach(function(m){
+      t += '<div class="guide-item" data-meid="'+m.id+'" style="padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><div style="font-weight:600;color:var(--primary-dark)">'+highlightKw(m.drug, kw)+'</div><div style="color:var(--text-body);font-size:12px;margin-top:2px">'+m.key+'</div></div>';
+    });
+    t += '</div></div>';
+  });
+  t += '</div></div></div>';
+  // 科普教育部分
+  var eduCats = [...new Set(HEALTH_EDU.map(function(h){return h.cat;}))];
+  var eduData = HEALTH_EDU;
+  if (kw) eduData = eduData.filter(function(h){return h.title.toLowerCase().includes(kw)||(h.content||'').toLowerCase().includes(kw)||h.cat.toLowerCase().includes(kw)||(h.py||'').toLowerCase().includes(kw)||genPy(h.cat).toLowerCase().includes(kw);});
+  t += '<div id="edu-section"><div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="background:linear-gradient(135deg,#FEF3C7,#FDE68A);cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name" style="color:#D97706">📖 科普教育 <span style="font-size:12px;color:var(--text-light)">'+eduData.length+' 篇</span></span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div><div class="guide-items" style="display:none">';
+  eduCats.forEach(function(cat){
+    var items = eduData.filter(function(h){return h.cat===cat;});
+    if (items.length===0) return;
+    t += '<div class="cat-card" style="margin-left:8px;margin-bottom:4px"><div class="cat-header" style="cursor:pointer;font-size:13px" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name">'+cat+'</span><span style="font-size:11px;color:var(--text-light)">'+items.length+' 篇 <span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></span></div><div class="guide-items" style="display:none">';
+    items.forEach(function(h){
+      var isPy = kw && ((h.py||'').toLowerCase().includes(kw) || genPy(h.cat).toLowerCase().includes(kw)) && !h.title.toLowerCase().includes(kw);
+      var pyTag = isPy ? ' <span class="badge badge-blue" style="font-size:10px">PY</span>' : '';
+      t += '<div class="guide-item" data-hid="'+h.id+'" style="display:flex;gap:6px;align-items:center;padding:8px 4px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"><span style="width:6px;height:6px;background:#D97706;border-radius:3px;flex-shrink:0"></span><span style="color:var(--text-body);flex:1">'+highlightKw(h.title, kw)+pyTag+'</span></div>';
+    });
+    t += '</div></div>';
+  });
+  t += '</div></div></div>';
+  container.innerHTML = t;
+  // 绑定点击
+  container.querySelectorAll('.guide-item[data-meid]').forEach(function(item){item.onclick=function(){openMedEdu(item.dataset.meid);};});
+  container.querySelectorAll('.guide-item[data-hid]').forEach(function(item){item.onclick=function(){openHealthEdu(item.dataset.hid);};});
+  // 标签切换
+  var tabs = document.getElementById('me-tabs');
+  if (tabs) {
+    tabs.querySelectorAll('.segment-item').forEach(function(tab){
+      tab.onclick = function(){
+        tabs.querySelectorAll('.segment-item').forEach(function(t){t.classList.remove('active');});
+        tab.classList.add('active');
+        var tabName = tab.dataset.tab;
+        document.getElementById('me-section').style.display = (tabName==='all'||tabName==='med') ? '' : 'none';
+        document.getElementById('edu-section').style.display = (tabName==='all'||tabName==='edu') ? '' : 'none';
+      };
+    });
+  }
+  // 键盘搜索
+  document.getElementById('me-search').oninput = renderMedEduCombined;
 }
 
 function openMedEdu(mid){
