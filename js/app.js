@@ -1012,8 +1012,8 @@ function sendMessage(from, to, text, type, sourcePage) {
   msgs.unshift(msg);
   saveMessages(msgs);
   // 同步到 Supabase（跨浏览器可见）
-  if (_online && typeof trySync === 'function') {
-    trySync('messages', { id: msg.id, sender: from, recipient: to, content: text, msg_type: type || 'admin', source_page: sourcePage || '', created_at: new Date().toISOString() });
+  if (typeof _supabase !== 'undefined' && _supabase && _online) {
+    _supabase.from('messages').upsert({ id: msg.id, sender: from, recipient: to, content: text, msg_type: type || 'admin', source_page: sourcePage || '', created_at: new Date().toISOString() }, { onConflict: 'id' }).catch(function(){});
   }
   return true;
 }
