@@ -81,12 +81,10 @@ function initAdmin() {
     };
   }
 
-  // 权限控制：所有管理员可见推送到仓库；仅walkman0097可见导出导入
+  // 仅walkman0097可见导出导入
   var isSuper = currentUser && currentUser.username === 'walkman0097';
-  var syncBtn = document.getElementById('admin-sync-btn');
   var expBtn = document.getElementById('admin-export-btn');
   var impBtn = document.getElementById('admin-import-btn');
-  if (syncBtn) syncBtn.style.display = 'inline-flex';
   if (expBtn) expBtn.style.display = isSuper ? 'inline-flex' : 'none';
   if (impBtn) impBtn.style.display = isSuper ? 'inline-flex' : 'none';
 
@@ -425,15 +423,10 @@ function renderUserList(){
     row.className='list-card';
     row.style.cssText='display:flex;align-items:center;gap:8px';
     row.innerHTML='<div class="icon-box">👤</div><div class="info" style="flex:1"><div class="name">'+u.username+' '+sourceTag+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+u.nickname+'</div></div>'
-      + (isBuiltin ? '' : '<button class="btn btn-sm btn-outline" style="margin-right:2px;font-size:11px">☁️导出</button>')
       + '<button class="btn btn-sm btn-outline" style="margin-right:4px">编辑</button>'
       + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)">删除</button>';
     var btns = row.querySelectorAll('button');
     var btnIdx = 0;
-    if (!isBuiltin) {
-      btns[btnIdx].onclick=function(){ syncOneUserToGitHub(u); };
-      btnIdx++;
-    }
     btns[btnIdx].onclick=function(){ showUserEditor(u); };
     btns[btnIdx+1].onclick=function(){
       if(u.username===currentUser.username){ toast('不能删除自己'); return; }
