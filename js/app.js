@@ -228,7 +228,6 @@ function initApp() {
 
   // 置顶按钮——监听各屏幕容器的滚动
   function onScreenScroll(){
-  function onScreenScroll(){
     var btn=document.getElementById('back-to-top');
     if(!btn) return;
     var active=document.querySelector('.screen.active');
