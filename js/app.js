@@ -996,7 +996,7 @@ function renderDetail(drugId) {
   dc.innerHTML=`
     <div class="detail-hero">
       <div class="detail-name">${d.name}</div>
-      <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-green">${d.category}</span><span class="badge badge-blue">${d.type}</span>${tagBadge(d.tag)} ${sourceBadge(d.id, DRUGS)}</span><span style="display:flex;align-items:center;gap:8px"><span id="drug-fav-star" style="cursor:pointer;font-size:14px;user-select:none" title="收藏此药品">${fav?'⭐':'☆'}</span><span style="font-size:12px;color:var(--text-light);user-select:none">收藏</span>${isEditor()?`<span id="edit-detail-btn" style="color:var(--primary);cursor:pointer;font-size:12px;flex-shrink:0;margin-left:4px">编辑</span>`:''}</span></div>
+      <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-green">${d.category}</span><span class="badge badge-blue">${d.type}</span>${tagBadge(d.tag)} ${sourceBadge(d.id, DRUGS)}</span>${isEditor()?`<span id="edit-detail-btn" style="color:var(--primary);cursor:pointer;font-size:12px;flex-shrink:0">编辑</span>`:''}</div>
       <div class="detail-actions">
         <button class="btn btn-outline" id="detail-fav"><span style="color:${fav?'var(--danger)':'var(--primary)'}">${fav?'❤️':'🤍'}</span> ${fav?'已收藏':'收藏'}</button>
         <button class="btn btn-outline" id="detail-cmp">⚖️ 加入对比</button>
@@ -1006,8 +1006,6 @@ function renderDetail(drugId) {
     <div id="detail-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
   document.getElementById('detail-fav').onclick=()=>{ toggleFav(drugId); renderDetail(drugId); };
-  var drugFavStar = document.getElementById('drug-fav-star');
-  if (drugFavStar) drugFavStar.onclick = function(e){ e.stopPropagation(); toggleFav(drugId); drugFavStar.textContent = isFav(drugId)?'⭐':'☆'; };
   document.getElementById('detail-cmp').onclick=()=>{ addToCompare(drugId); };
   document.getElementById('detail-label').onclick=()=>{ pushScreen('label'); renderLabel(drugId); };
   if(isEditor()){
