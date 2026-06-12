@@ -1,7 +1,9 @@
-// ═══ 用户认证 ═══
+// ═══ 用户认证（Supabase 同步版） ═══
 let currentUser = null;
+var _sbUsersLoaded = false;
+var _sbUsers = [];
 
-// 从 users.json 同步过来的核心数据
+// 从 users.json 同步过来的核心数据（离线降级用）
 const USERS = [
   { username:'walkman0097', password:'@Ab7704..Di', role:'admin', nickname:'管理员' },
   { username:'user001', password:'exr3690', role:'editor', nickname:'管理员-λ' },
@@ -105,24 +107,72 @@ const USERS = [
   { username:'user099', password:'cos4179', role:'user', nickname:'药师099' },
 ];
 
+// ═══ Supabase 用户同步 ═══
+function loadUsersFromSupabase(callback) {
+  if (!_online || typeof _supabase === 'undefined' || !_supabase) {
+    initSupabase();
+    if (!_supabase) { if(callback) callback(null); return; }
+  }
+  _supabase.from('profiles').select('id,username,password,nickname,display_name,role,source,created_at').then(function(r){
+    if (r.error) { console.warn('Supabase 加载用户失败:', r.error); if(callback) callback(null); return; }
+    if (r.data && r.data.length > 0) {
+      _sbUsers = r.data;
+      _sbUsersLoaded = true;
+      var localUsers = r.data.map(function(p){
+        return { username: p.username, password: p.password || '', nickname: p.display_name || p.nickname || p.username, role: p.role || 'user', source: p.source || 'manual', id: p.id };
+      });
+      localStorage.setItem('custom_users', JSON.stringify(localUsers));
+      if (callback) callback(localUsers);
+    } else {
+      if (callback) callback(null);
+    }
+  }).catch(function(e){
+    console.warn('Supabase 加载用户异常:', e);
+    if (callback) callback(null);
+  });
+}
+
+function syncUserToSupabase(username, data) {
+  if (!_online) return;
+  initSupabase();
+  if (!_supabase) return;
+  var existing = _sbUsers.find(function(u){ return u.username === username; });
+  var payload = { username: username, password: data.password, nickname: data.nickname, display_name: data.nickname, role: data.role || 'user', source: data.source || 'manual' };
+  if (existing && existing.id) {
+    payload.id = existing.id;
+  } else {
+    var hash = 0;
+    for (var i = 0; i < username.length; i++) { hash = ((hash << 5) - hash) + username.charCodeAt(i); hash |= 0; }
+    payload.id = '00000000-0000-0000-0000-' + String(Math.abs(hash)).padStart(12, '0').slice(0, 12);
+  }
+  _supabase.from('profiles').upsert(payload, { onConflict: 'username' }).then(function(r){
+    if (r.error) console.warn('Supabase 同步用户失败:', r.error);
+  }).catch(function(e){ console.warn('Supabase 同步用户异常:', e); });
+}
+
+function deleteUserFromSupabase(username) {
+  if (!_online) return;
+  initSupabase();
+  if (!_supabase) return;
+  _supabase.from('profiles').delete().eq('username', username).then(function(r){
+    if (r.error) console.warn('Supabase 删除用户失败:', r.error);
+  }).catch(function(e){ console.warn('Supabase 删除用户异常:', e); });
+}
+
+// ═══ 用户管理 ═══
 function findUser(username) {
   const users = getUsers();
   return users.find(u => u.username === username);
 }
 
-// 用户管理 — 从localStorage加载，无则用默认
 function getUsers() {
   try {
     var saved = localStorage.getItem('custom_users');
     if (saved) {
       var users = JSON.parse(saved);
-      // 同步源码中的USERS变更(如密码重置)到本地，不覆盖本地新增用户
       USERS.forEach(function(su){
         var local = users.find(function(u){ return u.username === su.username; });
-        if (local) {
-          // 仅同步密码(源码密码优先)，保留本地昵称/角色变更
-          local.password = su.password;
-        }
+        if (local) local.password = su.password;
       });
       return users;
     }
@@ -140,6 +190,7 @@ function addUser(user) {
   if (users.find(u => u.username === user.username)) return { ok: false, msg: '用户名已存在' };
   users.push(user);
   saveUsers(users);
+  syncUserToSupabase(user.username, user);
   return { ok: true };
 }
 
@@ -147,6 +198,7 @@ function removeUser(username) {
   var users = getUsers();
   users = users.filter(u => u.username !== username);
   saveUsers(users);
+  deleteUserFromSupabase(username);
 }
 
 function updateUser(username, updates) {
@@ -155,11 +207,12 @@ function updateUser(username, updates) {
   if (idx < 0) return { ok: false };
   Object.assign(users[idx], updates);
   saveUsers(users);
+  syncUserToSupabase(username, users[idx]);
   return { ok: true };
 }
 
+// ═══ 登录 ═══
 function login(username, password) {
-  // 检查锁定状态
   var lock = checkLock(username);
   if (lock.locked) return { ok:false, msg:'账户已锁定，'+(lock.remain > 60 ? Math.ceil(lock.remain/60)+'分钟' : lock.remain+'秒')+'后重试' };
 
@@ -171,24 +224,21 @@ function login(username, password) {
     if (lk.locked) return { ok:false, msg:'密码错误，账户已锁定'+(lk.remain > 60 ? Math.ceil(lk.remain/60)+'分钟' : lk.remain+'秒')+'后重试' };
     return { ok:false, msg:'密码错误，剩余'+(5-lk.count)+'次尝试' };
   }
-  // 登录成功，清除失败记录
   clearFails(username);
-  // 合并本地存储的昵称
   const saved = JSON.parse(localStorage.getItem('user_' + u.username) || '{}');
   if (saved.nickname) u.nickname = saved.nickname;
-  // 不再从user_读密码，密码统一由getUsers()管理
   currentUser = u;
   localStorage.setItem('currentUser', u.username);
   return { ok:true, user:u };
 }
 
-// 登录限次
+// ═══ 登录限次 ═══
 function checkLock(username) {
   try {
     var data = JSON.parse(localStorage.getItem('login_fails_' + username) || '{"count":0,"time":0}');
     if (data.count >= 5) {
       var elapsed = Math.floor((Date.now() - data.time) / 1000);
-      var remain = 900 - elapsed; // 15分钟
+      var remain = 900 - elapsed;
       if (remain > 0) return { locked: true, count: data.count, remain: remain };
       data = { count: 0, time: 0 };
     }
@@ -198,7 +248,7 @@ function checkLock(username) {
 
 function recordFail(username) {
   var data = JSON.parse(localStorage.getItem('login_fails_' + username) || '{"count":0,"time":0}');
-  if (data.count >= 5 && Date.now() - data.time < 900000) return; // already locked
+  if (data.count >= 5 && Date.now() - data.time < 900000) return;
   if (Date.now() - data.time > 900000) { data.count = 0; }
   data.count++;
   data.time = Date.now();
@@ -215,15 +265,20 @@ function logout() {
   clearRemember();
 }
 
+// ═══ 记住密码（15天免登录） ═══
 function saveRemember(username, password) {
-  var data={u:username, p:password, exp:9999999999999}; // 永不过期
-  localStorage.setItem('remember_login', JSON.stringify(data));
+  var exp = Date.now() + 15 * 24 * 60 * 60 * 1000; // 15天
+  localStorage.setItem('remember_login', JSON.stringify({u:username, p:password, exp:exp}));
 }
 
 function loadRemember() {
   try{
-    var data=JSON.parse(localStorage.getItem('remember_login'));
-    if(!data) return null;
+    var data = JSON.parse(localStorage.getItem('remember_login'));
+    if (!data) return null;
+    if (data.exp && Date.now() > data.exp) {
+      localStorage.removeItem('remember_login');
+      return null;
+    }
     return data;
   }catch(e){return null;}
 }
@@ -241,6 +296,8 @@ function updateNickname(newName) {
   saved.nickname = newName;
   localStorage.setItem('user_' + currentUser.username, JSON.stringify(saved));
   document.getElementById('profile-nickname').textContent = newName;
+  // 同步到 Supabase
+  syncUserToSupabase(currentUser.username, { password: currentUser.password, nickname: newName, role: currentUser.role });
   toast('昵称已修改');
 }
 
@@ -251,11 +308,12 @@ function changePassword(oldPw, newPw) {
   if (u.password !== oldPw) return { ok:false, msg:'原密码错误' };
   u.password = newPw;
   currentUser.password = newPw;
-  saveUsers(users); // 保存修改后的数组，不能重新getUsers
-  // 清除旧的user_缓存，防止登录时覆盖
+  saveUsers(users);
   var saved = JSON.parse(localStorage.getItem('user_' + currentUser.username) || '{}');
   saved.password = newPw;
   localStorage.setItem('user_' + currentUser.username, JSON.stringify(saved));
-  clearRemember(); // 密码变更后15天免登录失效
+  // 同步到 Supabase
+  syncUserToSupabase(currentUser.username, { password: newPw, nickname: currentUser.nickname, role: currentUser.role });
+  clearRemember();
   return { ok:true };
 }
