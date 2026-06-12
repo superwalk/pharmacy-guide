@@ -121,6 +121,11 @@ function loadUsersFromSupabase(callback) {
       var localUsers = r.data.map(function(p){
         return { username: p.username, password: p.password || '', nickname: p.display_name || p.nickname || p.username, role: p.role || 'user', source: p.source || 'manual', id: p.id, email: p.email || '', security_q1: p.security_q1, security_a1: p.security_a1, security_q2: p.security_q2, security_a2: p.security_a2, security_q3: p.security_q3, security_a3: p.security_a3, pw_reset_count: p.pw_reset_count || 0, pw_reset_date: p.pw_reset_date };
       });
+      // 从本地保存的 user_<username> 恢复昵称（避免 Supabase 旧数据覆盖）
+      localUsers.forEach(function(u){
+        var saved = JSON.parse(localStorage.getItem('user_' + u.username) || '{}');
+        if (saved.nickname) u.nickname = saved.nickname;
+      });
       localStorage.setItem('custom_users', JSON.stringify(localUsers));
       if (callback) callback(localUsers);
     } else {
