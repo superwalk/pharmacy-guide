@@ -98,7 +98,8 @@ svg{display:block}
 /* ── 分类行 ── */
 .cat-card{background:var(--card);border-radius:var(--radius);padding:10px 12px;box-shadow:none;display:flex;flex-direction:column;gap:6px}
 .cat-card:active{opacity:.8}
-.cat-header{display:flex;justify-content:space-between;align-items:center}
+.cat-header{display:flex;justify-content:space-between;align-items:center;touch-action:manipulation}
+[data-expanded]{touch-action:manipulation}
 .cat-name{font-size:14px;font-family:var(--font-heading);font-weight:700;color:var(--primary-dark)}
 .cat-arrow{width:18px;height:18px;color:var(--muted-fg)}
 .cat-subs{display:flex;gap:8px;flex-wrap:wrap}
