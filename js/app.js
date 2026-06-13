@@ -609,11 +609,14 @@ function initApp() {
   }
   // 触摸滑动检测：防止滑动时误触展开
   var _touchStartY = null;
+  var _touchExpanded = false; // 标记touchend已处理，防止click重复触发
   document.addEventListener('touchstart', function(e){
     _touchStartY = e.touches[0].clientY;
+    _touchExpanded = false;
   });
   // 手风琴：全局点击委托（兼容桌面click）
   document.addEventListener('click', function(e){
+    if (_touchExpanded) { _touchExpanded = false; return; } // touchend已处理，跳过
     var el = e.target;
     while (el && el !== document.body && el !== document) {
       try {
@@ -638,6 +641,7 @@ function initApp() {
       try {
         if (el.getAttribute && el.getAttribute('data-expanded') !== null) {
           toggleGuideGroup(el);
+          _touchExpanded = true; // 标记已处理
           e.preventDefault();
           return;
         }
