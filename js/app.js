@@ -908,7 +908,7 @@ function openGuide(gid) {
   addRecent(gid,'guide');
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:20px">${g.title}</div>
-    <div style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${g.system||'法律法规'}</span><span>${g.year||''}</span> ${sourceBadge(g.id, allGuides())}</span><span style="display:flex;align-items:center;gap:8px"><span id="guide-fav-star" style="cursor:pointer;font-size:14px;user-select:none" title="收藏此指南">${isFav(g.id)?'⭐':'☆'}</span><span style="font-size:12px;color:var(--text-light);user-select:none">收藏</span>${isEditor()?`<span id="guide-edit-btn" style="color:var(--primary);cursor:pointer;font-size:12px;flex-shrink:0;margin-left:4px">编辑</span>`:''}</span></div>
+    <div style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${g.system||'法律法规'}</span><span>${g.year||''}</span> ${sourceBadge(g.id, allGuides())}</span><span style="display:flex;align-items:center;gap:14px"><span id="guide-fav-star" style="cursor:pointer;font-size:13px;user-select:none;display:flex;align-items:center;gap:3px" title="收藏此指南"><span style="font-size:14px">${isFav(g.id)?'⭐':'☆'}</span><span style="font-size:12px;color:var(--text-light)">收藏</span></span>${isEditor()?`<span id="guide-edit-btn" style="color:var(--primary);cursor:pointer;font-size:12px;flex-shrink:0">编辑</span>`:''}</span></div>
     <div id="guide-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
   showEditBtn({type:'guide',id:gid});
@@ -921,7 +921,7 @@ function openGuide(gid) {
     if (geBtn) geBtn.onclick = function(){ editCurrentItem(); };
     // 绑定收藏按钮
     var gfav = document.getElementById('guide-fav-star');
-    if (gfav) gfav.onclick = function(e){ e.stopPropagation(); toggleFav(gid); gfav.textContent = isFav(gid)?'⭐':'☆'; };
+    if (gfav) gfav.onclick = function(e){ e.stopPropagation(); toggleFav(gid); gfav.innerHTML = (isFav(gid)?'⭐':'☆')+'<span style="font-size:12px;color:var(--text-light)">收藏</span>'; };
     var html = '<div class="label-doc"><p style="font-size:14px;line-height:1.9;color:var(--text-body);white-space:pre-wrap">'+hlText(detail.content||'')+'</p></div>';
     if(detail.sourceUrl){
       html += '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><a href="'+detail.sourceUrl+'" target="_blank" class="btn btn-outline btn-sm" style="font-size:13px;padding:6px 16px;text-decoration:none;display:inline-block">🔗 查看原文</a></div>';
@@ -1783,13 +1783,13 @@ function openHealthEdu(hid) {
   pushScreen('label');
   document.getElementById('label-content').innerHTML=`
     <div class="section-title" style="font-size:20px">${h.title}</div>
-    <div class="subtitle-row" style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between"><span>${h.cat} ${sourceBadge(h.id, HEALTH_EDU)}</span><span style="display:flex;align-items:center;gap:4px"><span id="he-fav-star" style="cursor:pointer;font-size:14px;user-select:none" title="收藏此科普">${isFav(h.id)?'⭐':'☆'}</span><span style="font-size:12px;color:var(--text-light);user-select:none">收藏</span></span></div>
+    <div class="subtitle-row" style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between"><span>${h.cat} ${sourceBadge(h.id, HEALTH_EDU)}</span><span style="display:flex;align-items:center;gap:14px"><span id="he-fav-star" style="cursor:pointer;font-size:13px;user-select:none;display:flex;align-items:center;gap:3px" title="收藏此科普"><span style="font-size:14px">${isFav(h.id)?'⭐':'☆'}</span><span style="font-size:12px;color:var(--text-light)">收藏</span></span></span></div>
     <div id="healthedu-body"><div style="text-align:center;padding:30px;color:var(--text-light)">加载中…</div></div>
   `;
   showEditBtn({type:'edu',id:hid});
   // 绑定收藏按钮
   var heFav = document.getElementById('he-fav-star');
-  if (heFav) heFav.onclick = function(e){ e.stopPropagation(); toggleFav(hid); heFav.textContent = isFav(hid)?'⭐':'☆'; };
+  if (heFav) heFav.onclick = function(e){ e.stopPropagation(); toggleFav(hid); heFav.innerHTML = (isFav(hid)?'⭐':'☆')+'<span style="font-size:12px;color:var(--text-light)">收藏</span>'; };
   loadHealthEduDetail(hid, function(full) {
     var detail = full || h;
     var hb = document.getElementById('healthedu-body');
@@ -1807,10 +1807,9 @@ function renderInfusion() {
   var data = INFUSION_DATA;
   if (kw) data = data.filter(function(i){return i.drug.toLowerCase().includes(kw)||(i.note||'').toLowerCase().includes(kw)||(i.cat||'').includes(kw)||(i.interact||'').includes(kw)||(i.vehicle||'').toLowerCase().includes(kw)||(i.py||'').toLowerCase().includes(kw)||genPy(i.cat||'').toLowerCase().includes(kw);});
   // 配伍查询面板
-  var qfid = 'calc-infquery';
-  var qfFaved = isFav(qfid);
+  // 配伍查询面板
   var queryHtml = '<div class="cat-card" style="margin-bottom:8px;background:linear-gradient(135deg,#F3E8FF,#E9D5FF)">'
-    + '<div class="cat-header" style="cursor:pointer;display:flex;align-items:center" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name" style="flex:1">🔍 配伍禁忌查询</span><span class="inf-tool-fav" style="cursor:pointer;font-size:14px;user-select:none;padding:0 6px" title="收藏此工具">'+(qfFaved?'⭐':'☆')+'</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></div>'
+    + '<div class="cat-header" style="cursor:pointer;display:flex;align-items:center" onclick="toggleGuideGroup(this)" data-expanded="false"><span class="cat-name" style="flex:1">🔍 配伍禁忌查询</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></div>'
     + '<div class="guide-items" style="display:none">'
     + '<div style="font-size:12px;color:var(--text-light);margin-bottom:6px">输入药品名称，多个药品用逗号或空格分隔</div>'
     + '<div id="inf-recent" style="margin-bottom:6px"></div>'
@@ -1964,14 +1963,6 @@ function doInfusionQuery() {
       doInfusionQuery();
     };
   });
-  // 绑定配伍查询工具收藏
-  container.querySelectorAll('.inf-tool-fav').forEach(function(btn){
-    btn.onclick = function(e){
-      e.stopPropagation();
-      toggleCalcFav('infquery');
-      btn.textContent = isFav('calc-infquery') ? '⭐' : '☆';
-    };
-  });
   // 保存到最近查询
   var input = document.getElementById('inf-query-input');
   if (input) {
@@ -2060,7 +2051,7 @@ function openDisease(name) {
   document.getElementById('label-content').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:12px">正在加载… (DISEASES: '+DISEASES.length+')</div>';
   let html='<div class="section-title" style="font-size:22px">'+name+'</div>';
   if(d) html+=`
-    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span> ${sourceBadge(d.id, DISEASES)}</span><span style="display:flex;align-items:center;gap:8px"><span id="ds-fav-star" style="cursor:pointer;font-size:14px;user-select:none" title="收藏此疾病">${isFav(d.id)?'⭐':'☆'}</span><span style="font-size:12px;color:var(--text-light);user-select:none">收藏</span>${isEditor()?'<span onclick="editCurrentItem()" style="color:var(--primary);cursor:pointer;font-size:12px;flex-shrink:0;margin-left:4px">编辑</span>':''}</span></div>
+    <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span><span class="badge badge-blue">${d.cat}</span> ${sourceBadge(d.id, DISEASES)}</span><span style="display:flex;align-items:center;gap:14px"><span id="ds-fav-star" style="cursor:pointer;font-size:13px;user-select:none;display:flex;align-items:center;gap:3px" title="收藏此疾病"><span style="font-size:14px">${isFav(d.id)?'⭐':'☆'}</span><span style="font-size:12px;color:var(--text-light)">收藏</span></span>${isEditor()?'<span onclick="editCurrentItem()" style="color:var(--primary);cursor:pointer;font-size:12px;flex-shrink:0">编辑</span>':''}</span></div>
     <div id="disease-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>`;
   if(drugs.length>0) html+=`<div class="section-title" style="margin-top:8px">💊 相关药品 (${drugs.length})</div>`+drugs.slice(0,6).map(dr=>`<div class="list-card" onclick="pushScreen('detail');renderDetail('${dr.id}')"><div class="icon-box">💊</div><div class="info"><div class="name">${dr.name}</div><div class="desc">${dr.category} · ${(dr.indications||'').slice(0,30)}…</div></div></div>`).join('');
   if(guides.length>0) html+=`<div class="section-title" style="margin-top:8px">📋 相关指南</div>`+guides.slice(0,3).map(g=>`<div class="list-card" onclick="openGuide('${g.id}')"><div class="icon-box">📋</div><div class="info"><div class="name">${g.title}</div><div class="desc">${g.system} · ${g.year}</div></div></div>`).join('');
@@ -2069,7 +2060,7 @@ function openDisease(name) {
   addRecent(d?d.id:name,'disease');
   // 绑定疾病收藏按钮
   var dsFav = document.getElementById('ds-fav-star');
-  if (dsFav) dsFav.onclick = function(e){ e.stopPropagation(); toggleFav(d.id); dsFav.textContent = isFav(d.id)?'⭐':'☆'; };
+  if (dsFav) dsFav.onclick = function(e){ e.stopPropagation(); toggleFav(d.id); dsFav.innerHTML = (isFav(d.id)?'⭐':'☆')+'<span style="font-size:12px;color:var(--text-light)">收藏</span>'; };
   if(d) {
     loadDiseaseDetail(d.id, function(full) {
       var detail = full || d;
@@ -2162,11 +2153,11 @@ function matchKw(val, kw) {
 function openMedEdu(mid){
   var m=MED_EDU.find(function(x){return x.id===mid;}); if(!m) return;
   pushScreen('label');
-  document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">'+m.drug+'</div><div class="subtitle-row" style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><span class="badge badge-blue">'+m.cat+'</span> '+sourceBadge(m.id, MED_EDU)+'<span style="display:flex;align-items:center;gap:4px"><span id="me-fav-star" style="cursor:pointer;font-size:14px;user-select:none" title="收藏此用药教育">'+(isFav(m.id)?'⭐':'☆')+'</span><span style="font-size:12px;color:var(--text-light);user-select:none">收藏</span></span></div><div id="mededu-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>';
+  document.getElementById('label-content').innerHTML='<div class="section-title" style="font-size:22px">'+m.drug+'</div><div class="subtitle-row" style="font-size:12px;color:var(--text-light);display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><span class="badge badge-blue">'+m.cat+'</span> '+sourceBadge(m.id, MED_EDU)+'<span style="display:flex;align-items:center;gap:14px"><span id="me-fav-star" style="cursor:pointer;font-size:13px;user-select:none;display:flex;align-items:center;gap:3px" title="收藏此用药教育"><span style="font-size:14px">'+(isFav(m.id)?'⭐':'☆')+'</span><span style="font-size:12px;color:var(--text-light)">收藏</span></span></span></div><div id="mededu-body"><div style="text-align:center;padding:20px;color:var(--text-light)">加载中…</div></div>';
   showEditBtn({type:'med',id:mid});
   // 绑定收藏按钮
   var meFav = document.getElementById('me-fav-star');
-  if (meFav) meFav.onclick = function(e){ e.stopPropagation(); toggleFav(mid); meFav.textContent = isFav(mid)?'⭐':'☆'; };
+  if (meFav) meFav.onclick = function(e){ e.stopPropagation(); toggleFav(mid); meFav.innerHTML = (isFav(mid)?'⭐':'☆')+'<span style="font-size:12px;color:var(--text-light)">收藏</span>'; };
   loadMedEduDetail(mid, function(full) {
     var detail = full || m;
     var mb = document.getElementById('mededu-body');
