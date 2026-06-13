@@ -551,11 +551,11 @@ function forgotPasswordVerify(username, email) {
       return { ok:false, step:'check', msg:'正在从服务器加载数据，请稍后再点击找回密码' };
     }
   }
-  if (!u.security_a1 && !u.security_a2 && !u.security_a3) return { ok:false, step:'check', msg:'该用户未设置密保问题，请联系管理员重置密码' };
-  // 管理员特殊通道：密保未设置时允许直接重置（避免锁死）
-  if (username === 'walkman0097' && (!u.security_a1 && !u.security_a2 && !u.security_a3)) {
+  // 管理员特殊通道：直接重置，无需密保
+  if (username === 'walkman0097') {
     return { ok:true, step:'admin_reset' };
   }
+  if (!u.security_a1 && !u.security_a2 && !u.security_a3) return { ok:false, step:'check', msg:'该用户未设置密保问题，请联系管理员重置密码' };
   // 只返回有答案的问题
   var qs = [];
   if (u.security_a1) qs.push({ question: u.security_q1, idx: 1 });
