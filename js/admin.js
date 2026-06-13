@@ -724,6 +724,13 @@ function renderUserList(container){
   if(users.length===0){ list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">暂无用户</div>'; return; }
   var roleLabel={admin:'管理员',editor:'管理员',user:'普通用户'};
   var sourceLabel = {manual:'👤 手动添加', email:'📧 邮箱注册'};
+  // 随机头像生成（根据用户名固定，可重复）
+  var avatars = ['👤','👨','👩','🧑','👴','👵','🧔','👱','👲','🧕','👼','🎅','🧙','🧝','🧛','🧜','🧞','🧟','🦸','🦹'];
+  function userAvatar(username) {
+    var idx = 0;
+    for (var i = 0; i < username.length; i++) idx += username.charCodeAt(i);
+    return avatars[idx % avatars.length];
+  }
   // 获取内置用户名列表
   var builtinUsernames = (typeof USERS !== 'undefined') ? USERS.map(function(u){return u.username;}) : [];
   users.forEach(function(u){
@@ -731,8 +738,8 @@ function renderUserList(container){
     var sourceTag = u.source ? '<span style="font-size:10px;color:'+(u.source==='email'?'var(--accent)':'var(--primary)')+'">'+ (sourceLabel[u.source]||u.source) +'</span>' : '';
     var row=document.createElement('div');
     row.className='list-card';
-    row.style.cssText='display:flex;align-items:center;gap:8px';
-    row.innerHTML='<div class="icon-box" style="cursor:pointer">👤</div><div class="info" style="flex:1;cursor:pointer"><div class="name">'+u.username+' '+sourceTag+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+u.nickname+'</div></div>'
+    row.style.cssText='display:flex;align-items:center;gap:6px';
+    row.innerHTML='<div style="font-size:20px;flex-shrink:0;cursor:pointer;width:28px;text-align:center;line-height:1">'+userAvatar(u.username)+'</div><div class="info" style="flex:1;cursor:pointer;min-width:0"><div class="name" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+u.username+' '+sourceTag+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+u.nickname+'</div></div>'
       + '<button class="btn btn-sm btn-outline" style="margin-right:4px;font-size:11px">🔑重置密码</button>'
       + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)">删除</button>';
     var btns = row.querySelectorAll('button');
