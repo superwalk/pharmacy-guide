@@ -187,6 +187,27 @@ function addRecent(id, type) {
   // 同步记录浏览统计
   recordView(id, type);
 }
+// 从 Supabase 加载最近查看（跨浏览器同步）
+function loadRecentFromSupabase() {
+  if (!_online || !_supabase || !currentUser || typeof _supabase.from !== 'function') return;
+  _supabase.from('recent_views').select('content_id,content_type,updated_at').eq('username', currentUser.username).order('updated_at', { ascending: false }).limit(15).then(function(r){
+    if (r.error || !r.data || r.data.length === 0) return;
+    var local = getRecent();
+    r.data.forEach(function(sr){
+      var existing = local.findIndex(function(x){ return x.id === sr.content_id && x.type === sr.content_type; });
+      if (existing >= 0) {
+        // 已存在，移到最前
+        local.splice(existing, 1);
+        local.unshift({ id: sr.content_id, type: sr.content_type });
+      } else {
+        local.push({ id: sr.content_id, type: sr.content_type });
+      }
+    });
+    // 去重并限制15条
+    var seen = {}; local = local.filter(function(x){ var k = x.id + '_' + x.type; if (seen[k]) return false; seen[k] = true; return true; }).slice(0, 15);
+    localStorage.setItem(recentKey(), JSON.stringify(local));
+  }).catch(function(){});
+}
 
 // 简易拼音首字母（新增内容自动支持搜索）
 function genPy(s){
@@ -662,6 +683,8 @@ function initApp() {
       if (loaded && _online) {
         // 同步用户数据
         if (typeof loadUsersFromSupabase === 'function') loadUsersFromSupabase();
+        // 同步最近查看
+        if (typeof loadRecentFromSupabase === 'function') loadRecentFromSupabase();
         // 数据已刷新，重新渲染当前页面
         var active = document.querySelector('.screen.active');
         if (active) {
