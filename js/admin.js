@@ -806,7 +806,10 @@ function showUserEditor(user){
   }
   var body='<div style="display:flex;flex-direction:column;gap:8px">'+lockInfo+
     '<input id="ed-uname" placeholder="用户名" value="'+esc(u.username||'')+'" '+(isNew?'':'disabled')+'>'+
-    '<div style="display:flex;gap:6px"><input id="ed-upass" placeholder="密码" value="'+(isNew?esc(u.password||''):'[已加密]')+'" style="flex:1"'+(isNew?'':' disabled')+'><button class="btn btn-sm btn-outline" id="ed-genpw" style="white-space:nowrap">🎲 随机</button></div>'+
+    (isNew
+      ? '<div style="display:flex;gap:6px"><input id="ed-upass" placeholder="密码" value="'+esc(u.password||'')+'" style="flex:1"><button class="btn btn-sm btn-outline" id="ed-genpw" style="white-space:nowrap">🎲 随机</button></div>'
+      : '<div style="font-size:12px;color:var(--text-light);padding:4px 0">🔑 密码已加密，如需修改请在列表页使用「🔑重置密码」按钮</div>'
+    )+
     '<input id="ed-unick" placeholder="昵称" value="'+esc(u.nickname||'')+'">';
   if(isAdmin){
     body+='<div style="padding:8px 0;font-size:13px;color:var(--primary);font-weight:600">🔒 管理员 · 拥有全部权限</div>';
