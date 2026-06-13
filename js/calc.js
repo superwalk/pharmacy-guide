@@ -327,7 +327,8 @@ function calcCard(title,id,desc,body){
 <div class="detail-hero" style="margin-bottom:14px" id="calc-${id}">
   <div style="font-size:16px;font-family:var(--font-heading);font-weight:700;color:var(--primary-dark);cursor:pointer;display:flex;align-items:center" onclick="toggleCalcSection(this,'calc-${id}')">
     <span style="flex:1">${title}</span>
-    <span class="calc-star" style="font-size:16px;cursor:pointer;padding:4px 4px 4px 8px" onclick="event.stopPropagation();toggleCalcFav('${id}')" title="收藏此工具">${starred}</span>
+    <span class="calc-star" style="font-size:16px;cursor:pointer;padding:4px 8px" onclick="event.stopPropagation();toggleCalcFav('${id}')" title="收藏此工具">${starred}</span>
+    <span style="width:8px"></span>
     <span class="calc-arrow" style="font-size:12px">▶</span>
   </div>
   <div style="font-size:11px;color:var(--text-light);margin-bottom:6px">${desc}</div>
