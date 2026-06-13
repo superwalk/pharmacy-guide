@@ -589,6 +589,12 @@ function showLoginErr(el, msg, type){
 
 // ═══ 初始化 ───
 function initApp() {
+  // 注销旧的 Service Worker（避免缓存冲突）
+  if (navigator.serviceWorker) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      regs.forEach(function(reg) { reg.unregister(); });
+    });
+  }
   document.getElementById('screen-login').classList.remove('active');
   document.getElementById('nav-bar').style.display='flex';
   SCREENS.forEach(s => {
