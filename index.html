@@ -211,7 +211,7 @@
   <div class="content">
     <!-- 内容管理（手风琴折叠，默认展开） -->
     <div style="background:var(--bg);border-radius:12px;padding:14px;border:1px solid var(--border)">
-      <div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>📋 内容管理</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div>
+      <div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="event.stopPropagation();toggleGuideGroup(this)" data-expanded="false"><span>📋 内容管理</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div>
       <div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">
         <div class="segment" id="admin-tabs" style="flex-wrap:wrap;gap:4px">
           <div class="segment-item active" data-tab="drugs">药品</div>
@@ -227,7 +227,7 @@
     </div>
     <!-- 用户管理（手风琴折叠，默认折叠） -->
     <div id="admin-user-card" style="background:var(--bg);border-radius:12px;padding:14px;margin-top:10px;border:1px solid var(--border)">
-      <div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false"><span>👥 用户管理</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div>
+      <div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="event.stopPropagation();toggleGuideGroup(this)" data-expanded="false"><span>👥 用户管理</span><span class="guide-arrow" style="display:inline-block;transition:transform .2s;font-size:12px;color:var(--text-light)">▶</span></div>
       <div class="guide-items" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:6px">
         <div id="admin-user-list"></div>
       </div>
