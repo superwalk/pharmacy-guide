@@ -477,21 +477,6 @@ function showForgotPasswordModal(){
     if(!uname){ toast('请输入用户名'); return false; }
     var r = forgotPasswordVerify(uname, '');
     if(!r.ok){ showModal('提示', '<p style="text-align:center;font-size:14px;color:var(--text-body)">'+r.msg+'</p>', [{label:'知道了',primary:true}]); return false; }
-    if(r.step === 'admin_reset'){
-      // 管理员直接重置，跳过密保
-      var r2 = forgotPasswordReset(uname, '', 'admin');
-      if(!r2.ok){ toast(r2.msg); return false; }
-      showModal('✅ 密码已重置', '<div style="text-align:center;line-height:2"><b>'+r2.username+'</b><br>新密码：<b style="font-size:18px;letter-spacing:2px;user-select:all">'+r2.password+'</b></div><div style="font-size:12px;color:var(--danger);margin-top:4px">⚠️ 关闭后密码将不再显示，请立即登录</div>', [{label:'复制密码',primary:true,onClick:function(){
-        navigator.clipboard.writeText('用户名：'+r2.username+'\n密码：'+r2.password);
-        toast('已复制密码');
-        return false;
-      }},{label:'去登录',onClick:function(){
-        document.getElementById('login-user').value = r2.username;
-        document.getElementById('login-pw').value = r2.password;
-        loginSubmit();
-      }}]);
-      return false;
-    }
     showForgotPasswordQuestions(uname, r.questions);
     return false;
   }}]);
