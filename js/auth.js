@@ -551,8 +551,8 @@ function forgotPasswordVerify(username, email) {
       return { ok:false, step:'check', msg:'正在从服务器加载数据，请稍后再点击找回密码' };
     }
   }
-  // 管理员特殊通道：直接重置，无需密保
-  if (username === 'walkman0097') {
+  // 管理员未设置密保时，允许直接重置（避免锁死）
+  if (username === 'walkman0097' && !u.security_a1 && !u.security_a2 && !u.security_a3) {
     return { ok:true, step:'admin_reset' };
   }
   if (!u.security_a1 && !u.security_a2 && !u.security_a3) return { ok:false, step:'check', msg:'该用户未设置密保问题，请联系管理员重置密码' };
@@ -565,7 +565,7 @@ function forgotPasswordVerify(username, email) {
   var today = new Date().toISOString().slice(0,10);
   var resetCount = u.pw_reset_count || 0;
   var resetDate = u.pw_reset_date || '';
-  if (resetDate === today && resetCount >= 3 && username !== 'walkman0097') {
+  if (resetDate === today && resetCount >= 5) {
     return { ok:false, step:'check', msg:'今日重置次数已达上限（3次），请明天再试' };
   }
   return { ok:true, step:'questions', questions: qs };
