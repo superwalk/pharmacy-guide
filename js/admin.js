@@ -189,7 +189,12 @@ function showEditLogs() {
       html += '<button class="btn btn-outline btn-sm" id="clear-review-btn" style="margin-top:4px;font-size:11px">🗑️ 清空已处理</button></div></div>';
     }
   }
-  // 编辑记录列表
+  // 编辑记录列表 - 手风琴折叠
+  html += '<div class="cat-card" style="margin-bottom:8px"><div class="cat-header" style="cursor:pointer" onclick="toggleGuideGroup(this)" data-expanded="false">'
+    + '<span class="cat-name" style="flex:1">📝 编辑记录</span>'
+    + '<span id="editlog-fav" style="cursor:pointer;font-size:14px;user-select:none;padding:0 6px" onclick="event.stopPropagation();togglePageFav(\'page_editlog\');this.textContent=getFavs().indexOf(\'page_editlog\')>=0?\'⭐\':\'☆\';" title="收藏编辑记录">'+(getFavs().indexOf('page_editlog')>=0?'⭐':'☆')+'</span>'
+    + '<span style="font-size:12px;color:var(--text-light);margin-left:4px;cursor:default;user-select:none">收藏</span>'
+    + '<span class="guide-arrow" style="display:inline-block;transition:transform .2s">▶</span></div><div class="guide-items" style="display:none">';
   if (logs.length === 0) {
     html += '<div style="text-align:center;padding:40px;color:var(--text-light)">暂无编辑记录</div>';
   } else {
@@ -200,6 +205,7 @@ function showEditLogs() {
       html += '<div class="list-card"'+clickAttr+'><div class="icon-box" style="font-size:12px;color:'+color+'">' + l.action + '</div><div class="info"><div class="name">' + l.name + '</div><div class="desc" style="font-size:11px">' + l.user + ' · ' + l.type + ' · ' + l.time + '</div></div></div>';
     });
   }
+  html += '</div></div>'; // 关闭编辑记录手风琴
   document.getElementById('label-content').innerHTML = html;
   // 绑定点击跳转
   document.querySelectorAll('[data-log-id]').forEach(function(el){
@@ -726,14 +732,14 @@ function renderUserList(container){
     var row=document.createElement('div');
     row.className='list-card';
     row.style.cssText='display:flex;align-items:center;gap:8px';
-    row.innerHTML='<div class="icon-box">👤</div><div class="info" style="flex:1"><div class="name">'+u.username+' '+sourceTag+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+u.nickname+'</div></div>'
-      + '<button class="btn btn-sm btn-outline" style="margin-right:4px">编辑</button>'
+    row.innerHTML='<div class="icon-box" style="cursor:pointer">👤</div><div class="info" style="flex:1;cursor:pointer"><div class="name">'+u.username+' '+sourceTag+'</div><div class="desc">'+roleLabel[u.role||'user']+' · '+u.nickname+'</div></div>'
       + '<button class="btn btn-sm btn-outline" style="margin-right:4px;font-size:11px">🔑重置密码</button>'
       + '<button class="btn btn-sm" style="color:var(--danger);border-color:var(--danger)">删除</button>';
     var btns = row.querySelectorAll('button');
     var btnIdx = 0;
-    btns[btnIdx].onclick=function(){ showUserEditor(u); };
-    btns[btnIdx+1].onclick=function(){
+    // 整行点击编辑
+    row.onclick=function(){ showUserEditor(u); };
+    btns[btnIdx].onclick=function(e){ e.stopPropagation();
       var newPw = genRandPw();
       updateUser(u.username, {password: newPw});
       var info = '用户名：'+u.username+'\n密码：'+newPw;
