@@ -1,4 +1,5 @@
-// ═══ 内容管理 ═══
+// ═══ 内容管理 (v1.2.0-final) ═══
+console.log('[pharmacy-guide] admin.js v1.2.0-final loaded');
 
 // 编辑日志
 function addEditLog(type, name, action, itemId) {
