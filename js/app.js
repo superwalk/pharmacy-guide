@@ -1607,7 +1607,7 @@ function renderProfile() {
   updateMsgBadge();
 }
 // ═══ 版本更新 ───
-var APP_VERSION='1.2.0';
+var APP_VERSION='1.2.1';
 var CHANGELOG_KEY='changelog_custom_v3';
 var DEFAULT_CHANGELOG=[
   '2026-06-13  v1.2.0：密码SHA256加密、所有操作跨浏览器同步、后台管理双手风琴折叠、Supabase异常保护',
