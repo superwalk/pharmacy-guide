@@ -432,7 +432,7 @@ function showRegisterModal(){
 
 function showFindUsername(){
   var html = '<div style="display:flex;flex-direction:column;gap:8px">'
-    + '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">输入你的昵称或邮箱，帮你找回用户名</div>'
+    + '<div style="font-size:13px;color:var(--text-light);margin-bottom:4px">输入你的昵称，帮你找回用户名</div>'
     + '<input id="fu-input" placeholder="昵称或邮箱" style="width:100%">'
     + '</div>';
   showModal('🔍 找回用户名', html, [{label:'取消'},{label:'搜索',primary:true,onClick:function(){
@@ -440,13 +440,13 @@ function showFindUsername(){
     if(!kw){ toast('请输入昵称或邮箱'); return false; }
     var users = getUsers();
     var result = users.filter(function(u){
-      return (u.nickname||'').toLowerCase().indexOf(kw)>=0 || (u.email||'').toLowerCase().indexOf(kw)>=0;
+      return (u.nickname||'').toLowerCase().indexOf(kw)>=0;
     });
     if (result.length === 0){
       // 也查 Supabase 用户
       if (typeof _sbUsers !== 'undefined' && _sbUsers.length > 0){
         result = _sbUsers.filter(function(u){
-          return (u.nickname||u.display_name||'').toLowerCase().indexOf(kw)>=0 || (u.email||'').toLowerCase().indexOf(kw)>=0;
+          return (u.nickname||u.display_name||'').toLowerCase().indexOf(kw)>=0;
         });
       }
       if (result.length === 0){ toast('未找到匹配的用户'); return false; }
