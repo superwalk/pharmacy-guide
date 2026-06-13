@@ -749,7 +749,7 @@ function renderUserList(container){
       showModal('🔑 密码已重置', '<div style="text-align:center;line-height:2"><b>'+u.username+'</b><br>新密码：<b style="font-size:18px;letter-spacing:2px">'+newPw+'</b></div><div style="font-size:12px;color:var(--text-light);margin-top:6px">已自动复制到剪贴板</div>', [{label:'确定',primary:true}]);
       renderUserList();
     };
-    btns[btnIdx+2].onclick=function(){
+    btns[btnIdx+1].onclick=function(){
       if(u.username===currentUser.username){ toast('不能删除自己'); return; }
       if(u.username==='walkman0097'){ toast('不能删除管理员账户'); return; }
       showModal('确认删除','<p>确定删除用户 <b>'+u.username+'</b>？</p>',[{label:'取消'},{label:'删除',primary:true,style:'background:var(--danger)',onClick:function(){
