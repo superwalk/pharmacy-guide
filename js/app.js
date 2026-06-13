@@ -1656,6 +1656,8 @@ function checkVersion(){
   }).then(function(data){
     if(!data||!data.version) return;
     if(data.version!==APP_VERSION){
+      // 保存新版本号到 localStorage，下次页面加载时通过内联脚本检测并强制刷新
+      try { localStorage.setItem('app_version', data.version); } catch(e) {}
       // 发现新版本，强制刷新（带缓存清除参数，解决VIA浏览器缓存问题）
       window.location.href = window.location.href.split('?')[0].split('#')[0] + '?v=' + data.version + '&t=' + Date.now();
     }
