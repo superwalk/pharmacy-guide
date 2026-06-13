@@ -720,8 +720,15 @@ function genRandPw(){ var c='abcdefghjkmnpqrstuvwxyz23456789'; var p=''; for(var
 function renderUserList(container){
   var list=container || document.getElementById('admin-list');
   var users=getUsers();
-  list.innerHTML='';
-  if(users.length===0){ list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)">暂无用户</div>'; return; }
+  // 搜索框
+  var searchHtml = '<div class="search-bar search-sm" style="margin-bottom:6px"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#94A3B8" stroke-width="2"/></svg><input id="um-search" placeholder="搜索用户…" oninput="renderUserList()"></div>';
+  list.innerHTML = searchHtml;
+  var kw = (document.getElementById('um-search')?.value||'').toLowerCase().trim();
+  // 过滤
+  if (kw) users = users.filter(function(u){
+    return (u.username||'').toLowerCase().indexOf(kw)>=0 || (u.nickname||'').toLowerCase().indexOf(kw)>=0 || (u.role||'').toLowerCase().indexOf(kw)>=0;
+  });
+  if(users.length===0){ list.innerHTML += '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px">暂无用户</div>'; return; }
   var roleLabel={admin:'管理员',editor:'管理员',user:'普通用户'};
   var sourceLabel = {manual:'👤 手动添加', email:'📧 邮箱注册'};
   // 随机头像生成（根据用户名固定，可重复）
@@ -783,7 +790,21 @@ function showUserEditor(user){
     u.nickname=u.username;
   }
   var isAdmin=u.username==='walkman0097';
-  var body='<div style="display:flex;flex-direction:column;gap:8px">'+
+  // 检查登录锁定状态
+  var lockInfo = '';
+  if (!isNew) {
+    try {
+      var failData = JSON.parse(localStorage.getItem('login_fails_' + u.username) || '{"count":0,"time":0}');
+      if (failData.count >= 5) {
+        var elapsed = Math.floor((Date.now() - failData.time) / 1000);
+        var remain = 900 - elapsed;
+        if (remain > 0) {
+          lockInfo = '<div style="padding:6px 8px;margin-top:4px;font-size:12px;background:#FEF2F2;color:var(--danger);border-radius:8px;display:flex;align-items:center;justify-content:space-between"><span>🔒 账户已锁定，剩余 '+(remain>60?Math.ceil(remain/60)+' 分钟':remain+' 秒')+' 后自动解锁</span><span style="cursor:pointer;font-size:11px;color:var(--primary);flex-shrink:0" onclick="clearFails(\''+u.username+'\');this.parentElement.remove();toast(\'已解锁\')">🔓 立即解锁</span></div>';
+        }
+      }
+    } catch(e) {}
+  }
+  var body='<div style="display:flex;flex-direction:column;gap:8px">'+lockInfo+
     '<input id="ed-uname" placeholder="用户名" value="'+esc(u.username||'')+'" '+(isNew?'':'disabled')+'>'+
     '<div style="display:flex;gap:6px"><input id="ed-upass" placeholder="密码" value="'+(isNew?esc(u.password||''):'[已加密]')+'" style="flex:1"'+(isNew?'':' disabled')+'><button class="btn btn-sm btn-outline" id="ed-genpw" style="white-space:nowrap">🎲 随机</button></div>'+
     '<input id="ed-unick" placeholder="昵称" value="'+esc(u.nickname||'')+'">';
