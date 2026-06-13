@@ -551,10 +551,6 @@ function forgotPasswordVerify(username, email) {
       return { ok:false, step:'check', msg:'正在从服务器加载数据，请稍后再点击找回密码' };
     }
   }
-  // 管理员未设置密保时，允许直接重置（避免锁死）
-  if (username === 'walkman0097' && !u.security_a1 && !u.security_a2 && !u.security_a3) {
-    return { ok:true, step:'admin_reset' };
-  }
   if (!u.security_a1 && !u.security_a2 && !u.security_a3) return { ok:false, step:'check', msg:'该用户未设置密保问题，请联系管理员重置密码' };
   // 只返回有答案的问题
   var qs = [];
@@ -573,25 +569,21 @@ function forgotPasswordVerify(username, email) {
 
 function forgotPasswordReset(username, email, answers) {
   // answers = { 1: "答案1", 2: "答案2", 3: "答案3" } — 任选一个正确即可
-  // 或 answers = "admin" — 管理员特殊通道直接重置
   var users = getUsers();
   var u = users.find(function(x){ return x.username === username });
   if (!u) return { ok:false, msg:'用户不存在' };
-  // 管理员通道跳过密保验证
-  if (answers !== 'admin') {
-    var anyCorrect = false;
-    var answersProvided = [];
-    for (var k in answers) {
-      if (answers.hasOwnProperty(k) && answers[k]) {
-        answersProvided.push(parseInt(k));
-        var expected = u['security_a' + k] || '';
-        if (expected.toLowerCase() === answers[k].toLowerCase()) {
-          anyCorrect = true;
-        }
+  var anyCorrect = false;
+  var answersProvided = [];
+  for (var k in answers) {
+    if (answers.hasOwnProperty(k) && answers[k]) {
+      answersProvided.push(parseInt(k));
+      var expected = u['security_a' + k] || '';
+      if (expected.toLowerCase() === answers[k].toLowerCase()) {
+        anyCorrect = true;
       }
     }
-    if (!anyCorrect) return { ok:false, msg:'密保答案不正确，请核对后重试' };
   }
+  if (!anyCorrect) return { ok:false, msg:'密保答案不正确，请核对后重试' };
   // 验证通过，生成新密码
   var newPw = genRandPw();
   u.password = hashPw(newPw);
