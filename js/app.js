@@ -1644,6 +1644,7 @@ function initProfileMenus() {
   document.getElementById('menu-update-help').onclick=function(){
     pushScreen('label');
     var isAdmin = currentUser.username === 'walkman0097';
+    var fv = getFavs(); // 页面收藏状态
     // 使用帮助 - 使用统一的USER_GUIDE
     var saved = (function(){
       try { var s = localStorage.getItem('custom_guide'); return s ? JSON.parse(s) : null; } catch(e){ return null; }
